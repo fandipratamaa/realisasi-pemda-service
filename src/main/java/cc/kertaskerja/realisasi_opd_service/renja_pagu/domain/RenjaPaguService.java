@@ -84,6 +84,7 @@ public class RenjaPaguService {
                                             existing.createdBy(),
                                             existing.createdDate(),
                                             existing.lastModifiedDate(),
+                                            existing.lastModifiedBy(),
                                             existing.version()
                                     );
                                     return renjaPaguRepository.save(updated);

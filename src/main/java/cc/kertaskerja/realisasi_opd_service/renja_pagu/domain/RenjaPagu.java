@@ -5,6 +5,7 @@ import java.time.Instant;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Column;
@@ -44,6 +45,9 @@ public record RenjaPagu(
         @LastModifiedDate
         @Column("last_modified_date")
         Instant lastModifiedDate,
+        @LastModifiedBy
+        @Column("last_modified_by")
+        String lastModifiedBy,
 
         @Version int version
 ) {
@@ -62,7 +66,7 @@ public record RenjaPagu(
         return new RenjaPagu(null, 
                 renjaPaguId, renjaPagu, jenisRenjaPagu, pagu, realisasi, satuan, 
                 tahun, jenisRealisasi, kodeOpd, status, 
-                null, null, null, 0);
+                null, null, null, null, 0);
     }
 
     @JsonProperty("capaian")

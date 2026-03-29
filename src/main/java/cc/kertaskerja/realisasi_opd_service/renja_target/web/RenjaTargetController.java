@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -149,7 +150,25 @@ public class RenjaTargetController {
     })
     public Flux<RenjaTarget> batchSubmitRealisasiRenjaTarget(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Daftar payload realisasi renja target", required = true,
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaTargetRequest.class))))
+                    content = @Content(
+                            array = @ArraySchema(schema = @Schema(implementation = RenjaTargetRequest.class)),
+                            examples = @ExampleObject(name = "ArrayRequest", value = "[\n" +
+                                    "  {\n" +
+                                    "    \"targetRealisasiId\": 10,\n" +
+                                    "    \"renjaTargetId\": \"REN-001\",\n" +
+                                    "    \"renjaTarget\": \"Program Peningkatan Infrastruktur\",\n" +
+                                    "    \"jenisRenjaTarget\": \"PROGRAM\",\n" +
+                                    "    \"indikatorId\": \"IND-REN-123\",\n" +
+                                    "    \"indikator\": \"Persentase capaian program\",\n" +
+                                    "    \"targetId\": \"TAR-1\",\n" +
+                                    "    \"target\": \"100\",\n" +
+                                    "    \"realisasi\": 85,\n" +
+                                    "    \"satuan\": \"%\",\n" +
+                                    "    \"tahun\": \"2026\",\n" +
+                                    "    \"jenisRealisasi\": \"NAIK\",\n" +
+                                    "    \"kodeOpd\": \"OPD-001\"\n" +
+                                    "  }\n" +
+                                    "]")))
             @RequestBody @Valid List<RenjaTargetRequest> renjaTargetRequests) {
         return renjaTargetService.batchSubmitRealisasiRenjaTarget(renjaTargetRequests);
     }

@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -141,7 +142,22 @@ public class RenjaPaguController {
     })
     public Flux<RenjaPagu> batchSubmitRealisasiRenjaPagu(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Daftar payload realisasi renja pagu", required = true,
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaPaguRequest.class))))
+                    content = @Content(
+                            array = @ArraySchema(schema = @Schema(implementation = RenjaPaguRequest.class)),
+                            examples = @ExampleObject(name = "ArrayRequest", value = "[\n" +
+                                    "  {\n" +
+                                    "    \"targetRealisasiId\": 10,\n" +
+                                    "    \"renjaPaguId\": \"RENPAGU-001\",\n" +
+                                    "    \"renjaPagu\": \"Program Pembangunan Jalan\",\n" +
+                                    "    \"jenisRenjaPagu\": \"PROGRAM\",\n" +
+                                    "    \"pagu\": 100000000,\n" +
+                                    "    \"realisasi\": 70000000,\n" +
+                                    "    \"satuan\": \"Rp\",\n" +
+                                    "    \"tahun\": \"2026\",\n" +
+                                    "    \"jenisRealisasi\": \"NAIK\",\n" +
+                                    "    \"kodeOpd\": \"OPD-001\"\n" +
+                                    "  }\n" +
+                                    "]")))
             @RequestBody @Valid List<RenjaPaguRequest> renjaPaguRequests) {
         return renjaPaguService.batchSubmitRealisasiRenjaPagu(renjaPaguRequests);
     }

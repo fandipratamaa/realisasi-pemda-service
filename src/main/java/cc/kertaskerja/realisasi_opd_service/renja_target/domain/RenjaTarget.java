@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Column;
@@ -51,6 +52,9 @@ public record RenjaTarget(
         @LastModifiedDate
         @Column("last_modified_date")
         Instant lastModifiedDate,
+        @LastModifiedBy
+        @Column("last_modified_by")
+        String lastModifiedBy,
 
         @Version int version
 ) {
@@ -72,7 +76,7 @@ public record RenjaTarget(
         return new RenjaTarget(null,
                 renjaId, renja, jenisRenja, indikatorId, indikator, targetId, target,
                 realisasi, satuan, tahun, jenisRealisasi, kodeOpd, status,
-                null, null, null, 0);
+                null, null, null, null, 0);
     }
 
     @JsonProperty("capaian")

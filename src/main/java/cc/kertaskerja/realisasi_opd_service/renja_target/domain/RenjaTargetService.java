@@ -110,6 +110,7 @@ public class RenjaTargetService {
                                             existing.createdBy(),
                                             existing.createdDate(),
                                             existing.lastModifiedDate(),
+                                            existing.lastModifiedBy(),
                                             existing.version());
                                     return renjaTargetRepository.save(updated);
                                 })
