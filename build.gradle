@@ -9,7 +9,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
+		languageVersion = JavaLanguageVersion.of(21)
 	}
 }
 
@@ -22,6 +22,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.6'
 	developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
 	runtimeOnly 'org.postgresql:postgresql'
 	runtimeOnly 'org.postgresql:r2dbc-postgresql'
@@ -49,7 +50,7 @@ tasks.named('test') {
 
 bootBuildImage {
 	imageName = "${project.name}"
-	environment = ["BP_JVM_VERSION" : "17.*"]
+	environment = ["BP_JVM_VERSION" : "21.*"]
 
 	if (System.getProperty( "os.arch" ).toLowerCase().startsWith('aarch')) {
 		builder = "paketobuildpacks/builder-jammy-buildpackless-tiny"

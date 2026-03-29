@@ -15,6 +15,11 @@ public class SecurityConfig {
     SecurityWebFilterChain filterChain(ServerHttpSecurity http) {
         return http
                 .authorizeExchange(exchange -> exchange
+                        .pathMatchers(
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**")
+                        .permitAll()
                         .anyExchange().authenticated())
                 .oauth2ResourceServer(oauth2 ->
                         oauth2.jwt(Customizer.withDefaults()))

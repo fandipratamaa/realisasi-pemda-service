@@ -12,6 +12,6 @@ import reactor.core.publisher.Mono;
 public class DataConfig {
     @Bean
     public ReactiveAuditorAware<String> auditorAware() {
-        return () -> Mono.just("user_id");
+        return () -> Mono.just("guest"); //default guest
     }
 }
