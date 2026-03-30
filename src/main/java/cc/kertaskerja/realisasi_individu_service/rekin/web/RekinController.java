@@ -1,0 +1,185 @@
+package cc.kertaskerja.realisasi_individu_service.rekin.web;
+
+import cc.kertaskerja.realisasi_individu_service.rekin.domain.Rekin;
+import cc.kertaskerja.realisasi_individu_service.rekin.domain.RekinService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("rekin")
+@Tag(name = "Individu - Rekin", description = "Endpoint realisasi rekin tingkat individu")
+public class RekinController {
+    private final RekinService rekinService;
+
+    public RekinController(RekinService rekinService) {
+        this.rekinService = rekinService;
+    }
+
+    @GetMapping
+    @Operation(summary = "Ambil semua realisasi rekin", description = "Mengambil seluruh data realisasi rekin.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi rekin", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Rekin.class)))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<Rekin> getAllRealisasiRekin() {
+        return rekinService.getAllRealisasiRekin();
+    }
+
+    @GetMapping("/find/{id}")
+    @Operation(summary = "Ambil realisasi rekin berdasarkan ID", description = "Mengambil satu data realisasi rekin berdasarkan ID internal.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data realisasi rekin ditemukan", content = @Content(schema = @Schema(implementation = Rekin.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Data tidak ditemukan", content = @Content)
+    })
+    public Mono<Rekin> getRealisasiRekin(
+            @Parameter(description = "ID internal realisasi rekin", example = "1") @PathVariable("id") Long id) {
+        return rekinService.getRealisasiRekinById(id);
+    }
+
+    @GetMapping("/by-rekin/{rekinId}")
+    @Operation(summary = "Cari realisasi rekin berdasarkan ID rekin", description = "Mengambil daftar realisasi rekin berdasarkan `rekinId`.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi rekin", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Rekin.class)))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<Rekin> getRealisasiRekinByRekinId(
+            @Parameter(description = "ID rekin", example = "REKIN-001") @PathVariable String rekinId) {
+        return rekinService.getRealisasiRekinByRekinId(rekinId);
+    }
+
+    @GetMapping("/by-tahun/{tahun}")
+    @Operation(summary = "Cari realisasi rekin per tahun", description = "Mengambil realisasi rekin berdasarkan tahun.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi rekin", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Rekin.class)))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<Rekin> getRealisasiRekinByTahun(
+            @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun) {
+        return rekinService.getRealisasiRekinByTahun(tahun);
+    }
+
+    @GetMapping("/by-periode/{tahunAwal}/{tahunAkhir}/rpjmd")
+    @Operation(summary = "Cari realisasi rekin periode RPJMD", description = "Mengambil realisasi rekin pada rentang tahun RPJMD.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi rekin periode RPJMD", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Rekin.class)))),
+            @ApiResponse(responseCode = "400", description = "Parameter periode tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<Rekin> getRealisasiRekinByPeriodeRpjmd(
+            @Parameter(description = "Tahun awal periode", example = "2025") @PathVariable String tahunAwal,
+            @Parameter(description = "Tahun akhir periode", example = "2030") @PathVariable String tahunAkhir) {
+        return rekinService.getRealisasiRekinByPeriodeRpjmd(tahunAwal, tahunAkhir);
+    }
+
+    @GetMapping("/by-id-sasaran/{idSasaran}")
+    @Operation(summary = "Cari realisasi rekin berdasarkan ID sasaran", description = "Mengambil realisasi rekin berdasarkan `idSasaran`.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi rekin", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Rekin.class)))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<Rekin> getRealisasiRekinByIdSasaran(
+            @Parameter(description = "ID sasaran", example = "SAS-001") @PathVariable String idSasaran) {
+        return rekinService.getRealisasiRekinByIdSasaran(idSasaran);
+    }
+
+    @GetMapping("/by-nip/{nip}")
+    @Operation(summary = "Cari realisasi rekin berdasarkan NIP", description = "Mengambil realisasi rekin berdasarkan `nip`.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi rekin", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Rekin.class)))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<Rekin> getRealisasiRekinByNip(
+            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip) {
+        return rekinService.getRealisasiRekinByNip(nip);
+    }
+
+    @PostMapping
+    @Operation(summary = "Simpan realisasi rekin", description = "Menyimpan satu data realisasi rekin.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data realisasi rekin tersimpan", content = @Content(schema = @Schema(implementation = Rekin.class))),
+            @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Mono<Rekin> submitRealisasiRekin(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload realisasi rekin", required = true,
+                    content = @Content(schema = @Schema(implementation = RekinRequest.class)))
+            @RequestBody @Valid RekinRequest rekinRequest) {
+        return rekinService.submitRealisasiRekin(
+                rekinRequest.rekinId(),
+                rekinRequest.rekin(),
+                rekinRequest.nip(),
+                rekinRequest.idSasaran(),
+                rekinRequest.sasaran(),
+                rekinRequest.targetId(),
+                rekinRequest.target(),
+                rekinRequest.realisasi(),
+                rekinRequest.satuan(),
+                rekinRequest.tahun(),
+                rekinRequest.jenisRealisasi()
+        );
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Hapus realisasi rekin", description = "Menghapus satu data realisasi rekin berdasarkan ID internal.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data realisasi rekin terhapus", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Data tidak ditemukan", content = @Content)
+    })
+    public Mono<Void> deleteRealisasiRekin(
+            @Parameter(description = "ID internal realisasi rekin", example = "1") @PathVariable Long id) {
+        return rekinService.deleteRealisasiRekin(id);
+    }
+
+    @PostMapping("/batch")
+    @Operation(summary = "Simpan batch realisasi rekin", description = "Menyimpan beberapa data realisasi rekin dalam satu request.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Batch berhasil disimpan", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Rekin.class)))),
+            @ApiResponse(responseCode = "400", description = "Payload batch tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<Rekin> batchSubmitRealisasiRekin(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Daftar payload realisasi rekin", required = true,
+                    content = @Content(
+                            array = @ArraySchema(schema = @Schema(implementation = RekinRequest.class)),
+                            examples = @ExampleObject(name = "ArrayRequest", value = "[\n" +
+                                    "  {\n" +
+                                    "    \"targetRealisasiId\": \"1\",\n" +
+                                    "    \"rekinId\": \"REKIN-001\",\n" +
+                                    "    \"rekin\": \"Rekin Peningkatan Infrastruktur\",\n" +
+                                    "    \"nip\": \"198012312005011001\",\n" +
+                                    "    \"idSasaran\": \"SAS-001\",\n" +
+                                    "    \"sasaran\": \"Meningkatkan kualitas layanan\",\n" +
+                                    "    \"targetId\": \"TAR-1\",\n" +
+                                    "    \"target\": \"100\",\n" +
+                                    "    \"realisasi\": 85,\n" +
+                                    "    \"satuan\": \"%\",\n" +
+                                    "    \"tahun\": \"2026\",\n" +
+                                    "    \"jenisRealisasi\": \"NAIK\"\n" +
+                                    "  }\n" +
+                                    "]")))
+            @RequestBody @Valid List<RekinRequest> rekinRequests) {
+        return rekinService.batchSubmitRealisasiRekin(rekinRequests);
+    }
+}

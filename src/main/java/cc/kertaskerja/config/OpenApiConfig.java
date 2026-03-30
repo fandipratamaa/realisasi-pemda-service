@@ -47,4 +47,12 @@ public class OpenApiConfig {
                         "/renja_pagu/**")
                 .build();
     }
+
+    @Bean
+    GroupedOpenApi individuApiGroup() {
+        return GroupedOpenApi.builder()
+                .group("individu")
+                .pathsToMatch("/rekin/**")
+                .build();
+    }
 }
