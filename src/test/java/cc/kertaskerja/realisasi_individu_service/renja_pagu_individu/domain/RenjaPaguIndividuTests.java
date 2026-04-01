@@ -5,13 +5,11 @@ import cc.kertaskerja.renja.domain.JenisRenja;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
 
 public class RenjaPaguIndividuTests {
     @Test
     void testCapaianRealisasiDibagiPagu() {
-        RenjaPaguIndividu renjaPaguIndividu = new RenjaPaguIndividu(
-                1L,
+        RenjaPaguIndividu renjaPaguIndividu = RenjaPaguIndividu.of(
                 "RENJA-1",
                 "Program A",
                 "1.02.01",
@@ -24,13 +22,7 @@ public class RenjaPaguIndividuTests {
                 "rupiah",
                 "2025",
                 JenisRealisasi.NAIK,
-                RenjaPaguIndividuStatus.UNCHECKED,
-                null,
-                "system",
-                "system",
-                Instant.now(),
-                Instant.now(),
-                1
+                RenjaPaguIndividuStatus.UNCHECKED
         );
 
         Assertions.assertEquals("50.00%", renjaPaguIndividu.capaian());
@@ -38,8 +30,7 @@ public class RenjaPaguIndividuTests {
 
     @Test
     void testCapaianRealisasiDibagiPaguDenganDesimal() {
-        RenjaPaguIndividu renjaPaguIndividu = new RenjaPaguIndividu(
-                2L,
+        RenjaPaguIndividu renjaPaguIndividu = RenjaPaguIndividu.of(
                 "RENJA-2",
                 "Program B",
                 "1.02.02",
@@ -52,13 +43,7 @@ public class RenjaPaguIndividuTests {
                 "rupiah",
                 "2025",
                 JenisRealisasi.NAIK,
-                RenjaPaguIndividuStatus.UNCHECKED,
-                null,
-                "system",
-                "system",
-                Instant.now(),
-                Instant.now(),
-                1
+                RenjaPaguIndividuStatus.UNCHECKED
         );
 
         Assertions.assertEquals("37.50%", renjaPaguIndividu.capaian());
@@ -66,8 +51,7 @@ public class RenjaPaguIndividuTests {
 
     @Test
     void testCapaianPaguNol() {
-        RenjaPaguIndividu renjaPaguIndividu = new RenjaPaguIndividu(
-                3L,
+        RenjaPaguIndividu renjaPaguIndividu = RenjaPaguIndividu.of(
                 "RENJA-3",
                 "Program C",
                 "1.02.03",
@@ -80,13 +64,7 @@ public class RenjaPaguIndividuTests {
                 "rupiah",
                 "2025",
                 JenisRealisasi.NAIK,
-                RenjaPaguIndividuStatus.UNCHECKED,
-                null,
-                "system",
-                "system",
-                Instant.now(),
-                Instant.now(),
-                1
+                RenjaPaguIndividuStatus.UNCHECKED
         );
 
         Assertions.assertEquals("0.00%", renjaPaguIndividu.capaian());
@@ -94,8 +72,7 @@ public class RenjaPaguIndividuTests {
 
     @Test
     void testCapaianRealisasiLebihBesarDariPagu() {
-        RenjaPaguIndividu renjaPaguIndividu = new RenjaPaguIndividu(
-                4L,
+        RenjaPaguIndividu renjaPaguIndividu = RenjaPaguIndividu.of(
                 "RENJA-4",
                 "Program D",
                 "1.02.04",
@@ -108,13 +85,7 @@ public class RenjaPaguIndividuTests {
                 "rupiah",
                 "2025",
                 JenisRealisasi.NAIK,
-                RenjaPaguIndividuStatus.UNCHECKED,
-                null,
-                "system",
-                "system",
-                Instant.now(),
-                Instant.now(),
-                1
+                RenjaPaguIndividuStatus.UNCHECKED
         );
 
         Assertions.assertEquals("150.00%", renjaPaguIndividu.capaian());
