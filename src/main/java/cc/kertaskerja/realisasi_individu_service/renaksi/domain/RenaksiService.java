@@ -25,6 +25,10 @@ public class RenaksiService {
         return renaksiRepository.findFirstByNipAndBulanAndRekinIdAndRenaksiId(nip, bulan, rekinId, renaksiId);
     }
 
+    public Flux<Renaksi> getRealisasiRenaksiByNipAndBulan(String nip, String bulan) {
+        return renaksiRepository.findAllByNipAndBulan(nip, bulan);
+    }
+
     public Mono<Renaksi> submitRealisasiRenaksi(
             String renaksiId,
             String renaksi,

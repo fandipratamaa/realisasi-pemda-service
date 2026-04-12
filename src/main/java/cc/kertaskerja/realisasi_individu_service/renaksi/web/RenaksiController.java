@@ -46,6 +46,22 @@ public class RenaksiController {
         return renaksiService.getAllRealisasiRenaksi();
     }
 
+    @GetMapping("/by-nip/{nip}/by-bulan/{bulan}")
+    @Operation(summary = "Cari realisasi renaksi berdasarkan NIP dan bulan", description = "Mengambil daftar data realisasi renaksi berdasarkan `nip` dan `bulan`.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi renaksi", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Renaksi.class)))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<Renaksi> getRealisasiRenaksiByNipBulan(
+            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
+            @Parameter(description = "Bulan realisasi", example = "Januari") @PathVariable String bulan) {
+        if (nip == null || nip.isBlank() || bulan == null || bulan.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip dan bulan tidak boleh kosong");
+        }
+        return renaksiService.getRealisasiRenaksiByNipAndBulan(nip, bulan);
+    }
+
     @GetMapping("/by-bulan/{bulan}/by-nip/{nip}/by-rekin/{rekinId}/by-renaksi/{renaksiId}")
     @Operation(summary = "Cari realisasi renaksi berdasarkan NIP, bulan, rekin, dan renaksi", description = "Mengambil satu data realisasi renaksi berdasarkan `nip`, `bulan`, `rekinId`, dan `renaksiId`.")
     @ApiResponses(value = {

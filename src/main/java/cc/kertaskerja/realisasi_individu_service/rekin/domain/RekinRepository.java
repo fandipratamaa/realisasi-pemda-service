@@ -7,15 +7,9 @@ import reactor.core.publisher.Mono;
 public interface RekinRepository extends ReactiveCrudRepository<Rekin, Long> {
     Flux<Rekin> findAllByRekinId(String rekinId);
 
-    Flux<Rekin> findAllByIndikatorId(String indikatorId);
-
-    Flux<Rekin> findAllByTahun(String tahun);
-
-    Flux<Rekin> findAllByIdSasaran(String idSasaran);
-
-    Flux<Rekin> findAllByNip(String nip);
+    Flux<Rekin> findAllByNipAndTahun(String nip, String tahun);
 
     Flux<Rekin> findAllByTahunBetween(String tahunAwal, String tahunAkhir);
 
-    Mono<Rekin> findFirstByNipAndIdSasaranAndTahun(String nip, String idSasaran, String tahun);
+    Mono<Rekin> findFirstByNipAndIdSasaranAndTahunAndRekinId(String nip, String idSasaran, String tahun, String rekinId);
 }

@@ -21,28 +21,12 @@ public class RekinService {
         return rekinRepository.findAll();
     }
 
-    public Mono<Rekin> getRealisasiRekinById(Long id) {
-        return rekinRepository.findById(id);
+    public Flux<Rekin> getRealisasiRekinByNipAndTahun(String nip, String tahun) {
+        return rekinRepository.findAllByNipAndTahun(nip, tahun);
     }
 
-    public Flux<Rekin> getRealisasiRekinByRekinId(String rekinId) {
-        return rekinRepository.findAllByRekinId(rekinId);
-    }
-
-    public Flux<Rekin> getRealisasiRekinByIndikatorId(String indikatorId) {
-        return rekinRepository.findAllByIndikatorId(indikatorId);
-    }
-
-    public Flux<Rekin> getRealisasiRekinByTahun(String tahun) {
-        return rekinRepository.findAllByTahun(tahun);
-    }
-
-    public Flux<Rekin> getRealisasiRekinByIdSasaran(String idSasaran) {
-        return rekinRepository.findAllByIdSasaran(idSasaran);
-    }
-
-    public Flux<Rekin> getRealisasiRekinByNip(String nip) {
-        return rekinRepository.findAllByNip(nip);
+    public Mono<Rekin> getRealisasiRekinByNipIdSasaranTahunRekinId(String nip, String idSasaran, String tahun, String rekinId) {
+        return rekinRepository.findFirstByNipAndIdSasaranAndTahunAndRekinId(nip, idSasaran, tahun, rekinId);
     }
 
     public Flux<Rekin> getRealisasiRekinByPeriodeRpjmd(String tahunAwal, String tahunAkhir) {
@@ -111,10 +95,11 @@ public class RekinService {
                                 }));
                     }
 
-                    return rekinRepository.findFirstByNipAndIdSasaranAndTahun(
+                    return rekinRepository.findFirstByNipAndIdSasaranAndTahunAndRekinId(
                                     req.nip(),
                                     req.idSasaran(),
-                                    req.tahun())
+                                    req.tahun(),
+                                    req.rekinId())
                             .flatMap(existing -> rekinRepository.save(buildUpdatedRealisasiRekin(existing, req)))
                             .switchIfEmpty(Mono.defer(() -> {
                                 Rekin baru = buildUncheckedRealisasiRekin(
