@@ -21,36 +21,16 @@ public class RenaksiService {
         return renaksiRepository.findAll();
     }
 
-    public Mono<Renaksi> getRealisasiRenaksiById(Long id) {
-        return renaksiRepository.findById(id);
-    }
-
-    public Flux<Renaksi> getRealisasiRenaksiByRenaksiId(String renaksiId) {
-        return renaksiRepository.findAllByRenaksiId(renaksiId);
-    }
-
-    public Flux<Renaksi> getRealisasiRenaksiByRekinId(String rekinId) {
-        return renaksiRepository.findAllByRekinId(rekinId);
+    public Flux<Renaksi> getRealisasiRenaksiByPeriodeRpjmd(String tahunAwal, String tahunAkhir) {
+        return renaksiRepository.findAllByTahunBetween(tahunAwal, tahunAkhir);
     }
 
     public Flux<Renaksi> getRealisasiRenaksiByTahun(String tahun) {
         return renaksiRepository.findAllByTahun(tahun);
     }
 
-    public Flux<Renaksi> getRealisasiRenaksiByNip(String nip) {
-        return renaksiRepository.findAllByNip(nip);
-    }
-
-    public Flux<Renaksi> getRealisasiRenaksiByPeriodeRpjmd(String tahunAwal, String tahunAkhir) {
-        return renaksiRepository.findAllByTahunBetween(tahunAwal, tahunAkhir);
-    }
-
-    public Flux<Renaksi> getRealisasiRenaksiByBulanAndTahunAndRenaksiIdAndTargetId(
-            String bulan,
-            String tahun,
-            String renaksiId,
-            String targetId) {
-        return renaksiRepository.findAllByBulanAndTahunAndRenaksiIdAndTargetId(bulan, tahun, renaksiId, targetId);
+    public Mono<Renaksi> getRealisasiRenaksiByNipBulanRekin(String nip, String bulan, String rekinId) {
+        return renaksiRepository.findFirstByNipAndBulanAndRekinId(nip, bulan, rekinId);
     }
 
     public Mono<Renaksi> submitRealisasiRenaksi(
