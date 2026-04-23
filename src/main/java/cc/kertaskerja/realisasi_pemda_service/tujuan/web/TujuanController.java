@@ -97,7 +97,20 @@ public class TujuanController {
     public Flux<Tujuan> getRealisasiTujuanByPeriodeRpjmd(
             @Parameter(description = "Tahun awal periode", example = "2025") @PathVariable String tahunAwal,
             @Parameter(description = "Tahun akhir periode", example = "2030") @PathVariable String tahunAkhir) {
-        return tujuanService.getRealisasiTujuanByPeriodeRpjmd(tahunAwal, tahunAkhir);
+return tujuanService.getRealisasiTujuanByPeriodeRpjmd(tahunAwal, tahunAkhir);
+    }
+
+    @GetMapping("/by-tahun/{tahun}/by-bulan/{bulan}")
+    @Operation(summary = "Cari realisasi tujuan per tahun dan bulan", description = "Mengambil realisasi tujuan berdasarkan tahun dan bulan.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realization tujuan", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Tujuan.class)))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<Tujuan> getRealisasiTujuanByTahunAndBulan(
+            @Parameter(description = "Tahun realization", example = "2025") @PathVariable String tahun,
+            @Parameter(description = "Bulan realization", example = "Januari") @PathVariable String bulan) {
+        return tujuanService.getRealisasiTujuanByTahunAndBulan(tahun, bulan);
     }
 
     @PostMapping
@@ -111,7 +124,7 @@ public class TujuanController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload realisasi tujuan", required = true,
                     content = @Content(schema = @Schema(implementation = TujuanRequest.class)))
             @RequestBody @Valid TujuanRequest tujuanRequest) {
-        return tujuanService.submitRealisasiTujuan(
+return tujuanService.submitRealisasiTujuan(
                 tujuanRequest.tujuanId(),
                 tujuanRequest.indikatorId(),
                 tujuanRequest.targetId(),
@@ -119,6 +132,7 @@ public class TujuanController {
                 tujuanRequest.realisasi(),
                 tujuanRequest.satuan(),
                 tujuanRequest.tahun(),
+                tujuanRequest.bulan(),
                 tujuanRequest.jenisRealisasi()
         );
     }

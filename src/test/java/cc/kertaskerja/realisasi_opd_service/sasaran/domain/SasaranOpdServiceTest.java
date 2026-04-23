@@ -22,7 +22,7 @@ public class SasaranOpdServiceTest {
     @InjectMocks
     private SasaranOpdService sasaranOpdService;
 
-    @Test
+@Test
     void submitRealisasiSasaranOpd_ShouldReturnSavedEntity_WhenValidInputProvided() {
         // Arrange
         String sasaranId = UUID.randomUUID().toString();
@@ -32,6 +32,7 @@ public class SasaranOpdServiceTest {
         Double realisasi = 80.0;
         String satuan = "Unit";
         String tahun = "2025";
+        String bulan = "JANUARI";
         JenisRealisasi jenisRealisasi = JenisRealisasi.NAIK;
         String kodeOpd = "OPD001";
 
@@ -45,6 +46,7 @@ public class SasaranOpdServiceTest {
                 realisasi,
                 satuan,
                 tahun,
+                bulan,
                 jenisRealisasi,
                 kodeOpd,
                 SasaranOpdStatus.UNCHECKED
@@ -54,7 +56,7 @@ public class SasaranOpdServiceTest {
 
         // Act
         Mono<SasaranOpd> result = sasaranOpdService.submitRealisasiSasaranOpd(
-                sasaranId, indikatorId, targetId, target, realisasi, satuan, tahun, jenisRealisasi, kodeOpd);
+                sasaranId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan, jenisRealisasi, kodeOpd);
 
         // Assert
         StepVerifier.create(result)
@@ -66,13 +68,14 @@ public class SasaranOpdServiceTest {
                                 sasaranOpd.capaian().equals(expectedSasaranOpd.capaian()) &&
                                 sasaranOpd.satuan().equals(expectedSasaranOpd.satuan()) &&
                                 sasaranOpd.tahun().equals(expectedSasaranOpd.tahun()) &&
+                                sasaranOpd.bulan().equals(expectedSasaranOpd.bulan()) &&
                                 sasaranOpd.jenisRealisasi() == expectedSasaranOpd.jenisRealisasi() &&
                                 sasaranOpd.kodeOpd().equals(expectedSasaranOpd.kodeOpd()) &&
                                 sasaranOpd.status() == SasaranOpdStatus.UNCHECKED)
                 .verifyComplete();
     }
 
-    @Test
+@Test
     void submitRealisasiSasaranOpd_ShouldThrowError_WhenRepositoryFails() {
         // Arrange
         String sasaranId = UUID.randomUUID().toString();
@@ -82,6 +85,7 @@ public class SasaranOpdServiceTest {
         Double realisasi = 80.0;
         String satuan = "Unit";
         String tahun = "2025";
+        String bulan = "JANUARI";
         JenisRealisasi jenisRealisasi = JenisRealisasi.NAIK;
         String kodeOpd = "OPD001";
 
@@ -89,7 +93,7 @@ public class SasaranOpdServiceTest {
 
         // Act
         Mono<SasaranOpd> result = sasaranOpdService.submitRealisasiSasaranOpd(
-                sasaranId, indikatorId, targetId, target, realisasi, satuan, tahun, jenisRealisasi, kodeOpd);
+                sasaranId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan, jenisRealisasi, kodeOpd);
 
         // Assert
         StepVerifier.create(result)

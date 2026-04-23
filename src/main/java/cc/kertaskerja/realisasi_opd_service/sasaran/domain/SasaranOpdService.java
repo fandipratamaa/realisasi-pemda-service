@@ -45,23 +45,27 @@ public class SasaranOpdService {
         return sasaranOpdRepository.findAllByTahunAndSasaranIdAndKodeOpd(tahun, sasaranId, kodeOpd);
     }
 
+    public Flux<SasaranOpd> getRealisasiSasaranOpdByTahunAndBulanAndKodeOpd(String tahun, String bulan, String kodeOpd) {
+        return sasaranOpdRepository.findAllByTahunAndBulanAndKodeOpd(tahun, bulan, kodeOpd);
+    }
+
     public Mono<SasaranOpd> getRealisasiSasaranOpdById(Long id) {
         return sasaranOpdRepository.findById(id);
     }
 
-    public Mono<SasaranOpd> submitRealisasiSasaranOpd(String sasaranId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, JenisRealisasi jenisRealisasi, String kodeOpd) {
-        return Mono.just(buildUncheckedRealisasiSasaranOpd(sasaranId, indikatorId, targetId, target, realisasi, satuan, tahun, jenisRealisasi, kodeOpd))
+    public Mono<SasaranOpd> submitRealisasiSasaranOpd(String sasaranId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi, String kodeOpd) {
+        return Mono.just(buildUncheckedRealisasiSasaranOpd(sasaranId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan, jenisRealisasi, kodeOpd))
                 .flatMap(sasaranOpdRepository::save);
     }
 
-    public static SasaranOpd buildUncheckedRealisasiSasaranOpd(String sasaranId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, JenisRealisasi jenisRealisasi, String kodeOpd) {
+    public static SasaranOpd buildUncheckedRealisasiSasaranOpd(String sasaranId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi, String kodeOpd) {
         return SasaranOpd.of(
                 sasaranId,
                 "Realisasi Sasaran Opd " + sasaranId,
                 indikatorId,
                 "Realisasi Indikator Opd " + indikatorId,
                 targetId, target, realisasi, satuan, tahun,
-                jenisRealisasi, kodeOpd,
+                bulan, jenisRealisasi, kodeOpd,
                 SasaranOpdStatus.UNCHECKED
         );
     }
@@ -83,6 +87,7 @@ public class SasaranOpdService {
                                             req.realisasi(),
                                             req.satuan(),
                                             req.tahun(),
+                                            req.bulan(),
                                             req.jenisRealisasi(),
                                             existing.kodeOpd(),
                                             SasaranOpdStatus.UNCHECKED,
@@ -101,6 +106,7 @@ public class SasaranOpdService {
                                             req.realisasi(),
                                             req.satuan(),
                                             req.tahun(),
+                                            req.bulan(),
                                             req.jenisRealisasi(),
                                             req.kodeOpd()
                                     );
@@ -116,6 +122,7 @@ public class SasaranOpdService {
                                 req.realisasi(),
                                 req.satuan(),
                                 req.tahun(),
+                                req.bulan(),
                                 req.jenisRealisasi(),
                                 req.kodeOpd()
                         );

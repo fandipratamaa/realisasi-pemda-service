@@ -29,6 +29,10 @@ public class RenaksiService {
         return renaksiRepository.findAllByNipAndBulan(nip, bulan);
     }
 
+    public Flux<Renaksi> getRealisasiRenaksiByNipAndTahunAndBulan(String nip, String tahun, String bulan) {
+        return renaksiRepository.findAllByNipAndTahunAndBulan(nip, tahun, bulan);
+    }
+
     public Flux<Renaksi> getRealisasiRenaksiByKodeOpdAndBulan(String kodeOpd, String bulan) {
         return renaksiRepository.findAllByKodeOpdAndBulan(kodeOpd, bulan);
     }

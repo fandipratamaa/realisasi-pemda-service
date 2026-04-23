@@ -85,7 +85,21 @@ public class TujuanOpdController {
         if (tujuanId != null && !tujuanId.isBlank()) {
             return tujuanOpdService.getRealisasiTujuanOpdByTahunAndTujuanIdAndKodeOpd(tahun, tujuanId, kodeOpd);
         }
-        return tujuanOpdService.getRealisasiTujuanOpdByTahunAndKodeOpd(tahun, kodeOpd);
+return tujuanOpdService.getRealisasiTujuanOpdByTahunAndKodeOpd(tahun, kodeOpd);
+    }
+
+    @GetMapping("/{kodeOpd}/tahun/{tahun}/bulan/{bulan}")
+    @Operation(summary = "Cari realisasi tujuan OPD per tahun dan bulan", description = "Mengambil realisasi tujuan OPD berdasarkan kode OPD, tahun, dan bulan.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi tujuan OPD", content = @Content(array = @ArraySchema(schema = @Schema(implementation = TujuanOpd.class)))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<TujuanOpd> getRealisasiTujuanOpdByTahunAndKodeOpdAndBulan(
+            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi", example = "1") @PathVariable String bulan) {
+        return tujuanOpdService.getRealisasiTujuanOpdByTahunAndKodeOpdAndBulan(tahun, kodeOpd, bulan);
     }
 
     @GetMapping("/{kodeOpd}/by-periode/{tahunAwal}/{tahunAkhir}/rpjmd")
@@ -124,7 +138,7 @@ public class TujuanOpdController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload realisasi tujuan OPD", required = true,
                     content = @Content(schema = @Schema(implementation = TujuanOpdRequest.class)))
             @RequestBody @Valid TujuanOpdRequest tujuanOpdRequest) {
-        return tujuanOpdService.submitRealisasiTujuanOpd(
+return tujuanOpdService.submitRealisasiTujuanOpd(
                 tujuanOpdRequest.tujuanId(),
                 tujuanOpdRequest.indikatorId(),
                 tujuanOpdRequest.targetId(),
@@ -132,6 +146,7 @@ public class TujuanOpdController {
                 tujuanOpdRequest.realisasi(),
                 tujuanOpdRequest.satuan(),
                 tujuanOpdRequest.tahun(),
+                tujuanOpdRequest.bulan(),
                 tujuanOpdRequest.jenisRealisasi(),
                 tujuanOpdRequest.kodeOpd()
         );

@@ -1,0 +1,3 @@
+ALTER TABLE sasarans ADD COLUMN bulan VARCHAR(255);
+UPDATE sasarans SET bulan = '' WHERE bulan IS NULL;
+ALTER TABLE sasarans ALTER COLUMN bulan SET NOT NULL;

@@ -62,7 +62,20 @@ public class SasaranController {
         if (sasaranId != null && !sasaranId.isEmpty()) {
             return sasaranService.getAllRealisasiSasaranByTahunAndSasaranId(tahun, sasaranId);
         }
-        return sasaranService.getAllRealisasiSasaranByTahun(tahun);
+return sasaranService.getAllRealisasiSasaranByTahun(tahun);
+    }
+
+@GetMapping("/by-tahun/{tahun}/by-bulan/{bulan}")
+    @Operation(summary = "Cari realisasi sasaran per tahun dan bulan", description = "Mengambil realisasi sasaran berdasarkan tahun dan bulan.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi sasaran", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Sasaran.class)))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<Sasaran> getAllRealisasiSasaranByTahunAndBulan(
+            @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi", example = "Januari") @PathVariable String bulan) {
+        return sasaranService.getAllRealisasiSasaranByTahunAndBulan(tahun, bulan);
     }
 
     @GetMapping("/by-sasaran/{sasaranId}")
@@ -96,7 +109,7 @@ public class SasaranController {
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Mono<Sasaran> submitRealisasiSasaran(
+public Mono<Sasaran> submitRealisasiSasaran(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload realisasi sasaran", required = true,
                     content = @Content(schema = @Schema(implementation = SasaranRequest.class)))
             @RequestBody @Valid SasaranRequest sasaranRequest) {
@@ -108,6 +121,7 @@ public class SasaranController {
                 sasaranRequest.realisasi(),
                 sasaranRequest.satuan(),
                 sasaranRequest.tahun(),
+                sasaranRequest.bulan(),
                 sasaranRequest.jenisRealisasi()
         );
     }
