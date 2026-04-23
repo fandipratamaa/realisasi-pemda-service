@@ -34,18 +34,18 @@ public class TujuanOpdControllerWebFluxTests {
     @Test
     void whenBatchSubmit_thenReturnsSavedTujuans() throws Exception {
         // prepare requests
-        TujuanOpdRequest r1 = new TujuanOpdRequest(null, "T1", "I1", "TAR-1", "100.0", 50.0, "unit1", "2025", JenisRealisasi.NAIK, "001");
-        TujuanOpdRequest r2 = new TujuanOpdRequest(null, "T2", "I2", "TAR-2", "200.0", 75.0, "unit2", "2026", JenisRealisasi.TURUN, "001");
+        TujuanOpdRequest r1 = new TujuanOpdRequest(null, "T1", "I1", "TAR-1", "100.0", 50.0, "unit1", "2025", "1", JenisRealisasi.NAIK, "001");
+        TujuanOpdRequest r2 = new TujuanOpdRequest(null, "T2", "I2", "TAR-2", "200.0", 75.0, "unit2", "2026", "2", JenisRealisasi.TURUN, "001");
 
         // prepare expected domain objects
         TujuanOpd t1 = TujuanOpdService.buildUncheckedRealisasiTujuanOpd(
                 r1.tujuanId(), r1.indikatorId(), r1.targetId() ,r1.target(), r1.realisasi(),
-                r1.satuan(), r1.tahun(), r1.jenisRealisasi(),
+                r1.satuan(), r1.tahun(), r1.bulan(), r1.jenisRealisasi(),
                 r1.kodeOpd()
         );
         TujuanOpd t2 = TujuanOpdService.buildUncheckedRealisasiTujuanOpd(
                 r2.tujuanId(), r2.indikatorId(), r2.targetId(), r2.target(), r2.realisasi(),
-                r2.satuan(), r2.tahun(), r2.jenisRealisasi(),
+                r2.satuan(), r2.tahun(), r2.bulan(), r2.jenisRealisasi(),
                 r2.kodeOpd()
         );
 

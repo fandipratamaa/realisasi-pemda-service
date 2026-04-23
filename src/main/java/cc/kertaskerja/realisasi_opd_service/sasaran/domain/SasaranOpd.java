@@ -24,6 +24,7 @@ public record SasaranOpd(
         Double realisasi,
         String satuan,
         String tahun,
+        String bulan,
         JenisRealisasi jenisRealisasi,
         String kodeOpd,
         SasaranOpdStatus status,
@@ -43,6 +44,7 @@ public record SasaranOpd(
             Double realisasi,
             String satuan,
             String tahun,
+            String bulan,
             JenisRealisasi jenisRealisasi,
             String kodeOpd,
             SasaranOpdStatus status
@@ -50,7 +52,7 @@ public record SasaranOpd(
         return new SasaranOpd(null,
                 sasaranId, sasaran, indikatorId, indikator,
                 targetId, target, realisasi, satuan, tahun,
-                jenisRealisasi, kodeOpd, status,
+                bulan, jenisRealisasi, kodeOpd, status,
                 null, null, 0);
     }
 

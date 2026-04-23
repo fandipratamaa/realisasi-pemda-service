@@ -45,22 +45,26 @@ public class TujuanOpdService {
         return tujuanOpdRepository.findAllByTahunAndTujuanIdAndKodeOpd(tahun, tujuanId, kodeOpd);
     }
 
+    public Flux<TujuanOpd> getRealisasiTujuanOpdByTahunAndKodeOpdAndBulan(String tahun, String kodeOpd, String bulan) {
+        return tujuanOpdRepository.findAllByTahunAndKodeOpdAndBulan(tahun, kodeOpd, bulan);
+    }
+
     public Mono<TujuanOpd> getRealisasiTujuanOpdById(Long id) {
         return tujuanOpdRepository.findById(id);
     }
 
-    public Mono<TujuanOpd> submitRealisasiTujuanOpd(String tujuanId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, JenisRealisasi jenisRealisasi, String kodeOpd) {
-        return Mono.just(buildUncheckedRealisasiTujuanOpd(tujuanId, indikatorId, targetId, target, realisasi, satuan, tahun, jenisRealisasi, kodeOpd))
+    public Mono<TujuanOpd> submitRealisasiTujuanOpd(String tujuanId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi, String kodeOpd) {
+        return Mono.just(buildUncheckedRealisasiTujuanOpd(tujuanId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan, jenisRealisasi, kodeOpd))
                 .flatMap(tujuanOpdRepository::save);
     }
 
-    public static TujuanOpd buildUncheckedRealisasiTujuanOpd(String tujuanId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, JenisRealisasi jenisRealisasi, String kodeOpd) {
+    public static TujuanOpd buildUncheckedRealisasiTujuanOpd(String tujuanId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi, String kodeOpd) {
         return TujuanOpd.of(
                 tujuanId,
                 "Realisasi Tujuan Opd " + tujuanId,
                 indikatorId,
                 "Realisasi Indikator Opd " + indikatorId,
-                targetId, target, realisasi, satuan, tahun,
+                targetId, target, realisasi, satuan, tahun, bulan,
                 jenisRealisasi, kodeOpd,
                 TujuanOpdStatus.UNCHECKED
         );
@@ -83,6 +87,7 @@ public class TujuanOpdService {
                                             req.realisasi(),
                                             req.satuan(),
                                             req.tahun(),
+                                            req.bulan(),
                                             req.jenisRealisasi(),
                                             existing.kodeOpd(),
                                             TujuanOpdStatus.UNCHECKED,
@@ -101,6 +106,7 @@ public class TujuanOpdService {
                                             req.realisasi(),
                                             req.satuan(),
                                             req.tahun(),
+                                            req.bulan(),
                                             req.jenisRealisasi(),
                                             req.kodeOpd()
                                     );
@@ -116,6 +122,7 @@ public class TujuanOpdService {
                                 req.realisasi(),
                                 req.satuan(),
                                 req.tahun(),
+                                req.bulan(),
                                 req.jenisRealisasi(),
                                 req.kodeOpd()
                         );

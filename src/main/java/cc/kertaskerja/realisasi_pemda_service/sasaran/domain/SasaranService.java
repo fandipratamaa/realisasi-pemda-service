@@ -25,6 +25,10 @@ public class SasaranService {
         return sasaranRepository.findAllByTahun(tahun);
     }
 
+    public Flux<Sasaran> getAllRealisasiSasaranByTahunAndBulan(String tahun, String bulan) {
+        return sasaranRepository.findAllByTahunAndBulan(tahun, bulan);
+    }
+
     public Flux<Sasaran> getAllRealisasiSasaranByTahunAndSasaranId(String tahun, String sasaranId) {
         return sasaranRepository.findAllByTahunAndSasaranId(tahun,  sasaranId);
     }
@@ -37,19 +41,19 @@ public class SasaranService {
         return sasaranRepository.findById(id);
     }
 
-    public Mono<Sasaran> submitRealisasiSasaran(String sasaranId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, JenisRealisasi jenisRealisasi) {
-        return Mono.just(buildUnchekcedRealisasiSasaran(sasaranId, indikatorId, targetId, target, realisasi, satuan, tahun, jenisRealisasi))
+    public Mono<Sasaran> submitRealisasiSasaran(String sasaranId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi) {
+        return Mono.just(buildUnchekcedRealisasiSasaran(sasaranId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan, jenisRealisasi))
                 .flatMap(sasaranRepository::save);
     }
 
     // sasaranId check to sasaranService
     // and modify sasaran, check target, satuan, and change status to CHECKED
-    public static Sasaran buildUnchekcedRealisasiSasaran(String sasaranId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, JenisRealisasi jenisRealisasi) {
+    public static Sasaran buildUnchekcedRealisasiSasaran(String sasaranId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi) {
         return Sasaran.of(sasaranId,
                 "Realisasi Sasaran " + sasaranId,
                 indikatorId,
                 "Realisasi Indikator " + indikatorId,
-                targetId, target, realisasi, satuan, tahun,
+                targetId, target, realisasi, satuan, tahun, bulan,
                 jenisRealisasi,
                 SasaranStatus.UNCHECKED);
     }
@@ -75,6 +79,7 @@ public class SasaranService {
                                             req.realisasi(),
                                             req.satuan(),
                                             req.tahun(),
+                                            req.bulan(),
                                             req.jenisRealisasi(),
                                             SasaranStatus.UNCHECKED,
                                             existing.createdDate(),
@@ -92,6 +97,7 @@ public class SasaranService {
                                             req.realisasi(),
                                             req.satuan(),
                                             req.tahun(),
+                                            req.bulan(),
                                             req.jenisRealisasi()
                                     );
                                     return sasaranRepository.save(baru);
@@ -106,6 +112,7 @@ public class SasaranService {
                                 req.realisasi(),
                                 req.satuan(),
                                 req.tahun(),
+                                req.bulan(),
                                 req.jenisRealisasi()
                         );
                         return sasaranRepository.save(baru);

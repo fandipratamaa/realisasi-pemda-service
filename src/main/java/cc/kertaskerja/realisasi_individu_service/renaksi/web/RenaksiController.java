@@ -62,6 +62,23 @@ public class RenaksiController {
         return renaksiService.getRealisasiRenaksiByNipAndBulan(nip, bulan);
     }
 
+    @GetMapping("/by-nip/{nip}/by-tahun/{tahun}/by-bulan/{bulan}")
+    @Operation(summary = "Cari realisasi renaksi berdasarkan NIP, tahun dan bulan", description = "Mengambil daftar data realisasi renaksi berdasarkan `nip`, `tahun` dan `bulan`.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi renaksi", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Renaksi.class)))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<Renaksi> getRealisasiRenaksiByNipTahunBulan(
+            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
+            @Parameter(description = "Tahun realizations", example = "2026") @PathVariable String tahun,
+            @Parameter(description = "Bulan realizations", example = "Januari") @PathVariable String bulan) {
+        if (nip == null || nip.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip, tahun, dan bulan tidak boleh kosong");
+        }
+        return renaksiService.getRealisasiRenaksiByNipAndTahunAndBulan(nip, tahun, bulan);
+    }
+
     @GetMapping("/by-kodeOpd/{kodeOpd}/by-bulan/{bulan}")
     @Operation(summary = "Cari realisasi renaksi berdasarkan kode OPD dan bulan", description = "Mengambil daftar data realisasi renaksi berdasarkan `kodeOpd` dan `bulan`.")
     @ApiResponses(value = {

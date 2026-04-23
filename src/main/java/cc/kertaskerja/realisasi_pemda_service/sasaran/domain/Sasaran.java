@@ -24,6 +24,7 @@ public record Sasaran(
         Double realisasi,
         String satuan,
         String tahun,
+        String bulan,
         JenisRealisasi jenisRealisasi,
         SasaranStatus status,
 
@@ -41,13 +42,14 @@ public record Sasaran(
             Double realisasi,
             String satuan,
             String tahun,
+            String bulan,
             JenisRealisasi jenisRealisasi,
             SasaranStatus status
     ) {
         return new Sasaran(null,
                 sasaranId, sasaran, indikatorId, indikator,
                 targetId, target,
-                realisasi, satuan, tahun, jenisRealisasi, status,
+                realisasi, satuan, tahun, bulan, jenisRealisasi, status,
                 null, null, 0);
     }
 

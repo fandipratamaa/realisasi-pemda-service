@@ -41,10 +41,15 @@ public record TujuanOpdRequest(
         @Schema(description = "Satuan target/realisasi", example = "%")
         String satuan,
 
-        @NotNull(message = "Tahun harus terdefinisi")
+@NotNull(message = "Tahun harus terdefinisi")
         @NotEmpty(message = "Tahun tidak boleh kosong")
         @Schema(description = "Tahun realisasi", example = "2025")
         String tahun,
+
+        @NotNull(message = "Bulan harus terdefinisi")
+        @NotEmpty(message = "Bulan tidak boleh kosong")
+        @Schema(description = "Bulan realisasi", example = "1", allowableValues = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"})
+        String bulan,
 
         @NotNull(message = "Pilih jenis NAIK atau TURUN")
         @Schema(description = "Jenis perhitungan capaian", example = "NAIK", allowableValues = {"NAIK", "TURUN"})

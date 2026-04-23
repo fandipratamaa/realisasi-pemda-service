@@ -88,6 +88,20 @@ public class SasaranOpdController {
         return sasaranOpdService.getRealisasiSasaranOpdByTahunAndKodeOpd(tahun, kodeOpd);
     }
 
+    @GetMapping("/{kodeOpd}/by-tahun/{tahun}/bulan/{bulan}")
+    @Operation(summary = "Cari realisasi sasaran OPD per tahun dan bulan", description = "Mengambil realisasi sasaran OPD berdasarkan kode OPD, tahun, dan bulan.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi sasaran OPD", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SasaranOpd.class)))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<SasaranOpd> getRealisasiSasaranOpdByTahunAndBulanAndKodeOpd(
+            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
+            @Parameter(description = "Bulan realizations", example = "JANUARI") @PathVariable String bulan) {
+        return sasaranOpdService.getRealisasiSasaranOpdByTahunAndBulanAndKodeOpd(tahun, bulan, kodeOpd);
+    }
+
     @GetMapping("/{kodeOpd}/by-periode/{tahunAwal}/{tahunAkhir}/rpjmd")
     @Operation(summary = "Cari realisasi sasaran OPD periode RPJMD", description = "Mengambil realisasi sasaran OPD pada rentang tahun RPJMD.")
     @ApiResponses(value = {
@@ -124,7 +138,7 @@ public class SasaranOpdController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload realisasi sasaran OPD", required = true,
                     content = @Content(schema = @Schema(implementation = SasaranOpdRequest.class)))
             @RequestBody @Valid SasaranOpdRequest sasaranOpdRequest) {
-        return sasaranOpdService.submitRealisasiSasaranOpd(
+return sasaranOpdService.submitRealisasiSasaranOpd(
                 sasaranOpdRequest.sasaranId(),
                 sasaranOpdRequest.indikatorId(),
                 sasaranOpdRequest.targetId(),
@@ -132,6 +146,7 @@ public class SasaranOpdController {
                 sasaranOpdRequest.realisasi(),
                 sasaranOpdRequest.satuan(),
                 sasaranOpdRequest.tahun(),
+                sasaranOpdRequest.bulan(),
                 sasaranOpdRequest.jenisRealisasi(),
                 sasaranOpdRequest.kodeOpd()
         );

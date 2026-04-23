@@ -32,6 +32,7 @@ public class TujuanOpdServiceTest {
         Double realisasi = 80.0;
         String satuan = "Unit";
         String tahun = "2025";
+        String bulan = "1";
         JenisRealisasi jenisRealisasi = JenisRealisasi.NAIK;
         String kodeOpd = "OPD001";
 
@@ -45,6 +46,7 @@ public class TujuanOpdServiceTest {
                 realisasi,
                 satuan,
                 tahun,
+                bulan,
                 jenisRealisasi,
                 kodeOpd,
                 TujuanOpdStatus.UNCHECKED
@@ -54,7 +56,7 @@ public class TujuanOpdServiceTest {
 
         // Act
         Mono<TujuanOpd> result = tujuanOpdService.submitRealisasiTujuanOpd(
-                tujuanId, indikatorId, targetId, target, realisasi, satuan, tahun, jenisRealisasi, kodeOpd);
+                tujuanId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan, jenisRealisasi, kodeOpd);
 
         // Assert
         StepVerifier.create(result)
@@ -66,6 +68,7 @@ public class TujuanOpdServiceTest {
                                 tujuanOpd.capaian().equals(expectedTujuanOpd.capaian()) &&
                                 tujuanOpd.satuan().equals(expectedTujuanOpd.satuan()) &&
                                 tujuanOpd.tahun().equals(expectedTujuanOpd.tahun()) &&
+                                tujuanOpd.bulan().equals(expectedTujuanOpd.bulan()) &&
                                 tujuanOpd.jenisRealisasi() == expectedTujuanOpd.jenisRealisasi() &&
                                 tujuanOpd.kodeOpd().equals(expectedTujuanOpd.kodeOpd()) &&
                                 tujuanOpd.status() == TujuanOpdStatus.UNCHECKED)
@@ -82,6 +85,7 @@ public class TujuanOpdServiceTest {
         Double realisasi = 80.0;
         String satuan = "Unit";
         String tahun = "2025";
+        String bulan = "1";
         JenisRealisasi jenisRealisasi = JenisRealisasi.NAIK;
         String kodeOpd = "OPD001";
 
@@ -89,7 +93,7 @@ public class TujuanOpdServiceTest {
 
         // Act
         Mono<TujuanOpd> result = tujuanOpdService.submitRealisasiTujuanOpd(
-                tujuanId, indikatorId, targetId, target, realisasi, satuan, tahun, jenisRealisasi, kodeOpd);
+                tujuanId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan, jenisRealisasi, kodeOpd);
 
         // Assert
         StepVerifier.create(result)

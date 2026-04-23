@@ -39,9 +39,13 @@ public record SasaranRequest(
         @Schema(description = "Satuan target/realisasi", example = "%")
         String satuan,
 
-        @NotEmpty(message = "Tahun tidak boleh kosong")
+@NotEmpty(message = "Tahun tidak boleh kosong")
         @Schema(description = "Tahun realisasi", example = "2025")
         String tahun,
+
+        @NotEmpty(message = "Bulan tidak boleh kosong")
+        @Schema(description = "Bulan realisasi", example = "01")
+        String bulan,
 
         @NotNull(message = "Pilih jenis NAIK atau TURUN")
         @Schema(description = "Jenis perhitungan capaian", example = "NAIK", allowableValues = {"NAIK", "TURUN"})
