@@ -79,7 +79,7 @@ public class RenaksiController {
         return renaksiService.getRealisasiRenaksiByNipAndTahunAndBulan(nip, tahun, bulan);
     }
 
-    @GetMapping("/by-kodeOpd/{kodeOpd}/by-bulan/{bulan}")
+@GetMapping("/by-kodeOpd/{kodeOpd}/by-bulan/{bulan}")
     @Operation(summary = "Cari realisasi renaksi berdasarkan kode OPD dan bulan", description = "Mengambil daftar data realisasi renaksi berdasarkan `kodeOpd` dan `bulan`.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar realisasi renaksi", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Renaksi.class)))),
@@ -93,6 +93,23 @@ public class RenaksiController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd dan bulan tidak boleh kosong");
         }
         return renaksiService.getRealisasiRenaksiByKodeOpdAndBulan(kodeOpd, bulan);
+    }
+
+    @GetMapping("/by-kodeOpd/{kodeOpd}/by-tahun/{tahun}/by-bulan/{bulan}")
+    @Operation(summary = "Cari realisasi renaksi berdasarkan kode OPD, tahun dan bulan", description = "Mengambil daftar data realized renaksi berdasarkan `kodeOpd`, `tahun` dan `bulan`.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realization renaksi", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Renaksi.class)))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<Renaksi> getRealisasiRenaksiByKodeOpdTahunBulan(
+            @Parameter(description = "Kode OPD", example = "4.01.01.") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun realisasi", example = "2026") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi", example = "Januari") @PathVariable String bulan) {
+        if (kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd, tahun, dan bulan tidak boleh kosong");
+        }
+        return renaksiService.getRealisasiRenaksiByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
     }
 
     @PostMapping
