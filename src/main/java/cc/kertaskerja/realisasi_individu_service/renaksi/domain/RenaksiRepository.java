@@ -14,4 +14,6 @@ public interface RenaksiRepository extends ReactiveCrudRepository<Renaksi, Long>
     Flux<Renaksi> findAllByNipAndTahunAndBulan(String nip, String tahun, String bulan);
 
     Flux<Renaksi> findAllByKodeOpdAndBulan(String kodeOpd, String bulan);
+
+    Flux<Renaksi> findAllByKodeOpdAndTahunAndBulan(String kodeOpd, String tahun, String bulan);
 }
