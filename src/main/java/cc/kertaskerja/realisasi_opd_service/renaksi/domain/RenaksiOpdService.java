@@ -3,6 +3,8 @@ package cc.kertaskerja.realisasi_opd_service.renaksi.domain;
 import cc.kertaskerja.capaian.domain.Capaian;
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import cc.kertaskerja.realisasi_opd_service.renaksi.web.RenaksiOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.renaksi.web.detail_bulanan_response.RenaksiOpdDetailBulananResponse;
+import cc.kertaskerja.realisasi_opd_service.renaksi.web.detail_bulanan_response.RenaksiOpdDetailBulananRow;
 import cc.kertaskerja.realisasi_opd_service.renaksi.web.renaksi_triwulan_response.RenaksiTriwulanRekapResponse;
 import cc.kertaskerja.realisasi_opd_service.renaksi.web.renaksi_triwulan_response.TriwulanDetailResponse;
 import jakarta.validation.Valid;
@@ -16,6 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class RenaksiOpdService {
@@ -60,6 +63,42 @@ public class RenaksiOpdService {
                     }
 
                     return Flux.fromIterable(grouped.entrySet().stream().map(e -> buildRow(e.getKey(), e.getValue())).toList());
+                });
+    }
+
+    public Mono<RenaksiOpdDetailBulananResponse> getDetailBulanan(
+            String kodeOpd,
+            String nip,
+            String tahun,
+            String triwulan,
+            String renaksiId,
+            String targetId
+    ) {
+        Integer tw = parseTriwulan(triwulan);
+        if (tw == null) {
+            return Mono.error(new IllegalArgumentException("Parameter triwulan harus 1-4"));
+        }
+
+        List<String> months = monthsByTriwulan(tw);
+
+        return renaksiOpdRepository
+                .findAllByKodeOpdAndNipAndTahunAndRenaksiIdAndTargetId(kodeOpd, nip, tahun, renaksiId, targetId)
+                .collectList()
+                .map(items -> {
+                    Map<String, Integer> sumByMonth = items.stream()
+                            .filter(it -> it.bulan() != null)
+                            .collect(Collectors.toMap(
+                                    it -> it.bulan().trim(),
+                                    it -> it.realisasi() == null ? 0 : it.realisasi(),
+                                    Integer::sum,
+                                    LinkedHashMap::new
+                            ));
+
+                    List<RenaksiOpdDetailBulananRow> rows = months.stream()
+                            .map(m -> new RenaksiOpdDetailBulananRow(renaksiId, targetId, m, sumByMonth.getOrDefault(m, 0)))
+                            .toList();
+
+                    return new RenaksiOpdDetailBulananResponse(nip, kodeOpd, tahun, rows);
                 });
     }
 
@@ -111,6 +150,21 @@ public class RenaksiOpdService {
         Integer m = toMonthNumber(bulan);
         if (m == null) return 0;
         return ((m - 1) / 3) + 1;
+    }
+
+    private Integer parseTriwulan(String triwulan) {
+        if (triwulan == null || triwulan.isBlank()) return null;
+        try {
+            int n = Integer.parseInt(triwulan.trim());
+            return (n >= 1 && n <= 4) ? n : null;
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    private List<String> monthsByTriwulan(int triwulan) {
+        int start = ((triwulan - 1) * 3) + 1;
+        return List.of(String.valueOf(start), String.valueOf(start + 1), String.valueOf(start + 2));
     }
 
     private Integer toMonthNumber(String bulan) {
