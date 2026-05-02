@@ -1,5 +1,7 @@
-name: Commit stage
-on: push
+name: Build and Push image
+on:
+  push:
+    branches: ["main"]
 
 env:
   REGISTRY: ghcr.io
@@ -26,20 +28,9 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew build
-      - name: Setup tools
-        uses: alexellis/setup-arkade@v3
-      - name: Install tools
-        uses: alexellis/arkade-get@master
-        with:
-          kustomize: latest
-          kubeconform: latest
-      - name: Validate Kubernetes manifests
-        run: |
-          kustomize build k8s | kubeconform --strict -
 
   package:
     name: Package and Publish
-    if: ${{ github.ref == 'refs/heads/main' }}
     needs: [ build ]
     runs-on: ubuntu-22.04
     permissions:
@@ -53,7 +44,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 24
           cache: gradle
       - name: Build container image
         run: |
@@ -68,3 +59,23 @@ jobs:
           password: ${{ secrets.GH_PAT }}
       - name: Publish container image
         run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+
+  notify:
+    needs: [package]
+    if: always()
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Notify Discord
+        run: |
+            STATUS="${{ needs.package.result }}"
+
+            if [ "$STATUS" = "success" ]; then
+               MSG="✅ Image pushed: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}"
+            else
+               MSG="❌ Build FAILED di ${{ github.repository }} @ ${{ github.sha }}"
+            fi
+
+            curl -H "Content-Type: application/json" \
+              -X POST \
+              -d "{\"content\": \"$MSG\"}" \
+              ${{ secrets.DISCORD_WEBHOOK_URL }}
