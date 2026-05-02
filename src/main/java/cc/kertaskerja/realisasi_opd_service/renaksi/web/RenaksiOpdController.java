@@ -2,6 +2,7 @@ package cc.kertaskerja.realisasi_opd_service.renaksi.web;
 
 import cc.kertaskerja.realisasi_opd_service.renaksi.domain.RenaksiOpd;
 import cc.kertaskerja.realisasi_opd_service.renaksi.domain.RenaksiOpdService;
+import cc.kertaskerja.realisasi_opd_service.renaksi.web.detail_bulanan_response.RenaksiOpdDetailBulananResponse;
 import cc.kertaskerja.realisasi_opd_service.renaksi.web.renaksi_triwulan_response.RenaksiTriwulanRekapResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -51,6 +52,36 @@ public class RenaksiOpdController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd, nip dan tahun tidak boleh kosong");
         }
         return renaksiOpdService.getRekapTriwulanByNipAndTahun(kodeOpd, nip, tahun);
+    }
+
+    @GetMapping("/by-kode-opd/{kodeOpd}/by-nip/{nip}/by-tahun/{tahun}/by-triwulan/{triwulan}/by-renaksi-id/{renaksiId}/by-target-id/{targetId}/detail-bulanan")
+    @Operation(summary = "Detail realisasi renaksi OPD per bulan (per triwulan)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Detail bulanan", content = @Content(schema = @Schema(implementation = RenaksiOpdDetailBulananResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Mono<RenaksiOpdDetailBulananResponse> getDetailBulanan(
+            @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
+            @Parameter(description = "NIP pelaksana") @PathVariable String nip,
+            @Parameter(description = "Tahun realisasi") @PathVariable String tahun,
+            @Parameter(description = "Triwulan (1-4)") @PathVariable String triwulan,
+            @Parameter(description = "ID renaksi") @PathVariable String renaksiId,
+            @Parameter(description = "ID target") @PathVariable String targetId
+    ) {
+        if (kodeOpd == null || kodeOpd.isBlank()
+                || nip == null || nip.isBlank()
+                || tahun == null || tahun.isBlank()
+                || triwulan == null || triwulan.isBlank()
+                || renaksiId == null || renaksiId.isBlank()
+                || targetId == null || targetId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Parameter kodeOpd, nip, tahun, triwulan, renaksiId, dan targetId tidak boleh kosong");
+        }
+
+        return renaksiOpdService.getDetailBulanan(kodeOpd, nip, tahun, triwulan, renaksiId, targetId)
+                .onErrorMap(IllegalArgumentException.class,
+                        ex -> new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage()));
     }
 
     @PostMapping
