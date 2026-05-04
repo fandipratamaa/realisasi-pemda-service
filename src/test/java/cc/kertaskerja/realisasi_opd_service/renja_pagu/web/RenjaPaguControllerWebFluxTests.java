@@ -109,7 +109,7 @@ public class RenjaPaguControllerWebFluxTests {
                 .mutateWith(SecurityMockServerConfigurers.mockJwt()
                         .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                 .get()
-                .uri("/renja_pagu/kodeOpd/001/by-tahun/2025/by-bulan/01/by-jenis-renja/PROGRAM/by-kode-renja/001/by-renja-id/RENJA-1")
+                .uri("/renja_pagu/kodeOpd/001/by-tahun/2025/by-bulan/01/by-jenis-renja/PROGRAM/by-kode-renja/001/by-jenis-renja-id/RENJA-1")
                 .exchange()
                 .expectStatus().is2xxSuccessful()
                 .expectBodyList(RenjaPagu.class)
