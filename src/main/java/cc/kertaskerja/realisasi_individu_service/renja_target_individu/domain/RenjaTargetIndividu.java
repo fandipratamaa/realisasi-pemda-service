@@ -102,12 +102,18 @@ public static RenjaTargetIndividu of(
 
     @JsonProperty("capaian")
     public String capaian() {
-        return String.format("%.2f%%", capaianRenjaTargetIndividu());
+        double calculatedCapaian = capaianRenjaTargetIndividu();
+        return formatCapaian(Math.min(calculatedCapaian, 100));
     }
 
     @JsonProperty("keteranganCapaian")
     public String keteranganCapaian() {
-        return capaianRenjaTargetIndividu() > 100 ? "nilai capaian lebih dari 100%" : null;
+        double calculatedCapaian = capaianRenjaTargetIndividu();
+        return calculatedCapaian > 100 ? "nilai capaian lebih dari 100% (" + formatCapaian(calculatedCapaian) + ")" : null;
+    }
+
+    private String formatCapaian(double value) {
+        return String.format("%.2f%%", value);
     }
 
     public Double capaianRenjaTargetIndividu() {

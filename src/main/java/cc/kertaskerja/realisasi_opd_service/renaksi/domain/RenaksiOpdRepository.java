@@ -7,6 +7,8 @@ import reactor.core.publisher.Mono;
 public interface RenaksiOpdRepository extends ReactiveCrudRepository<RenaksiOpd, Long> {
     Flux<RenaksiOpd> findAllByKodeOpdAndTahun(String kodeOpd, String tahun);
 
+    Flux<RenaksiOpd> findAllByKodeOpdAndTahunAndBulan(String kodeOpd, String tahun, String bulan);
+
     Flux<RenaksiOpd> findAllByKodeOpdAndTahunAndRenaksiIdAndTargetId(
             String kodeOpd,
             String tahun,

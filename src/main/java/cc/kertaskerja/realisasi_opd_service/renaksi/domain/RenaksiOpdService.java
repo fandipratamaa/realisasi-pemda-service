@@ -66,6 +66,10 @@ public class RenaksiOpdService {
                 });
     }
 
+    public Flux<RenaksiOpd> getRealisasiRenaksiByKodeOpdAndTahunAndBulan(String kodeOpd, String tahun, String bulan) {
+        return renaksiOpdRepository.findAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
+    }
+
     public Mono<RenaksiOpdDetailBulananResponse> getDetailBulanan(
             String kodeOpd,
             String tahun,
@@ -139,8 +143,8 @@ public class RenaksiOpdService {
                 .orElseGet(() -> allItems.stream().map(RenaksiOpd::jenisRealisasi).filter(Objects::nonNull).findFirst().orElse(JenisRealisasi.NAIK));
 
         double capaianValue = new Capaian((double) realisasi, target.toPlainString(), jenis).hasilCapaian();
-        String capaian = BigDecimal.valueOf(capaianValue).stripTrailingZeros().toPlainString();
-        String keterangan = capaianValue > 100 ? "nilai capaian lebih dari 100%" : null;
+        String capaian = formatCapaian(Math.min(capaianValue, 100));
+        String keterangan = capaianValue > 100 ? "nilai capaian lebih dari 100% (" + formatCapaian(capaianValue) + ")" : null;
 
         return new TriwulanDetailResponse(target, realisasi, satuan, capaian, keterangan);
     }
@@ -149,6 +153,10 @@ public class RenaksiOpdService {
         Integer m = toMonthNumber(bulan);
         if (m == null) return 0;
         return ((m - 1) / 3) + 1;
+    }
+
+    private String formatCapaian(double value) {
+        return String.format("%.2f%%", value);
     }
 
     private Integer parseTriwulan(String triwulan) {

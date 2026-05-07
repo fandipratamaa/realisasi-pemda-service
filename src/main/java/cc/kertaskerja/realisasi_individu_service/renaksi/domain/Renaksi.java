@@ -103,12 +103,18 @@ public record Renaksi(
 
     @JsonProperty("capaian")
     public String capaian() {
-        return String.format("%.2f%%", capaianRenaksi());
+        double calculatedCapaian = capaianRenaksi();
+        return formatCapaian(Math.min(calculatedCapaian, 100));
     }
 
     @JsonProperty("keteranganCapaian")
     public String keteranganCapaian() {
-        return capaianRenaksi() > 100 ? "nilai capaian lebih dari 100%" : null;
+        double calculatedCapaian = capaianRenaksi();
+        return calculatedCapaian > 100 ? "nilai capaian lebih dari 100% (" + formatCapaian(calculatedCapaian) + ")" : null;
+    }
+
+    private String formatCapaian(double value) {
+        return String.format("%.2f%%", value);
     }
 
     public Double capaianRenaksi() {

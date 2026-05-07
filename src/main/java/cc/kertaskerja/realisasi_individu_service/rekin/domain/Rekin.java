@@ -99,12 +99,18 @@ public record Rekin(
 
     @JsonProperty("capaian")
     public String capaian() {
-        return String.format("%.2f%%", capaianRekin());
+        double calculatedCapaian = capaianRekin();
+        return formatCapaian(Math.min(calculatedCapaian, 100));
     }
 
     @JsonProperty("keteranganCapaian")
     public String keteranganCapaian() {
-        return capaianRekin() > 100 ? "nilai capaian lebih dari 100%" : null;
+        double calculatedCapaian = capaianRekin();
+        return calculatedCapaian > 100 ? "nilai capaian lebih dari 100% (" + formatCapaian(calculatedCapaian) + ")" : null;
+    }
+
+    private String formatCapaian(double value) {
+        return String.format("%.2f%%", value);
     }
 
     public Double capaianRekin() {

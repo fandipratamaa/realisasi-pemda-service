@@ -92,6 +92,7 @@ public class RenjaPaguIndividuTests {
                 RenjaPaguIndividuStatus.UNCHECKED
         );
 
-        Assertions.assertEquals("150.00%", renjaPaguIndividu.capaian());
+        Assertions.assertEquals("100.00%", renjaPaguIndividu.capaian());
+        Assertions.assertEquals("nilai capaian lebih dari 100% (150.00%)", renjaPaguIndividu.keteranganCapaian());
     }
 }
