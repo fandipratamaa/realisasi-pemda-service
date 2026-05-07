@@ -1,6 +1,8 @@
 package cc.kertaskerja.realisasi_opd_service.renaksi.domain;
 
+import cc.kertaskerja.capaian.domain.Capaian;
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
@@ -51,5 +53,30 @@ public record RenaksiOpd(
     ) {
         return new RenaksiOpd(null, renaksiId, renaksi, rekinId, rekin, targetId, target, realisasi, satuan,
                 bulan, tahun, jenisRealisasi, kodeOpd, status, null, null, null, null, 0);
+    }
+
+    @JsonProperty("capaian")
+    public String capaian() {
+        double calculatedCapaian = capaianRenaksiOpd();
+        return formatCapaian(Math.min(calculatedCapaian, 100));
+    }
+
+    @JsonProperty("keteranganCapaian")
+    public String keteranganCapaian() {
+        double calculatedCapaian = capaianRenaksiOpd();
+        return calculatedCapaian > 100 ? "nilai capaian lebih dari 100% (" + formatCapaian(calculatedCapaian) + ")" : null;
+    }
+
+    private String formatCapaian(double value) {
+        return String.format("%.2f%%", value);
+    }
+
+    public Double capaianRenaksiOpd() {
+        if (realisasi == null) {
+            return 0.0;
+        }
+
+        Capaian capaian = new Capaian(realisasi.doubleValue(), target, jenisRealisasi);
+        return capaian.hasilCapaian();
     }
 }
