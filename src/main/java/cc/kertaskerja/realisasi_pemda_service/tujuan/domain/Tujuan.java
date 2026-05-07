@@ -59,12 +59,18 @@ public record Tujuan(
 
     @JsonProperty("capaian")
     public String capaian() {
-        return String.format("%.2f%%", capaianTujuan());
+        double calculatedCapaian = capaianTujuan();
+        return formatCapaian(Math.min(calculatedCapaian, 100));
     }
 
     @JsonProperty("keteranganCapaian")
     public String keteranganCapaian() {
-        return capaianTujuan() > 100 ? "nilai capaian lebih dari 100%" : null;
+        double calculatedCapaian = capaianTujuan();
+        return calculatedCapaian > 100 ? "nilai capaian lebih dari 100% (" + formatCapaian(calculatedCapaian) + ")" : null;
+    }
+
+    private String formatCapaian(double value) {
+        return String.format("%.2f%%", value);
     }
 
     public Double capaianTujuan() {

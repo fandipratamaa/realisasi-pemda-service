@@ -117,6 +117,7 @@ public class RenjaTargetTests {
                 1
         );
 
-        Assertions.assertEquals("150.00%", renjaTarget.capaian());
+        Assertions.assertEquals("100.00%", renjaTarget.capaian());
+        Assertions.assertEquals("nilai capaian lebih dari 100% (150.00%)", renjaTarget.keteranganCapaian());
     }
 }
