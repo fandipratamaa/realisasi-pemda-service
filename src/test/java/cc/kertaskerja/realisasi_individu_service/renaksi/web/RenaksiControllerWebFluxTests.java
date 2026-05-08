@@ -3,6 +3,7 @@ package cc.kertaskerja.realisasi_individu_service.renaksi.web;
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import cc.kertaskerja.realisasi_individu_service.renaksi.domain.Renaksi;
 import cc.kertaskerja.realisasi_individu_service.renaksi.domain.RenaksiService;
+import cc.kertaskerja.realisasi_opd_service.renaksi.domain.RenaksiOpdService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,15 +24,19 @@ public class RenaksiControllerWebFluxTests {
     @MockitoBean
     private RenaksiService renaksiService;
 
+    @MockitoBean
+    private RenaksiOpdService renaksiOpdService;
+
     @Test
-    void whenGetByNipAndBulan_thenReturnsList() {
-        String nip = "198012312005011001";
+    void whenGetByKodeOpdTahunBulan_thenReturnsList() {
+        String kodeOpd = "4.01.01.";
+        String tahun = "2026";
         String bulan = "Januari";
 
         Renaksi r1 = RenaksiService.buildUncheckedRealisasiRenaksi(
                 "RENAKSI-1",
                 "Renaksi A",
-                nip,
+                "198012312005011001",
                 "REKIN-1",
                 "Rekin A",
                 "TAR-1",
@@ -39,14 +44,14 @@ public class RenaksiControllerWebFluxTests {
                 50,
                 "%",
                 bulan,
-                "2026",
+                tahun,
                 JenisRealisasi.NAIK,
-                "4.01.01."
+                kodeOpd
         );
         Renaksi r2 = RenaksiService.buildUncheckedRealisasiRenaksi(
                 "RENAKSI-2",
                 "Renaksi B",
-                nip,
+                "198012312005011001",
                 "REKIN-1",
                 "Rekin A",
                 "TAR-2",
@@ -54,19 +59,19 @@ public class RenaksiControllerWebFluxTests {
                 120,
                 "%",
                 bulan,
-                "2026",
+                tahun,
                 JenisRealisasi.NAIK,
-                "4.01.01."
+                kodeOpd
         );
 
-        when(renaksiService.getRealisasiRenaksiByNipAndBulan(nip, bulan))
+        when(renaksiService.getRealisasiRenaksiByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan))
                 .thenReturn(Flux.just(r1, r2));
 
         webTestClient
                 .mutateWith(SecurityMockServerConfigurers.mockJwt()
                         .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                 .get()
-                .uri("/renaksi/by-nip/{nip}/by-bulan/{bulan}", nip, bulan)
+                .uri("/renaksi/by-kodeOpd/{kodeOpd}/by-tahun/{tahun}/by-bulan/{bulan}", kodeOpd, tahun, bulan)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(Renaksi.class)

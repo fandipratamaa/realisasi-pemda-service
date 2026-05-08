@@ -23,6 +23,10 @@ public record Tujuan(
         String satuan,
         String tahun,
         String bulan,
+        @Column("visi_misi")
+        String visiMisi,
+        @Column("rumus_perhitungan")
+        String rumusPerhitungan,
         JenisRealisasi jenisRealisasi,
         TujuanStatus status,
 
@@ -48,12 +52,14 @@ public record Tujuan(
             String satuan,
             String tahun,
             String bulan,
+            String visiMisi,
+            String rumusPerhitungan,
             JenisRealisasi jenisRealisasi,
             TujuanStatus status
     ) {
         return new Tujuan(null,
                 tujuanId, tujuan, indikatorId, indikator,
-                targetId, target, realisasi, satuan, tahun, bulan, jenisRealisasi, status,
+                targetId, target, realisasi, satuan, tahun, bulan, visiMisi, rumusPerhitungan, jenisRealisasi, status,
                 null, null, null, null, 0);
     }
 

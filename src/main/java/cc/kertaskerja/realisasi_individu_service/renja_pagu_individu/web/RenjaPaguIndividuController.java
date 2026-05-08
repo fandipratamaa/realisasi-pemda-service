@@ -35,28 +35,6 @@ public class RenjaPaguIndividuController {
         this.renjaPaguIndividuService = renjaPaguIndividuService;
     }
 
-    @GetMapping
-    @Operation(summary = "Ambil semua realisasi renja pagu individu", description = "Mengambil seluruh data realisasi renja pagu individu.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realisasi renja pagu individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaPaguIndividu.class)))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<RenjaPaguIndividu> getAllRealisasiRenjaPaguIndividu() {
-        return renjaPaguIndividuService.getAllRealisasiRenjaPaguIndividu();
-    }
-
-@GetMapping("/nip/{nip}/by-tahun/{tahun}")
-    @Operation(summary = "Cari realisasi renja pagu individu berdasarkan NIP dan tahun", description = "Mengambil daftar realisasi renja pagu individu berdasarkan NIP dan tahun.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realisasi renja pagu individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaPaguIndividu.class)))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<RenjaPaguIndividu> getRealisasiRenjaPaguIndividuByNipAndTahun(
-            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
-            @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun) {
-        return renjaPaguIndividuService.getRealisasiRenjaPaguIndividuByNipAndTahun(nip, tahun);
-    }
-
     @GetMapping("/by-nip/{nip}/by-tahun/{tahun}/by-bulan/{bulan}")
     @Operation(summary = "Cari realisasi renja pagu individu berdasarkan NIP, tahun, dan bulan", description = "Mengambil daftar realisasi renja pagu individu berdasarkan NIP, tahun, dan bulan.")
     @ApiResponses(value = {
@@ -86,7 +64,7 @@ public class RenjaPaguIndividuController {
     }
 
     @PostMapping
-    @Operation(summary = "Simpan realisasi renja pagu individu", description = "Menyimpan satu data realisasi renja pagu individu.")
+    @Operation(summary = "Simpan realisasi renja pagu individu (belum digunakan di endpoint realisasi)", description = "Menyimpan satu data realisasi renja pagu individu.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data realisasi renja pagu individu tersimpan", content = @Content(schema = @Schema(implementation = RenjaPaguIndividu.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
@@ -146,7 +124,7 @@ public class RenjaPaguIndividuController {
         return renjaPaguIndividuService.batchSubmitRealisasiRenjaPaguIndividu(renjaPaguIndividuRequests);
     }
 
-    @DeleteMapping("/by-renja-id/{renjaId}")
+    @DeleteMapping("/by-renja-id/{renjaId} (belum digunakan di endpoint realisasi)")
     @Operation(summary = "Hapus realisasi renja pagu individu berdasarkan renjaId", description = "Menghapus semua data realisasi renja pagu individu berdasarkan renjaId.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data berhasil dihapus", content = @Content),

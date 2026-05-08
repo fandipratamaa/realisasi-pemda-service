@@ -38,18 +38,8 @@ public class RenjaPaguController {
         this.renjaOpdHierarkiService = renjaOpdHierarkiService;
     }
 
-    @GetMapping
-    @Operation(summary = "Ambil semua realisasi renja pagu", description = "Mengambil seluruh data realisasi renja pagu OPD.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realisasi renja pagu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaPagu.class)))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<RenjaPagu> getAllRealisasiRenjaPagu() {
-        return renjaPaguService.getAllRealisasiRenjaPagu();
-    }
-
     @PostMapping
-    @Operation(summary = "Simpan realisasi renja pagu", description = "Menyimpan satu data realisasi renja pagu OPD.")
+    @Operation(summary = "Simpan realisasi renja pagu (belum digunakan di endpoint realisasi)", description = "Menyimpan satu data realisasi renja pagu OPD.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data realisasi renja pagu tersimpan", content = @Content(schema = @Schema(implementation = RenjaPagu.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
@@ -138,7 +128,7 @@ public class RenjaPaguController {
     }
 
     @DeleteMapping("/{jenisRenjaId}")
-    @Operation(summary = "Hapus realisasi renja pagu berdasarkan renja ID", description = "Menghapus data realisasi renja pagu berdasarkan renja ID.")
+    @Operation(summary = "Hapus realisasi renja pagu berdasarkan renja ID (belum digunakan di endpoint realisasi)", description = "Menghapus data realisasi renja pagu berdasarkan renja ID.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Data berhasil dihapus", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)

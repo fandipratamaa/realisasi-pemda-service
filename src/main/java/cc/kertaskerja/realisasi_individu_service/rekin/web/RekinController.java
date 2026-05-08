@@ -36,18 +36,8 @@ public class RekinController {
         this.rekinService = rekinService;
     }
 
-    @GetMapping
-    @Operation(summary = "Ambil semua realisasi rekin", description = "Mengambil seluruh data realisasi rekin.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realisasi rekin", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Rekin.class)))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<Rekin> getAllRealisasiRekin() {
-        return rekinService.getAllRealisasiRekin();
-    }
-
     @GetMapping("/by-nip/{nip}/by-tahun/{tahun}")
-    @Operation(summary = "Cari realisasi rekin berdasarkan NIP dan tahun", description = "Mengambil daftar data realisasi rekin berdasarkan `nip` dan `tahun`.")
+    @Operation(summary = "Cari realisasi rekin berdasarkan NIP dan tahun (belum digunakan di endpoint realisasi)", description = "Mengambil daftar data realisasi rekin berdasarkan `nip` dan `tahun`.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar realisasi rekin", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Rekin.class)))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
@@ -101,7 +91,7 @@ public class RekinController {
     }
 
     @PostMapping
-    @Operation(summary = "Simpan realisasi rekin", description = "Menyimpan satu data realisasi rekin.")
+    @Operation(summary = "Simpan realisasi rekin (belum digunakan di endpoint realisasi)", description = "Menyimpan satu data realisasi rekin.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data realisasi rekin tersimpan", content = @Content(schema = @Schema(implementation = Rekin.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
@@ -130,7 +120,7 @@ public class RekinController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Hapus realisasi rekin", description = "Menghapus satu data realisasi rekin berdasarkan ID internal.")
+    @Operation(summary = "Hapus realisasi rekin (belum digunakan di endpoint realisasi)", description = "Menghapus satu data realisasi rekin berdasarkan ID internal.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data realisasi rekin terhapus", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),

@@ -37,18 +37,18 @@ public class SasaranControllerWebFluxTests {
     void whenBatchSubmit_thenReturnSavedSasarans() throws Exception {
         // prepare data
         SasaranRequest s1 = new SasaranRequest(null, "S-1", "IS-1", "TIS-1",
-                "10", 10.0, "%", "2025", "01", JenisRealisasi.NAIK);
+                "10", 10.0, "%", "2025", "01", "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK);
         SasaranRequest s2 = new SasaranRequest(null, "S-12", "IS-12", "TIS-12",
-                "10", 5.0, "%", "2025", "01", JenisRealisasi.NAIK);
+                "10", 5.0, "%", "2025", "01", "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK);
 
         Sasaran ss1 = SasaranService.buildUnchekcedRealisasiSasaran(
                 s1.sasaranId(), s1.indikatorId(), s1.targetId(),
-                s1.target(), s1.realisasi(), s1.satuan(), s1.tahun(), s1.bulan(), s1.jenisRealisasi()
+                s1.target(), s1.realisasi(), s1.satuan(), s1.tahun(), s1.bulan(), s1.rumusPerhitungan(), s1.sumberData(), s1.jenisRealisasi()
         );
 
         Sasaran ss2 = SasaranService.buildUnchekcedRealisasiSasaran(
                 s2.sasaranId(), s2.indikatorId(), s2.targetId(),
-                s2.target(), s2.realisasi(), s2.satuan(), s2.tahun(), s2.bulan(), s2.jenisRealisasi()
+                s2.target(), s2.realisasi(), s2.satuan(), s2.tahun(), s2.bulan(), s2.rumusPerhitungan(), s2.sumberData(), s2.jenisRealisasi()
         );
 
         when(sasaranService.batchSubmitRealisasiSasaran(anyList()))
@@ -84,7 +84,7 @@ public class SasaranControllerWebFluxTests {
 
         Sasaran ss = SasaranService.buildUnchekcedRealisasiSasaran(
                 "S-1", "IS-1", "TIS-1",
-                "10", 10.0, "%", tahun, bulan, JenisRealisasi.NAIK
+                "10", 10.0, "%", tahun, bulan, "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK
         );
 
         when(sasaranService.getAllRealisasiSasaranByTahunAndBulan(anyString(), anyString()))

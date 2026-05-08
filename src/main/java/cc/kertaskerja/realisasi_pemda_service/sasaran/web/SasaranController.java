@@ -122,6 +122,8 @@ public Mono<Sasaran> submitRealisasiSasaran(
                 sasaranRequest.satuan(),
                 sasaranRequest.tahun(),
                 sasaranRequest.bulan(),
+                sasaranRequest.rumusPerhitungan(),
+                sasaranRequest.sumberData(),
                 sasaranRequest.jenisRealisasi()
         );
     }

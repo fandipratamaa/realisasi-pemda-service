@@ -47,6 +47,16 @@ public record SasaranRequest(
         @Schema(description = "Bulan realisasi", example = "01")
         String bulan,
 
+        @NotNull(message = "Rumus perhitungan tidak boleh kosong")
+        @NotEmpty(message = "Rumus perhitungan tidak boleh kosong")
+        @Schema(description = "Rumus perhitungan indikator", example = "(realisasi/target)*100")
+        String rumusPerhitungan,
+
+        @NotNull(message = "Sumber data tidak boleh kosong")
+        @NotEmpty(message = "Sumber data tidak boleh kosong")
+        @Schema(description = "Sumber data realisasi", example = "BPS")
+        String sumberData,
+
         @NotNull(message = "Pilih jenis NAIK atau TURUN")
         @Schema(description = "Jenis perhitungan capaian", example = "NAIK", allowableValues = {"NAIK", "TURUN"})
         JenisRealisasi jenisRealisasi
