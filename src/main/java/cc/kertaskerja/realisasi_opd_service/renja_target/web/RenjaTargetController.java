@@ -34,7 +34,7 @@ public class RenjaTargetController {
     }
 
     @GetMapping
-    @Operation(summary = "Ambil semua realisasi renja target", description = "Mengambil seluruh data realisasi renja target OPD.")
+    @Operation(summary = "Ambil semua realisasi renja target (belum digunakan di endpoint realisasi)", description = "Mengambil seluruh data realisasi renja target OPD.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar realisasi renja target", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaTarget.class)))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
@@ -81,7 +81,7 @@ public class RenjaTargetController {
     }
 
     @PostMapping
-    @Operation(summary = "Simpan realisasi renja target", description = "Menyimpan satu data realisasi renja target OPD.")
+    @Operation(summary = "Simpan realisasi renja target (belum digunakan di endpoint realisasi)", description = "Menyimpan satu data realisasi renja target OPD.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data realisasi renja target tersimpan", content = @Content(schema = @Schema(implementation = RenjaTarget.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
@@ -141,7 +141,7 @@ public class RenjaTargetController {
     }
 
 @DeleteMapping("/{jenisRenjaId}")
-    @Operation(summary = "Hapus realizations renja target", description = "Menghapus satu data realizations renja target berdasarkan ID.")
+    @Operation(summary = "Hapus realizations renja target (belum digunakan di endpoint realisasi)", description = "Menghapus satu data realizations renja target berdasarkan ID. (belum digunakan di endpoint realisasi)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data realizations renja target terhapus", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),

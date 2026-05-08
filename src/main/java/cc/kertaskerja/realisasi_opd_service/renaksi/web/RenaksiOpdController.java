@@ -32,7 +32,7 @@ public class RenaksiOpdController {
     }
 
     @GetMapping("/by-kode-opd/{kodeOpd}/by-tahun/{tahun}/rekap-triwulan")
-    @Operation(summary = "Rekap realisasi renaksi OPD per triwulan")
+    @Operation(summary = "Rekap realisasi renaksi OPD per triwulan (digunakan untuk menampilkan data laporan print")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar rekap per triwulan", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenaksiTriwulanRekapResponse.class)))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
@@ -65,7 +65,7 @@ public class RenaksiOpdController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Hapus realisasi renaksi OPD")
+    @Operation(summary = "Hapus realisasi renaksi OPD (belum digunakan di endpoint realisasi)")
     public Mono<Void> deleteRealisasiRenaksi(@PathVariable Long id) {
         return renaksiOpdService.deleteRealisasiRenaksi(id);
     }

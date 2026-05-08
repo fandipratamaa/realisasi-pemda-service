@@ -38,7 +38,7 @@ public class RenjaTargetIndividuController {
     }
 
     @GetMapping
-    @Operation(summary = "Ambil semua realisasi renja target individu", description = "Mengambil seluruh data realisasi renja target individu.")
+    @Operation(summary = "Ambil semua realisasi renja target individu (belum digunakan di endpoint realisasi)", description = "Mengambil seluruh data realisasi renja target individu.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar realisasi renja target individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaTargetIndividu.class)))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
@@ -48,7 +48,7 @@ public class RenjaTargetIndividuController {
     }
 
     @GetMapping("/by-nip/{nip}/by-tahun/{tahun}")
-    @Operation(summary = "Cari realisasi renja target individu berdasarkan NIP dan tahun", description = "Mengambil realisasi renja target individu berdasarkan NIP dan tahun.")
+    @Operation(summary = "Cari realisasi renja target individu berdasarkan NIP dan tahun (belum digunakan di endpoint realisasi)", description = "Mengambil realisasi renja target individu berdasarkan NIP dan tahun.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar realisasi renja target individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaTargetIndividu.class)))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
@@ -95,7 +95,7 @@ public class RenjaTargetIndividuController {
     }
 
     @PostMapping
-    @Operation(summary = "Simpan realisasi renja target individu", description = "Menyimpan satu data realisasi renja target individu.")
+    @Operation(summary = "Simpan realisasi renja target individu (belum digunakan di endpoint realisasi)", description = "Menyimpan satu data realisasi renja target individu.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data realisasi renja target individu tersimpan", content = @Content(schema = @Schema(implementation = RenjaTargetIndividu.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
@@ -158,7 +158,7 @@ public class RenjaTargetIndividuController {
     }
 
     @DeleteMapping("/by-renja-id/{renjaId}")
-    @Operation(summary = "Hapus realisasi renja target individu", description = "Menghapus data realisasi renja target individu berdasarkan `renjaId`.")
+    @Operation(summary = "Hapus realisasi renja target individu (belum digunakan di endpoint realisasi)", description = "Menghapus data realisasi renja target individu berdasarkan `renjaId`.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data realisasi renja target individu terhapus", content = @Content),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),

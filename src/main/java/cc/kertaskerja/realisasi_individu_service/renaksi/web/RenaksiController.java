@@ -47,7 +47,7 @@ public class RenaksiController {
     }
 
 @GetMapping("/by-nip/{nip}/by-bulan/{bulan}")
-    @Operation(summary = "Cari realisasi renaksi berdasarkan NIP dan bulan", description = "Mengambil daftar data realisasi renaksi berdasarkan `nip` dan `bulan`.")
+    @Operation(summary = "Cari realisasi renaksi berdasarkan NIP dan bulan (belum digunakan di endpoint realisasi)", description = "Mengambil daftar data realisasi renaksi berdasarkan `nip` dan `bulan`.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar realisasi renaksi", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Renaksi.class)))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
@@ -80,7 +80,7 @@ public class RenaksiController {
     }
 
 @GetMapping("/by-kodeOpd/{kodeOpd}/by-bulan/{bulan}")
-    @Operation(summary = "Cari realisasi renaksi berdasarkan kode OPD dan bulan", description = "Mengambil daftar data realisasi renaksi berdasarkan `kodeOpd` dan `bulan`.")
+    @Operation(summary = "Cari realisasi renaksi berdasarkan kode OPD dan bulan (belum digunakan di endpoint realisasi)", description = "Mengambil daftar data realisasi renaksi berdasarkan `kodeOpd` dan `bulan`.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar realisasi renaksi", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Renaksi.class)))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
@@ -113,7 +113,7 @@ public class RenaksiController {
     }
 
     @PostMapping
-    @Operation(summary = "Simpan realisasi renaksi", description = "Menyimpan satu data realisasi renaksi.")
+    @Operation(summary = "Simpan realisasi renaksi (belum digunakan di endpoint realisasi)", description = "Menyimpan satu data realisasi renaksi.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data realisasi renaksi tersimpan", content = @Content(schema = @Schema(implementation = Renaksi.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
@@ -141,7 +141,7 @@ public class RenaksiController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Hapus realisasi renaksi", description = "Menghapus satu data realisasi renaksi berdasarkan ID internal.")
+    @Operation(summary = "Hapus realisasi renaksi (belum digunakan di endpoint realisasi)", description = "Menghapus satu data realisasi renaksi berdasarkan ID internal.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data realisasi renaksi terhapus", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
