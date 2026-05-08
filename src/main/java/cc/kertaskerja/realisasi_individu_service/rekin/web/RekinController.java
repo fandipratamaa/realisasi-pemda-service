@@ -36,16 +36,6 @@ public class RekinController {
         this.rekinService = rekinService;
     }
 
-    @GetMapping
-    @Operation(summary = "Ambil semua realisasi rekin (belum digunakan di endpoint realisasi)", description = "Mengambil seluruh data realisasi rekin.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realisasi rekin", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Rekin.class)))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<Rekin> getAllRealisasiRekin() {
-        return rekinService.getAllRealisasiRekin();
-    }
-
     @GetMapping("/by-nip/{nip}/by-tahun/{tahun}")
     @Operation(summary = "Cari realisasi rekin berdasarkan NIP dan tahun (belum digunakan di endpoint realisasi)", description = "Mengambil daftar data realisasi rekin berdasarkan `nip` dan `tahun`.")
     @ApiResponses(value = {

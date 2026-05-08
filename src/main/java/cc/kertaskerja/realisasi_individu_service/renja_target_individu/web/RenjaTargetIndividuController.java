@@ -47,19 +47,6 @@ public class RenjaTargetIndividuController {
         return renjaTargetIndividuService.getAllRealisasiRenjaTargetIndividu();
     }
 
-    @GetMapping("/by-nip/{nip}/by-tahun/{tahun}")
-    @Operation(summary = "Cari realisasi renja target individu berdasarkan NIP dan tahun (belum digunakan di endpoint realisasi)", description = "Mengambil realisasi renja target individu berdasarkan NIP dan tahun.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realisasi renja target individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaTargetIndividu.class)))),
-            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<RenjaTargetIndividu> getRealisasiRenjaTargetIndividuByTahunAndNip(
-            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
-            @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun) {
-        return renjaTargetIndividuService.getRealisasiRenjaTargetIndividuByTahunAndNip(tahun, nip);
-    }   
-
     @GetMapping("/by-nip/{nip}/by-tahun/{tahun}/by-bulan/{bulan}")
     @Operation(summary = "Cari realisasi renja target individu berdasarkan NIP, tahun, dan bulan", description = "Mengambil realisasi renja target individu berdasarkan NIP, tahun, dan bulan.")
     @ApiResponses(value = {

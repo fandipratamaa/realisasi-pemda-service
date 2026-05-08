@@ -27,8 +27,8 @@ public class TujuanServiceTests {
     @Test
     void batchSubmitRealisasiTujuanShouldBuildAndSaveAllItem() {
         // given
-        TujuanRequest r1 = new TujuanRequest(null, "T1", "I1", "TAR-1", "100.0", 50.0, "unit1", "2025", "01", JenisRealisasi.NAIK);
-        TujuanRequest r2 = new TujuanRequest(null, "T2", "I2", "TAR-2", "200.0", 75.0, "unit2", "2026", "01", JenisRealisasi.NAIK);
+        TujuanRequest r1 = new TujuanRequest(null, "T1", "I1", "TAR-1", "100.0", 50.0, "unit1", "2025", "01", "Visi Misi 1", "(realisasi/target)*100", JenisRealisasi.NAIK);
+        TujuanRequest r2 = new TujuanRequest(null, "T2", "I2", "TAR-2", "200.0", 75.0, "unit2", "2026", "01", "Visi Misi 2", "(realisasi/target)*100", JenisRealisasi.NAIK);
         when(tujuanRepository.save(ArgumentMatchers.any(Tujuan.class)))
                 .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
         // when

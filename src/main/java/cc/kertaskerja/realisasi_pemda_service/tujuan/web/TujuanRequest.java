@@ -49,6 +49,16 @@ public record TujuanRequest(
         @Schema(description = "Bulan realisasi", example = "Januari")
         String bulan,
 
+        @NotNull(message = "Visi/misi tidak boleh kosong")
+        @NotEmpty(message = "Visi/misi tidak boleh kosong")
+        @Schema(description = "Visi/misi tujuan pemda", example = "Mewujudkan tata kelola pemerintahan yang baik")
+        String visiMisi,
+
+        @NotNull(message = "Rumus perhitungan tidak boleh kosong")
+        @NotEmpty(message = "Rumus perhitungan tidak boleh kosong")
+        @Schema(description = "Rumus perhitungan indikator", example = "(realisasi/target)*100")
+        String rumusPerhitungan,
+
         @NotNull(message = "Pilih jenis NAIK atau TURUN")
         @Schema(description = "Jenis perhitungan capaian", example = "NAIK", allowableValues = {"NAIK", "TURUN"})
         JenisRealisasi jenisRealisasi

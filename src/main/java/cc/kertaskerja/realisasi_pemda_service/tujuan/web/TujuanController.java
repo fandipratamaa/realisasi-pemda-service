@@ -133,6 +133,8 @@ return tujuanService.submitRealisasiTujuan(
                 tujuanRequest.satuan(),
                 tujuanRequest.tahun(),
                 tujuanRequest.bulan(),
+                tujuanRequest.visiMisi(),
+                tujuanRequest.rumusPerhitungan(),
                 tujuanRequest.jenisRealisasi()
         );
     }

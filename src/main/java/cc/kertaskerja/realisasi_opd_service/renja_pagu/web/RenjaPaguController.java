@@ -38,16 +38,6 @@ public class RenjaPaguController {
         this.renjaOpdHierarkiService = renjaOpdHierarkiService;
     }
 
-    @GetMapping
-    @Operation(summary = "Ambil semua realisasi renja pagu (belum digunakan di endpoint realisasi)", description = "Mengambil seluruh data realisasi renja pagu OPD.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realisasi renja pagu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaPagu.class)))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<RenjaPagu> getAllRealisasiRenjaPagu() {
-        return renjaPaguService.getAllRealisasiRenjaPagu();
-    }
-
     @PostMapping
     @Operation(summary = "Simpan realisasi renja pagu (belum digunakan di endpoint realisasi)", description = "Menyimpan satu data realisasi renja pagu OPD.")
     @ApiResponses(value = {

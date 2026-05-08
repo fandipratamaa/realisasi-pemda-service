@@ -41,19 +41,20 @@ public class SasaranService {
         return sasaranRepository.findById(id);
     }
 
-    public Mono<Sasaran> submitRealisasiSasaran(String sasaranId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi) {
-        return Mono.just(buildUnchekcedRealisasiSasaran(sasaranId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan, jenisRealisasi))
+    public Mono<Sasaran> submitRealisasiSasaran(String sasaranId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, String rumusPerhitungan, String sumberData, JenisRealisasi jenisRealisasi) {
+        return Mono.just(buildUnchekcedRealisasiSasaran(sasaranId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan, rumusPerhitungan, sumberData, jenisRealisasi))
                 .flatMap(sasaranRepository::save);
     }
 
     // sasaranId check to sasaranService
     // and modify sasaran, check target, satuan, and change status to CHECKED
-    public static Sasaran buildUnchekcedRealisasiSasaran(String sasaranId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi) {
+    public static Sasaran buildUnchekcedRealisasiSasaran(String sasaranId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, String rumusPerhitungan, String sumberData, JenisRealisasi jenisRealisasi) {
         return Sasaran.of(sasaranId,
                 "Realisasi Sasaran " + sasaranId,
                 indikatorId,
                 "Realisasi Indikator " + indikatorId,
                 targetId, target, realisasi, satuan, tahun, bulan,
+                rumusPerhitungan, sumberData,
                 jenisRealisasi,
                 SasaranStatus.UNCHECKED);
     }
@@ -80,6 +81,8 @@ public class SasaranService {
                                             req.satuan(),
                                             req.tahun(),
                                             req.bulan(),
+                                            req.rumusPerhitungan(),
+                                            req.sumberData(),
                                             req.jenisRealisasi(),
                                             SasaranStatus.UNCHECKED,
                                             existing.createdBy(),
@@ -100,6 +103,8 @@ public class SasaranService {
                                             req.satuan(),
                                             req.tahun(),
                                             req.bulan(),
+                                            req.rumusPerhitungan(),
+                                            req.sumberData(),
                                             req.jenisRealisasi()
                                     );
                                     return sasaranRepository.save(baru);
@@ -115,6 +120,8 @@ public class SasaranService {
                                 req.satuan(),
                                 req.tahun(),
                                 req.bulan(),
+                                req.rumusPerhitungan(),
+                                req.sumberData(),
                                 req.jenisRealisasi()
                         );
                         return sasaranRepository.save(baru);

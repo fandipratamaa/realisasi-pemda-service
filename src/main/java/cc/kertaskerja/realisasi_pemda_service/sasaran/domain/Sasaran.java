@@ -28,6 +28,10 @@ public record Sasaran(
         String satuan,
         String tahun,
         String bulan,
+        @Column("rumus_perhitungan")
+        String rumusPerhitungan,
+        @Column("sumber_data")
+        String sumberData,
         JenisRealisasi jenisRealisasi,
         SasaranStatus status,
 
@@ -52,13 +56,15 @@ public record Sasaran(
             String satuan,
             String tahun,
             String bulan,
+            String rumusPerhitungan,
+            String sumberData,
             JenisRealisasi jenisRealisasi,
             SasaranStatus status
     ) {
         return new Sasaran(null,
                 sasaranId, sasaran, indikatorId, indikator,
                 targetId, target,
-                realisasi, satuan, tahun, bulan, jenisRealisasi, status,
+                realisasi, satuan, tahun, bulan, rumusPerhitungan, sumberData, jenisRealisasi, status,
                 null, null, null, null, 0);
     }
 

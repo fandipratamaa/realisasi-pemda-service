@@ -33,16 +33,6 @@ public class RenjaTargetController {
         this.renjaOpdHierarkiService = renjaOpdHierarkiService;
     }
 
-    @GetMapping
-    @Operation(summary = "Ambil semua realisasi renja target (belum digunakan di endpoint realisasi)", description = "Mengambil seluruh data realisasi renja target OPD.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realisasi renja target", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaTarget.class)))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<RenjaTarget> getAllRealisasiRenjaTarget() {
-        return renjaTargetService.getAllRealisasiRenjaTarget();
-    }
-
     @GetMapping("/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}")
     @Operation(summary = "Ambil realisasi renja target berdasarkan kode OPD, tahun, dan bulan")
     @ApiResponses(value = {
