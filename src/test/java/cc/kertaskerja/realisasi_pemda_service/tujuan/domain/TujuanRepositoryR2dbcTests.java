@@ -38,8 +38,8 @@ public class TujuanRepositoryR2dbcTests {
 
     @Test
     void findRealisasiTujuanByPeriodeRpjmd() {
-        var realisasi2025 = TujuanService.buildUncheckedRealisasiTujuan("1", "123", "TAR-1", "10.0", 10.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100", JenisRealisasi.NAIK);
-        var realisasi2026 = TujuanService.buildUncheckedRealisasiTujuan("1", "123", "TAR-2", "12.0", 12.0, "%", "2026", "01", "Visi Misi 2", "(realisasi/target)*100", JenisRealisasi.NAIK);
+        var realisasi2025 = TujuanService.buildUncheckedRealisasiTujuan("1", "123", "TAR-1", "10.0", 10.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK);
+        var realisasi2026 = TujuanService.buildUncheckedRealisasiTujuan("1", "123", "TAR-2", "12.0", 12.0, "%", "2026", "01", "Visi Misi 2", "(realisasi/target)*100", "Bappeda", JenisRealisasi.NAIK);
         StepVerifier.create(
                 tujuanRepository
                         .saveAll(Flux.just(realisasi2025, realisasi2026))

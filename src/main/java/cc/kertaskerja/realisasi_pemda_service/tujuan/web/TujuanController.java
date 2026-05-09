@@ -135,6 +135,7 @@ return tujuanService.submitRealisasiTujuan(
                 tujuanRequest.bulan(),
                 tujuanRequest.visiMisi(),
                 tujuanRequest.rumusPerhitungan(),
+                tujuanRequest.sumberData(),
                 tujuanRequest.jenisRealisasi()
         );
     }
