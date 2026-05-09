@@ -21,7 +21,7 @@ public class TujuanJsonTests {
 var realisasiTujuan = new Tujuan(304L, "T1", "TUJ-1",
                 "I1", "IND-1",
                 "TAR-1", "10.0", 10.0, "%",
-                "2025", "01", "Visi Misi 1", "(realisasi/target)*100", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED, null, Instant.now(), Instant.now(), null, 1);
+                "2025", "01", "Visi Misi 1", "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED, null, Instant.now(), Instant.now(), null, 1);
        var jsonContent = json.write(realisasiTujuan);
        assertThat(jsonContent).extractingJsonPathNumberValue("@.id")
                .isEqualTo(realisasiTujuan.id().intValue());

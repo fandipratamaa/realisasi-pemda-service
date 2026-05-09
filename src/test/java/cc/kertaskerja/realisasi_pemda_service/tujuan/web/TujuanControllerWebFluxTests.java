@@ -38,7 +38,7 @@ public class TujuanControllerWebFluxTests {
                 Tujuan.of("TUJ-123", "Test-Tujuan",
                         "IND-TUJ-123", "Produk-A",
                         "TAR-1", "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
-                        JenisRealisasi.NAIK, TujuanStatus.UNCHECKED));
+                        "BPS", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED));
         when(tujuanService.getRealisasiTujuanByTahunAndTujuanId("2025", "TUJ-123"))
                 .thenReturn(Flux.fromIterable(mockTujuans));
 
@@ -62,11 +62,11 @@ public class TujuanControllerWebFluxTests {
                 Tujuan.of("TUJ-123", "Test-Tujuan",
                         "IND-TUJ-123", "Produk-A",
                        "TAR-1", "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
-                        JenisRealisasi.NAIK, TujuanStatus.UNCHECKED),
+                        "BPS", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED),
                 Tujuan.of("TUJ-123", "Test-Tujuan",
                         "IND-TUJ-123", "Produk-A",
                        "TAR-2", "100.0", 100.0, "%", "2026", "01", "Visi Misi 2", "(realisasi/target)*100",
-                        JenisRealisasi.NAIK, TujuanStatus.UNCHECKED)
+                        "Bappeda", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED)
         );
         when(tujuanService.getRealisasiTujuanByTahun("2025"))
                 .thenReturn(Flux.just(mockTujuans.get(0)));
@@ -89,7 +89,7 @@ public class TujuanControllerWebFluxTests {
                 Tujuan.of("TUJ-123", "Test-Tujuan",
                         "IND-TUJ-123", "Produk-A",
                         "TAR-1", "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
-                        JenisRealisasi.NAIK, TujuanStatus.UNCHECKED));
+                        "BPS", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED));
         when(tujuanService.getRealisasiTujuanByIndikatorId("IND-TUJ-123"))
                 .thenReturn(Flux.fromIterable(mockTujuans));
 
@@ -110,19 +110,19 @@ public class TujuanControllerWebFluxTests {
                 Tujuan.of("TUJ-123", "Test-Tujuan",
                         "IND-TUJ-123", "Produk-A",
                       "TAR-1",  "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
-                        JenisRealisasi.NAIK, TujuanStatus.UNCHECKED),
+                        "BPS", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED),
                 Tujuan.of("TUJ-123", "Test-Tujuan",
                         "IND-TUJ-123", "Produk-A",
                       "TAR-2",  "100.0", 100.0, "%", "2026", "01", "Visi Misi 2", "(realisasi/target)*100",
-                        JenisRealisasi.NAIK, TujuanStatus.UNCHECKED),
+                        "Bappeda", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED),
                 Tujuan.of("TUJ-12", "Test-Tujuan",
                         "IND-TUJ-124", "Produk-B",
                         "TAR-3", "4,70 - 4,75", 4.75, "%", "2025", "01", "Visi Misi 3", "(realisasi/target)*100",
-                        JenisRealisasi.NAIK, TujuanStatus.UNCHECKED),
+                        "BPS", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED),
                 Tujuan.of("TUJ-12", "Test-Tujuan",
                         "IND-TUJ-124", "Produk-B",
                       "TAR-4",  "4,85 - 4,90", 4.50, "%", "2027", "01", "Visi Misi 4", "(realisasi/target)*100",
-                        JenisRealisasi.NAIK, TujuanStatus.UNCHECKED)
+                        "Bappeda", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED)
         );
         when(tujuanService.getRealisasiTujuanByPeriodeRpjmd("2025", "2030"))
                 .thenReturn(Flux.fromIterable(mockTujuans));
@@ -141,16 +141,16 @@ public class TujuanControllerWebFluxTests {
     @Test
     void whenBatchSubmit_thenReturnsSavedTujuans() throws Exception {
         // prepare requests
-TujuanRequest r1 = new TujuanRequest(null, "T1", "I1", "TAR-1", "100.0", 50.0, "unit1", "2025", "01", "Visi Misi 1", "(realisasi/target)*100", JenisRealisasi.NAIK);
-        TujuanRequest r2 = new TujuanRequest(null, "T2", "I2", "TAR-2", "200.0", 75.0, "unit2", "2026", "01", "Visi Misi 2", "(realisasi/target)*100", JenisRealisasi.TURUN);
+TujuanRequest r1 = new TujuanRequest(null, "T1", "I1", "TAR-1", "100.0", 50.0, "unit1", "2025", "01", "Visi Misi 1", "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK);
+        TujuanRequest r2 = new TujuanRequest(null, "T2", "I2", "TAR-2", "200.0", 75.0, "unit2", "2026", "01", "Visi Misi 2", "(realisasi/target)*100", "Bappeda", JenisRealisasi.TURUN);
 
 Tujuan t1 = TujuanService.buildUncheckedRealisasiTujuan(
                 r1.tujuanId(), r1.indikatorId(), r1.targetId() ,r1.target(), r1.realisasi(),
-                r1.satuan(), r1.tahun(), r1.bulan(), r1.visiMisi(), r1.rumusPerhitungan(), r1.jenisRealisasi()
+                r1.satuan(), r1.tahun(), r1.bulan(), r1.visiMisi(), r1.rumusPerhitungan(), r1.sumberData(), r1.jenisRealisasi()
         );
         Tujuan t2Baru = TujuanService.buildUncheckedRealisasiTujuan(
                 r2.tujuanId(), r2.indikatorId(), r2.targetId(), r2.target(), r2.realisasi(),
-                r2.satuan(), r2.tahun(), r2.bulan(), r2.visiMisi(), r2.rumusPerhitungan(), r2.jenisRealisasi()
+                r2.satuan(), r2.tahun(), r2.bulan(), r2.visiMisi(), r2.rumusPerhitungan(), r2.sumberData(), r2.jenisRealisasi()
         );
 
         when(tujuanService.batchSubmitRealisasiTujuan(anyList()))

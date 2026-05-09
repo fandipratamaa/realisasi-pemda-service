@@ -27,8 +27,8 @@ public class TujuanServiceTests {
     @Test
     void batchSubmitRealisasiTujuanShouldBuildAndSaveAllItem() {
         // given
-        TujuanRequest r1 = new TujuanRequest(null, "T1", "I1", "TAR-1", "100.0", 50.0, "unit1", "2025", "01", "Visi Misi 1", "(realisasi/target)*100", JenisRealisasi.NAIK);
-        TujuanRequest r2 = new TujuanRequest(null, "T2", "I2", "TAR-2", "200.0", 75.0, "unit2", "2026", "01", "Visi Misi 2", "(realisasi/target)*100", JenisRealisasi.NAIK);
+        TujuanRequest r1 = new TujuanRequest(null, "T1", "I1", "TAR-1", "100.0", 50.0, "unit1", "2025", "01", "Visi Misi 1", "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK);
+        TujuanRequest r2 = new TujuanRequest(null, "T2", "I2", "TAR-2", "200.0", 75.0, "unit2", "2026", "01", "Visi Misi 2", "(realisasi/target)*100", "Bappeda", JenisRealisasi.NAIK);
         when(tujuanRepository.save(ArgumentMatchers.any(Tujuan.class)))
                 .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
         // when
@@ -40,13 +40,15 @@ public class TujuanServiceTests {
                         t.tujuanId().equals("T1") &&
                         t.indikatorId().equals("I1") &&
                         t.target().equals("100.0") &&
-                        t.realisasi().equals(50.0)
+                        t.realisasi().equals(50.0) &&
+                        t.sumberData().equals("BPS")
                 )
                 .expectNextMatches(t ->
                         t.tujuanId().equals("T2") &&
                         t.indikatorId().equals("I2") &&
                         t.target().equals("200.0") &&
-                        t.realisasi().equals(75.0)
+                        t.realisasi().equals(75.0) &&
+                        t.sumberData().equals("Bappeda")
                 )
                 .verifyComplete();
         verify(tujuanRepository, times(2)).save(any(Tujuan.class));
