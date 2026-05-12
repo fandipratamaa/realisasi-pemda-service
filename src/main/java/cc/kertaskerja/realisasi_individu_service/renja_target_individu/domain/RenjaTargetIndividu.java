@@ -19,9 +19,6 @@ import java.time.Instant;
 public record RenjaTargetIndividu(
         @Id Long id,
 
-        @Column("renja_id")
-        String renjaId,
-        String renja,
         @Column("kode_renja")
         String kodeRenja,
         @Column("jenis_renja")
@@ -63,8 +60,6 @@ public record RenjaTargetIndividu(
         @Version int version
 ) {
 public static RenjaTargetIndividu of(
-            String renjaId,
-            String renja,
             String kodeRenja,
             JenisRenja jenisRenja,
             String nip,
@@ -81,8 +76,6 @@ public static RenjaTargetIndividu of(
     ) {
         return new RenjaTargetIndividu(
                 null,
-                renjaId,
-                renja,
                 kodeRenja,
                 jenisRenja,
                 nip,

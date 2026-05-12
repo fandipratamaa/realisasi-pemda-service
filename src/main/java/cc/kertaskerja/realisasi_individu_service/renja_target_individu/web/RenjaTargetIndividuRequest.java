@@ -14,16 +14,6 @@ public record RenjaTargetIndividuRequest(
         @Schema(description = "ID internal data realisasi. Kosongkan saat create.", example = "1", nullable = true)
         Long targetRealisasiId,
 
-        @NotNull(message = "ID renja tidak boleh kosong")
-        @NotEmpty(message = "ID renja tidak boleh kosong")
-        @Schema(description = "ID renja", example = "RENJA-001")
-        String renjaId,
-
-        @NotNull(message = "Renja tidak boleh kosong")
-        @NotEmpty(message = "Renja tidak boleh kosong")
-        @Schema(description = "Nama renja", example = "Program Pembangunan Jalan")
-        String renja,
-
         @NotNull(message = "Kode renja tidak boleh kosong")
         @NotEmpty(message = "Kode renja tidak boleh kosong")
         @Schema(description = "Kode renja berdasarkan level", example = "1.02.01")

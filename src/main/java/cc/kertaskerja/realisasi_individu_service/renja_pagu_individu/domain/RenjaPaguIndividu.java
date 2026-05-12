@@ -19,9 +19,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public record RenjaPaguIndividu(
         @Id Long id,
 
-        @Column("renja_id")
-        String renjaId,
-        String renja,
         @Column("kode_renja")
         String kodeRenja,
         @Column("jenis_renja")
@@ -61,8 +58,6 @@ public record RenjaPaguIndividu(
         @Version int version
 ) {
     public static RenjaPaguIndividu of(
-            String renjaId,
-            String renja,
             String kodeRenja,
             JenisRenja jenisRenja,
             String nip,
@@ -78,8 +73,6 @@ public record RenjaPaguIndividu(
     ) {
         return new RenjaPaguIndividu(
                 null,
-                renjaId,
-                renja,
                 kodeRenja,
                 jenisRenja,
                 nip,

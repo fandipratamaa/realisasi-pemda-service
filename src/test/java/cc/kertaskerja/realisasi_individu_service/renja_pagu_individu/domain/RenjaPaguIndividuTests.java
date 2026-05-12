@@ -10,8 +10,6 @@ public class RenjaPaguIndividuTests {
     @Test
     void testCapaianRealisasiDibagiPagu() {
         RenjaPaguIndividu renjaPaguIndividu = RenjaPaguIndividu.of(
-                "RENJA-1",
-                "Program A",
                 "1.02.01",
                 JenisRenja.PROGRAM,
                 "198012312005011001",
@@ -32,8 +30,6 @@ public class RenjaPaguIndividuTests {
     @Test
     void testCapaianRealisasiDibagiPaguDenganDesimal() {
         RenjaPaguIndividu renjaPaguIndividu = RenjaPaguIndividu.of(
-                "RENJA-2",
-                "Program B",
                 "1.02.02",
                 JenisRenja.KEGIATAN,
                 "198012312005011001",
@@ -54,8 +50,6 @@ public class RenjaPaguIndividuTests {
     @Test
     void testCapaianPaguNol() {
         RenjaPaguIndividu renjaPaguIndividu = RenjaPaguIndividu.of(
-                "RENJA-3",
-                "Program C",
                 "1.02.03",
                 JenisRenja.SUBKEGIATAN,
                 "198012312005011001",
@@ -76,8 +70,6 @@ public class RenjaPaguIndividuTests {
     @Test
     void testCapaianRealisasiLebihBesarDariPagu() {
         RenjaPaguIndividu renjaPaguIndividu = RenjaPaguIndividu.of(
-                "RENJA-4",
-                "Program D",
                 "1.02.04",
                 JenisRenja.PROGRAM,
                 "198012312005011001",
