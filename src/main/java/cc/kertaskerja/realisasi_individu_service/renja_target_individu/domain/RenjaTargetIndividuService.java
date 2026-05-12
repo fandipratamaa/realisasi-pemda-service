@@ -113,22 +113,25 @@ public static RenjaTargetIndividu buildUncheckedRealisasiRenjaTargetIndividu(
                     if (req.targetRealisasiId() != null) {
                         return renjaTargetIndividuRepository.findById(req.targetRealisasiId())
                                 .flatMap(existing -> renjaTargetIndividuRepository.save(buildUpdatedRealisasiRenjaTargetIndividu(existing, req)))
-                                .switchIfEmpty(Mono.defer(() -> renjaTargetIndividuRepository.save(buildUncheckedRealisasiRenjaTargetIndividu(
-                                        req.renjaId(),
-                                        req.renja(),
-                                        req.kodeRenja(),
-                                        req.jenisRenja(),
-                                        req.nip(),
-                                        req.idIndikator(),
-                                        req.indikator(),
-                                        req.targetId(),
-                                        req.target(),
-                                        req.realisasi(),
-                                        req.satuan(),
-                                        req.tahun(),
-                                        req.bulan(),
-                                        req.jenisRealisasi()
-                                ))));
+                                .switchIfEmpty(Mono.defer(() -> renjaTargetIndividuRepository
+                                        .findFirstByTargetId(req.targetId())
+                                        .flatMap(existing -> renjaTargetIndividuRepository.save(buildUpdatedRealisasiRenjaTargetIndividu(existing, req)))
+                                        .switchIfEmpty(Mono.defer(() -> renjaTargetIndividuRepository.save(buildUncheckedRealisasiRenjaTargetIndividu(
+                                                req.renjaId(),
+                                                req.renja(),
+                                                req.kodeRenja(),
+                                                req.jenisRenja(),
+                                                req.nip(),
+                                                req.idIndikator(),
+                                                req.indikator(),
+                                                req.targetId(),
+                                                req.target(),
+                                                req.realisasi(),
+                                                req.satuan(),
+                                                req.tahun(),
+                                                req.bulan(),
+                                                req.jenisRealisasi()
+                                        ))))));
                     }
 
                     return renjaTargetIndividuRepository
@@ -138,22 +141,25 @@ public static RenjaTargetIndividu buildUncheckedRealisasiRenjaTargetIndividu(
                                     req.kodeRenja(),
                                     req.jenisRenja())
                             .flatMap(existing -> renjaTargetIndividuRepository.save(buildUpdatedRealisasiRenjaTargetIndividu(existing, req)))
-                            .switchIfEmpty(Mono.defer(() -> renjaTargetIndividuRepository.save(buildUncheckedRealisasiRenjaTargetIndividu(
-                                    req.renjaId(),
-                                    req.renja(),
-                                    req.kodeRenja(),
-                                    req.jenisRenja(),
-                                    req.nip(),
-                                    req.idIndikator(),
-                                    req.indikator(),
-                                    req.targetId(),
-                                    req.target(),
-                                    req.realisasi(),
-                                    req.satuan(),
-                                    req.tahun(),
-                                    req.bulan(),
-                                    req.jenisRealisasi()
-                            ))));
+                            .switchIfEmpty(Mono.defer(() -> renjaTargetIndividuRepository
+                                    .findFirstByTargetId(req.targetId())
+                                    .flatMap(existing -> renjaTargetIndividuRepository.save(buildUpdatedRealisasiRenjaTargetIndividu(existing, req)))
+                                    .switchIfEmpty(Mono.defer(() -> renjaTargetIndividuRepository.save(buildUncheckedRealisasiRenjaTargetIndividu(
+                                            req.renjaId(),
+                                            req.renja(),
+                                            req.kodeRenja(),
+                                            req.jenisRenja(),
+                                            req.nip(),
+                                            req.idIndikator(),
+                                            req.indikator(),
+                                            req.targetId(),
+                                            req.target(),
+                                            req.realisasi(),
+                                            req.satuan(),
+                                            req.tahun(),
+                                            req.bulan(),
+                                            req.jenisRealisasi()
+                                    ))))));
                 });
     }
 
@@ -178,7 +184,8 @@ public static RenjaTargetIndividu buildUncheckedRealisasiRenjaTargetIndividu(
                 existing.createdBy(),
                 existing.lastModifiedBy(),
                 existing.createdDate(),
-                existing.lastModifiedDate()
+                existing.lastModifiedDate(),
+                existing.version()
         );
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -57,7 +58,9 @@ public record RenjaTargetIndividu(
         Instant createdDate,
         @LastModifiedDate
         @Column("last_modified_date")
-        Instant lastModifiedDate
+        Instant lastModifiedDate,
+
+        @Version int version
 ) {
 public static RenjaTargetIndividu of(
             String renjaId,
@@ -96,7 +99,8 @@ public static RenjaTargetIndividu of(
                 null,
                 null,
                 null,
-                null
+                null,
+                0
         );
     }
 
