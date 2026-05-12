@@ -31,7 +31,10 @@ public class OpenApiConfig {
     GroupedOpenApi pemdaApiGroup() {
         return GroupedOpenApi.builder()
                 .group("pemda")
-                .pathsToMatch("/tujuans/**", "/sasarans/**", "/ikus/**")
+                .pathsToMatch(
+                        "/tujuans/**", 
+                        "/sasarans/**", 
+                        "/ikus/**")
                 .build();
     }
 
@@ -53,7 +56,12 @@ public class OpenApiConfig {
     GroupedOpenApi individuApiGroup() {
         return GroupedOpenApi.builder()
                 .group("individu")
-                .pathsToMatch("/rekin/**", "/renja_pagu_individu/**", "/renja_target_individu/**", "/renaksi/**")
+                .pathsToMatch(
+                        "/rekin/**",
+                        "/sasaran_individu/**",
+                        "/renja_pagu_individu/**", 
+                        "/renja_target_individu/**", 
+                        "/renaksi/**")
                 .build();
     }
 }

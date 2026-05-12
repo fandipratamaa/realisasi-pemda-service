@@ -6,8 +6,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface RenjaTargetIndividuRepository extends ReactiveCrudRepository<RenjaTargetIndividu, Long> {
-    Flux<RenjaTargetIndividu> findAllByRenjaId(String renjaId);
-
     Flux<RenjaTargetIndividu> findAllByTahunAndNip(String tahun, String nip);
 
     Flux<RenjaTargetIndividu> findAllByTahunAndNipAndBulan(String tahun, String nip, String bulan);
@@ -15,8 +13,6 @@ public interface RenjaTargetIndividuRepository extends ReactiveCrudRepository<Re
     Flux<RenjaTargetIndividu> findAllByTahunBetweenAndNip(String tahunAwal, String tahunAkhir, String nip);
 
     Flux<RenjaTargetIndividu> findAllByNip(String nip);
-
-    Flux<RenjaTargetIndividu> findAllByTahunAndRenjaIdAndNip(String tahun, String renjaId, String nip);
 
     Flux<RenjaTargetIndividu> findAllByTahunAndJenisRenjaAndKodeRenjaAndNip(String tahun, JenisRenja jenisRenja, String kodeRenja, String nip);
 
@@ -26,5 +22,5 @@ public interface RenjaTargetIndividuRepository extends ReactiveCrudRepository<Re
 
     Mono<RenjaTargetIndividu> findFirstByTargetId(String targetId);
 
-    Mono<RenjaTargetIndividu> findFirstByTahunAndNipAndJenisRenjaAndKodeRenjaAndRenjaId(String tahun, String nip, JenisRenja jenisRenja, String kodeRenja, String renjaId);
+    Mono<Void> deleteByTahunAndNipAndJenisRenjaAndKodeRenja(String tahun, String nip, JenisRenja jenisRenja, String kodeRenja);
 }

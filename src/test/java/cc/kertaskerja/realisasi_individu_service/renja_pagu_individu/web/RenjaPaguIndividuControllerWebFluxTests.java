@@ -36,8 +36,6 @@ public class RenjaPaguIndividuControllerWebFluxTests {
     void whenBatchSubmit_thenReturnsSavedRenjaPaguIndividus() throws Exception {
 RenjaPaguIndividuRequest r1 = new RenjaPaguIndividuRequest(
                 null,
-                "RENJA-1",
-                "Program A",
                 "1.02.01",
                 JenisRenja.PROGRAM,
                 "198012312005011001",
@@ -52,8 +50,6 @@ RenjaPaguIndividuRequest r1 = new RenjaPaguIndividuRequest(
         );
         RenjaPaguIndividuRequest r2 = new RenjaPaguIndividuRequest(
                 null,
-                "RENJA-2",
-                " Kegiatan B",
                 "1.02.02",
                 JenisRenja.KEGIATAN,
                 "198012312005011001",
@@ -68,8 +64,6 @@ RenjaPaguIndividuRequest r1 = new RenjaPaguIndividuRequest(
         );
 
         RenjaPaguIndividu p1 = RenjaPaguIndividuService.buildUncheckedRealisasiRenjaPaguIndividu(
-                r1.renjaId(),
-                r1.renja(),
                 r1.kodeRenja(),
                 r1.jenisRenja(),
                 r1.nip(),
@@ -83,8 +77,6 @@ RenjaPaguIndividuRequest r1 = new RenjaPaguIndividuRequest(
                 r1.jenisRealisasi()
         );
         RenjaPaguIndividu p2 = RenjaPaguIndividuService.buildUncheckedRealisasiRenjaPaguIndividu(
-                r2.renjaId(),
-                r2.renja(),
                 r2.kodeRenja(),
                 r2.jenisRenja(),
                 r2.nip(),

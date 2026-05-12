@@ -61,8 +61,8 @@ public class RenjaTargetIndividuController {
         return renjaTargetIndividuService.getRealisasiRenjaTargetIndividuByTahunNipAndBulan(tahun, nip, bulan);
     }
 
-    @GetMapping("/by-tahun/{tahun}/by-nip/{nip}/by-jenis-renja/{jenisRenja}/by-kode-renja/{kodeRenja}/by-renja-id/{renjaId}")
-    @Operation(summary = "Cari realisasi renja target individu berdasarkan tahun, NIP, jenis renja, kode renja, dan renjaId", description = "Mengambil satu data realisasi renja target individu berdasarkan `tahun`, `nip`, `jenisRenja`, `kodeRenja`, dan `renjaId`.")
+    @GetMapping("/by-tahun/{tahun}/by-nip/{nip}/by-jenis-renja/{jenisRenja}/by-kode-renja/{kodeRenja}")
+    @Operation(summary = "Cari realisasi renja target individu berdasarkan tahun, NIP, jenis renja, dan kode renja", description = "Mengambil satu data realisasi renja target individu berdasarkan `tahun`, `nip`, `jenisRenja`, dan `kodeRenja`.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data realisasi renja target individu ditemukan", content = @Content(schema = @Schema(implementation = RenjaTargetIndividu.class))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
@@ -72,13 +72,12 @@ public class RenjaTargetIndividuController {
             @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
             @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
             @Parameter(description = "Jenis renja", example = "PROGRAM") @PathVariable JenisRenja jenisRenja,
-            @Parameter(description = "Kode renja sesuai jenis renja", example = "1.1") @PathVariable String kodeRenja,
-            @Parameter(description = "ID renja", example = "RENJA-001") @PathVariable String renjaId) {
-        if (tahun == null || tahun.isBlank() || nip == null || nip.isBlank() 
-                || kodeRenja == null || kodeRenja.isBlank() || renjaId == null || renjaId.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter tahun, nip, jenisRenja, kodeRenja, dan renjaId tidak boleh kosong");
+            @Parameter(description = "Kode renja sesuai jenis renja", example = "1.1") @PathVariable String kodeRenja) {
+        if (tahun == null || tahun.isBlank() || nip == null || nip.isBlank()
+                || kodeRenja == null || kodeRenja.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter tahun, nip, jenisRenja, dan kodeRenja tidak boleh kosong");
         }
-        return renjaTargetIndividuService.getRealisasiRenjaTargetIndividuByTahunNipJenisRenjaKodeRenjaRenjaId(tahun, nip, jenisRenja, kodeRenja, renjaId);
+        return renjaTargetIndividuService.getRealisasiRenjaTargetIndividuByTahunNipJenisRenjaKodeRenja(tahun, nip, jenisRenja, kodeRenja);
     }
 
     @PostMapping
@@ -93,8 +92,6 @@ public class RenjaTargetIndividuController {
                     content = @Content(schema = @Schema(implementation = RenjaTargetIndividuRequest.class)))
             @RequestBody @Valid RenjaTargetIndividuRequest renjaTargetIndividuRequest) {
         return renjaTargetIndividuService.submitRealisasiRenjaTargetIndividu(
-                renjaTargetIndividuRequest.renjaId(),
-                renjaTargetIndividuRequest.renja(),
                 renjaTargetIndividuRequest.kodeRenja(),
                 renjaTargetIndividuRequest.jenisRenja(),
                 renjaTargetIndividuRequest.nip(),
@@ -124,8 +121,6 @@ public class RenjaTargetIndividuController {
                             examples = @ExampleObject(name = "ArrayRequest", value = "[\n" +
                                     "  {\n" +
                                     "    \"targetRealisasiId\": 10,\n" +
-                                    "    \"renjaId\": \"RENJA-001\",\n" +
-                                    "    \"renja\": \"Program Pembangunan Jalan\",\n" +
                                     "    \"kodeRenja\": \"1.02.01\",\n" +
                                     "    \"jenisRenja\": \"PROGRAM\",\n" +
                                     "    \"nip\": \"198012312005011001\",\n" +
@@ -144,8 +139,8 @@ public class RenjaTargetIndividuController {
         return renjaTargetIndividuService.batchSubmitRealisasiRenjaTargetIndividu(renjaTargetIndividuRequests);
     }
 
-    @DeleteMapping("/by-renja-id/{renjaId}")
-    @Operation(summary = "Hapus realisasi renja target individu (belum digunakan di endpoint realisasi)", description = "Menghapus data realisasi renja target individu berdasarkan `renjaId`.")
+    @DeleteMapping("/by-tahun/{tahun}/by-nip/{nip}/by-jenis-renja/{jenisRenja}/by-kode-renja/{kodeRenja}")
+    @Operation(summary = "Hapus realisasi renja target individu (belum digunakan di endpoint realisasi)", description = "Menghapus data realisasi renja target individu berdasarkan `tahun`, `nip`, `jenisRenja`, dan `kodeRenja`.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data realisasi renja target individu terhapus", content = @Content),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
@@ -153,10 +148,13 @@ public class RenjaTargetIndividuController {
             @ApiResponse(responseCode = "404", description = "Data tidak ditemukan", content = @Content)
     })
     public Mono<Void> deleteRealisasiRenjaTargetIndividu(
-            @Parameter(description = "ID renja", example = "RENJA-001") @PathVariable String renjaId) {
-        if (renjaId == null || renjaId.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter renjaId tidak boleh kosong");
+            @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
+            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
+            @Parameter(description = "Jenis renja", example = "PROGRAM") @PathVariable JenisRenja jenisRenja,
+            @Parameter(description = "Kode renja sesuai jenis renja", example = "1.1") @PathVariable String kodeRenja) {
+        if (tahun == null || tahun.isBlank() || nip == null || nip.isBlank() || kodeRenja == null || kodeRenja.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter tahun, nip, jenisRenja, dan kodeRenja tidak boleh kosong");
         }
-        return renjaTargetIndividuService.deleteRealisasiRenjaTargetIndividuByRenjaId(renjaId);
+        return renjaTargetIndividuService.deleteRealisasiRenjaTargetIndividuByFilters(tahun, nip, jenisRenja, kodeRenja);
     }
 }

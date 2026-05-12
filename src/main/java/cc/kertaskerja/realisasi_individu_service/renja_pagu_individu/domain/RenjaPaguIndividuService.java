@@ -32,18 +32,16 @@ public class RenjaPaguIndividuService {
     }
 
     public Flux<RenjaPaguIndividu> getRealisasiRenjaPaguIndividuByFilters(
-            String tahun, String nip, JenisRenja jenisRenja, String kodeRenja, String renjaId) {
-        return renjaPaguIndividuRepository.findAllByTahunAndNipAndJenisRenjaAndKodeRenjaAndRenjaId(
-                tahun, nip, jenisRenja, kodeRenja, renjaId);
+            String tahun, String nip, JenisRenja jenisRenja, String kodeRenja) {
+        return renjaPaguIndividuRepository.findAllByTahunAndNipAndJenisRenjaAndKodeRenja(
+                tahun, nip, jenisRenja, kodeRenja);
     }
 
-    public Mono<Void> deleteRealisasiRenjaPaguIndividuByRenjaId(String renjaId) {
-        return renjaPaguIndividuRepository.deleteByRenjaId(renjaId);
+    public Mono<Void> deleteRealisasiRenjaPaguIndividuByFilters(String tahun, String nip, JenisRenja jenisRenja, String kodeRenja) {
+        return renjaPaguIndividuRepository.deleteByTahunAndNipAndJenisRenjaAndKodeRenja(tahun, nip, jenisRenja, kodeRenja);
     }
 
 public Mono<RenjaPaguIndividu> submitRealisasiRenjaPaguIndividu(
-            String renjaId,
-            String renja,
             String kodeRenja,
             JenisRenja jenisRenja,
             String nip,
@@ -56,8 +54,6 @@ public Mono<RenjaPaguIndividu> submitRealisasiRenjaPaguIndividu(
             String bulan,
             JenisRealisasi jenisRealisasi) {
         return Mono.just(buildUncheckedRealisasiRenjaPaguIndividu(
-                        renjaId,
-                        renja,
                         kodeRenja,
                         jenisRenja,
                         nip,
@@ -73,8 +69,6 @@ public Mono<RenjaPaguIndividu> submitRealisasiRenjaPaguIndividu(
     }
 
     public static RenjaPaguIndividu buildUncheckedRealisasiRenjaPaguIndividu(
-            String renjaId,
-            String renja,
             String kodeRenja,
             JenisRenja jenisRenja,
             String nip,
@@ -87,8 +81,6 @@ public Mono<RenjaPaguIndividu> submitRealisasiRenjaPaguIndividu(
             String bulan,
             JenisRealisasi jenisRealisasi) {
         return RenjaPaguIndividu.of(
-                renjaId,
-                renja,
                 kodeRenja,
                 jenisRenja,
                 nip,
@@ -111,8 +103,6 @@ public Mono<RenjaPaguIndividu> submitRealisasiRenjaPaguIndividu(
                         return renjaPaguIndividuRepository.findById(req.targetRealisasiId())
                                 .flatMap(existing -> renjaPaguIndividuRepository.save(buildUpdatedRealisasiRenjaPaguIndividu(existing, req)))
                                 .switchIfEmpty(Mono.defer(() -> renjaPaguIndividuRepository.save(buildUncheckedRealisasiRenjaPaguIndividu(
-                                        req.renjaId(),
-                                        req.renja(),
                                         req.kodeRenja(),
                                         req.jenisRenja(),
                                         req.nip(),
@@ -135,8 +125,6 @@ public Mono<RenjaPaguIndividu> submitRealisasiRenjaPaguIndividu(
                                     req.kodeRenja())
                             .flatMap(existing -> renjaPaguIndividuRepository.save(buildUpdatedRealisasiRenjaPaguIndividu(existing, req)))
                             .switchIfEmpty(Mono.defer(() -> renjaPaguIndividuRepository.save(buildUncheckedRealisasiRenjaPaguIndividu(
-                                    req.renjaId(),
-                                    req.renja(),
                                     req.kodeRenja(),
                                     req.jenisRenja(),
                                     req.nip(),
@@ -155,8 +143,6 @@ public Mono<RenjaPaguIndividu> submitRealisasiRenjaPaguIndividu(
     private static RenjaPaguIndividu buildUpdatedRealisasiRenjaPaguIndividu(RenjaPaguIndividu existing, RenjaPaguIndividuRequest req) {
         return new RenjaPaguIndividu(
                 existing.id(),
-                existing.renjaId(),
-                existing.renja(),
                 existing.kodeRenja(),
                 existing.jenisRenja(),
                 existing.nip(),

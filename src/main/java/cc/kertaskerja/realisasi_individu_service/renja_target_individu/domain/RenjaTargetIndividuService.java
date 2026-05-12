@@ -30,19 +30,15 @@ public class RenjaTargetIndividuService {
         return renjaTargetIndividuRepository.findAllByTahunAndNipAndBulan(tahun, nip, bulan);
     }
 
-    public Mono<RenjaTargetIndividu> getRealisasiRenjaTargetIndividuByTahunNipJenisRenjaKodeRenjaRenjaId(String tahun, String nip, JenisRenja jenisRenja, String kodeRenja, String renjaId) {
-        return renjaTargetIndividuRepository.findFirstByTahunAndNipAndJenisRenjaAndKodeRenjaAndRenjaId(tahun, nip, jenisRenja, kodeRenja, renjaId);
+    public Mono<RenjaTargetIndividu> getRealisasiRenjaTargetIndividuByTahunNipJenisRenjaKodeRenja(String tahun, String nip, JenisRenja jenisRenja, String kodeRenja) {
+        return renjaTargetIndividuRepository.findFirstByNipAndTahunAndKodeRenjaAndJenisRenja(nip, tahun, kodeRenja, jenisRenja);
     }
 
-    public Mono<Void> deleteRealisasiRenjaTargetIndividuByRenjaId(String renjaId) {
-        return renjaTargetIndividuRepository.findAllByRenjaId(renjaId)
-                .flatMap(renjaTargetIndividuRepository::delete)
-                .then();
+    public Mono<Void> deleteRealisasiRenjaTargetIndividuByFilters(String tahun, String nip, JenisRenja jenisRenja, String kodeRenja) {
+        return renjaTargetIndividuRepository.deleteByTahunAndNipAndJenisRenjaAndKodeRenja(tahun, nip, jenisRenja, kodeRenja);
     }
 
     public Mono<RenjaTargetIndividu> submitRealisasiRenjaTargetIndividu(
-            String renjaId,
-            String renja,
             String kodeRenja,
             JenisRenja jenisRenja,
             String nip,
@@ -56,8 +52,6 @@ public class RenjaTargetIndividuService {
             String bulan,
             JenisRealisasi jenisRealisasi) {
         return Mono.just(buildUncheckedRealisasiRenjaTargetIndividu(
-                        renjaId,
-                        renja,
                         kodeRenja,
                         jenisRenja,
                         nip,
@@ -74,8 +68,6 @@ public class RenjaTargetIndividuService {
     }
 
 public static RenjaTargetIndividu buildUncheckedRealisasiRenjaTargetIndividu(
-            String renjaId,
-            String renja,
             String kodeRenja,
             JenisRenja jenisRenja,
             String nip,
@@ -89,8 +81,6 @@ public static RenjaTargetIndividu buildUncheckedRealisasiRenjaTargetIndividu(
             String bulan,
             JenisRealisasi jenisRealisasi) {
         return RenjaTargetIndividu.of(
-                renjaId,
-                renja,
                 kodeRenja,
                 jenisRenja,
                 nip,
@@ -117,8 +107,6 @@ public static RenjaTargetIndividu buildUncheckedRealisasiRenjaTargetIndividu(
                                         .findFirstByTargetId(req.targetId())
                                         .flatMap(existing -> renjaTargetIndividuRepository.save(buildUpdatedRealisasiRenjaTargetIndividu(existing, req)))
                                         .switchIfEmpty(Mono.defer(() -> renjaTargetIndividuRepository.save(buildUncheckedRealisasiRenjaTargetIndividu(
-                                                req.renjaId(),
-                                                req.renja(),
                                                 req.kodeRenja(),
                                                 req.jenisRenja(),
                                                 req.nip(),
@@ -145,8 +133,6 @@ public static RenjaTargetIndividu buildUncheckedRealisasiRenjaTargetIndividu(
                                     .findFirstByTargetId(req.targetId())
                                     .flatMap(existing -> renjaTargetIndividuRepository.save(buildUpdatedRealisasiRenjaTargetIndividu(existing, req)))
                                     .switchIfEmpty(Mono.defer(() -> renjaTargetIndividuRepository.save(buildUncheckedRealisasiRenjaTargetIndividu(
-                                            req.renjaId(),
-                                            req.renja(),
                                             req.kodeRenja(),
                                             req.jenisRenja(),
                                             req.nip(),
@@ -166,8 +152,6 @@ public static RenjaTargetIndividu buildUncheckedRealisasiRenjaTargetIndividu(
     private static RenjaTargetIndividu buildUpdatedRealisasiRenjaTargetIndividu(RenjaTargetIndividu existing, RenjaTargetIndividuRequest req) {
         return new RenjaTargetIndividu(
                 existing.id(),
-                existing.renjaId(),
-                existing.renja(),
                 existing.kodeRenja(),
                 existing.jenisRenja(),
                 existing.nip(),

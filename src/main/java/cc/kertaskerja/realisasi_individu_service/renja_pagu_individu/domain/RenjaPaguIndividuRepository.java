@@ -11,10 +11,10 @@ public interface RenjaPaguIndividuRepository extends ReactiveCrudRepository<Renj
 
     Flux<RenjaPaguIndividu> findAllByNipAndTahunAndBulan(String nip, String tahun, String bulan);
 
-    Flux<RenjaPaguIndividu> findAllByTahunAndNipAndJenisRenjaAndKodeRenjaAndRenjaId(
-            String tahun, String nip, JenisRenja jenisRenja, String kodeRenja, String renjaId);
+    Flux<RenjaPaguIndividu> findAllByTahunAndNipAndJenisRenjaAndKodeRenja(
+            String tahun, String nip, JenisRenja jenisRenja, String kodeRenja);
 
     Mono<RenjaPaguIndividu> findFirstByNipAndTahunAndJenisRenjaAndKodeRenja(String nip, String tahun, JenisRenja jenisRenja, String kodeRenja);
 
-    Mono<Void> deleteByRenjaId(String renjaId);
+    Mono<Void> deleteByTahunAndNipAndJenisRenjaAndKodeRenja(String tahun, String nip, JenisRenja jenisRenja, String kodeRenja);
 }
