@@ -57,7 +57,7 @@ public class RenjaTargetIndividuController {
     public Flux<RenjaTargetIndividu> getRealisasiRenjaTargetIndividuByTahunAndNipAndBulan(
             @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
             @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
-            @Parameter(description = "Bulan realisasi", example = "Januari") @PathVariable String bulan) {
+            @Parameter(description = "Bulan realisasi", example = "1") @PathVariable String bulan) {
         return renjaTargetIndividuService.getRealisasiRenjaTargetIndividuByTahunNipAndBulan(tahun, nip, bulan);
     }
 
@@ -136,7 +136,7 @@ public class RenjaTargetIndividuController {
                                     "    \"realisasi\": 85,\n" +
                                     "    \"satuan\": \"%\",\n" +
                                     "    \"tahun\": \"2026\",\n" +
-                                    "    \"bulan\": \"Januari\",\n" +
+                                    "    \"bulan\": \"1\",\n" +
                                     "    \"jenisRealisasi\": \"NAIK\"\n" +
                                     "  }\n" +
                                     "]")))

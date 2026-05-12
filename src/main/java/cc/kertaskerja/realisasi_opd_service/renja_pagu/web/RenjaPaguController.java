@@ -72,7 +72,7 @@ public class RenjaPaguController {
     public Mono<RenjaOpdHierarkiResponse> getRealisasiRenjaPaguByKodeOpdAndTahunAndBulan(
             @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
-            @Parameter(description = "Bulan realisasi", example = "01") @PathVariable String bulan) {
+            @Parameter(description = "Bulan realisasi", example = "1") @PathVariable String bulan) {
         return renjaOpdHierarkiService.getHierarkiByKodeOpdTahunBulan(
                 kodeOpd,
                 tahun,
@@ -90,9 +90,9 @@ public class RenjaPaguController {
     public Flux<RenjaPagu> getRealisasiRenjaPaguByFilterLengkap(
             @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
-            @Parameter(description = "Bulan realisasi", example = "01") @PathVariable String bulan,
+            @Parameter(description = "Bulan realisasi", example = "1") @PathVariable String bulan,
             @Parameter(description = "Jenis renja", example = "PROGRAM") @PathVariable String jenisRenja,
-            @Parameter(description = "Kode renja", example = "001") @PathVariable String kodeRenja,
+            @Parameter(description = "Kode renja", example = "5") @PathVariable String kodeRenja,
             @Parameter(description = "ID jenis renja", example = "RENJA-001") @PathVariable String jenisRenjaId) {
         return renjaPaguService.getRealisasiRenjaPaguByKodeOpdAndTahunAndBulanAndJenisRenjaAndKodeRenjaAndRenjaId(
                 kodeOpd, tahun, bulan, jenisRenja, kodeRenja, jenisRenjaId);
@@ -120,7 +120,8 @@ public class RenjaPaguController {
                                     "    \"tahun\": \"2026\",\n" +
                                     "    \"bulan\": \"1\",\n" +
                                     "    \"jenisRealisasi\": \"NAIK\",\n" +
-                                    "    \"kodeOpd\": \"OPD-001\"\n" +
+                                    "    \"kodeOpd\": \"OPD-001\",\n" +
+                                    "    \"kodeRenja\": \"5\"\n" +
                                     "  }\n" +
                                     "]")))
             @RequestBody @Valid List<RenjaPaguRequest> renjaPaguRequests) {

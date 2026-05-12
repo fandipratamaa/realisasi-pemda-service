@@ -123,7 +123,8 @@ public class RenjaTargetController {
                                     "    \"tahun\": \"2026\",\n" +
                                     "    \"bulan\": \"1\",\n" +
                                     "    \"jenisRealisasi\": \"NAIK\",\n" +
-                                    "    \"kodeOpd\": \"OPD-001\"\n" +
+                                    "    \"kodeOpd\": \"OPD-001\",\n" +
+                                    "    \"kodeRenja\": \"5\"\n" +
                                     "  }\n" +
                                     "]")))
             @RequestBody @Valid List<RenjaTargetRequest> renjaTargetRequests) {

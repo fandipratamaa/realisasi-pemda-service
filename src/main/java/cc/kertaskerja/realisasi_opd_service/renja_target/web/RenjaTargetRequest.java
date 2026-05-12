@@ -56,7 +56,7 @@ public record RenjaTargetRequest(
         @Schema(description = "Tahun realisasi", example = "2025")
         String tahun,
 
-        @Schema(description = "Bulan realisasi", example = "01")
+        @Schema(description = "Bulan realisasi", example = "1")
         String bulan,
 
         @NotNull(message = "Pilih jenis NAIK atau TURUN")
@@ -68,8 +68,8 @@ public record RenjaTargetRequest(
         @Schema(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000")
         String kodeOpd,
 
-        @Nullable
-        @Schema(description = "Kode renja", example = "001")
+        @NotNull(message = "Kode renja tidak boleh kosong")
+        @Schema(description = "Kode renja", example = "5")
         String kodeRenja
 ) {
 }

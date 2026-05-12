@@ -37,7 +37,7 @@ public class RenjaOpdHierarkiServiceTests {
         RenjaTarget renjaTargetSatu = new RenjaTarget(
                 1L,
                 "ID-REN01",
-                JenisRenja.URUSAN,
+                JenisRenja.PROGRAM,
                 "IND-1",
                 "Indikator 1",
                 "TAR-1",
@@ -48,7 +48,7 @@ public class RenjaOpdHierarkiServiceTests {
                 "1",
                 JenisRealisasi.NAIK,
                 "5.01.5.05.0.00.01.0000",
-                "5",
+                "5.01.03",
                 RenjaTargetStatus.CHECKED,
                 "maker-1",
                 Instant.now(),
@@ -59,7 +59,7 @@ public class RenjaOpdHierarkiServiceTests {
         RenjaTarget renjaTargetDua = new RenjaTarget(
                 2L,
                 "ID-REN02",
-                JenisRenja.URUSAN,
+                JenisRenja.PROGRAM,
                 "IND-2",
                 "Indikator 2",
                 "TAR-2",
@@ -70,7 +70,7 @@ public class RenjaOpdHierarkiServiceTests {
                 "1",
                 JenisRealisasi.NAIK,
                 "5.01.5.05.0.00.01.0000",
-                "5",
+                "5.01.03",
                 RenjaTargetStatus.CHECKED,
                 "maker-2",
                 Instant.now(),
@@ -82,7 +82,7 @@ public class RenjaOpdHierarkiServiceTests {
         RenjaPagu renjaPaguSatu = new RenjaPagu(
                 1L,
                 "ID-REN01",
-                JenisRenja.URUSAN,
+                JenisRenja.PROGRAM,
                 4006000,
                 1000000,
                 "Rp",
@@ -90,7 +90,7 @@ public class RenjaOpdHierarkiServiceTests {
                 "1",
                 JenisRealisasi.NAIK,
                 "5.01.5.05.0.00.01.0000",
-                "5",
+                "5.01.03",
                 RenjaPaguStatus.CHECKED,
                 "maker-1",
                 Instant.now(),
@@ -101,7 +101,7 @@ public class RenjaOpdHierarkiServiceTests {
         RenjaPagu renjaPaguDua = new RenjaPagu(
                 2L,
                 "ID-REN02",
-                JenisRenja.URUSAN,
+                JenisRenja.PROGRAM,
                 5007000,
                 2000000,
                 "Rp",
@@ -109,7 +109,7 @@ public class RenjaOpdHierarkiServiceTests {
                 "1",
                 JenisRealisasi.NAIK,
                 "5.01.5.05.0.00.01.0000",
-                "5",
+                "5.01.03",
                 RenjaPaguStatus.CHECKED,
                 "maker-2",
                 Instant.now(),
@@ -139,14 +139,14 @@ public class RenjaOpdHierarkiServiceTests {
                             response.data().stream().map(RenjaOpdHierarkiResponse.DataItem::idRenja).toList());
                     org.junit.jupiter.api.Assertions.assertEquals(1000000L, first.paguTotalRealisasi());
                     org.junit.jupiter.api.Assertions.assertEquals(2000000L, second.paguTotalRealisasi());
-                    org.junit.jupiter.api.Assertions.assertEquals("5", first.urusan().getFirst().kodeRenja());
-                    org.junit.jupiter.api.Assertions.assertEquals("5", second.urusan().getFirst().kodeRenja());
-                    org.junit.jupiter.api.Assertions.assertEquals("80", first.urusan().getFirst().target().getFirst().realisasi());
-                    org.junit.jupiter.api.Assertions.assertEquals("60", second.urusan().getFirst().target().getFirst().realisasi());
-                    org.junit.jupiter.api.Assertions.assertEquals("maker-1", first.urusan().getFirst().target().getFirst().createdBy());
-                    org.junit.jupiter.api.Assertions.assertEquals("maker-2", second.urusan().getFirst().target().getFirst().createdBy());
-                    org.junit.jupiter.api.Assertions.assertEquals(4006000, first.urusan().getFirst().pagu().getFirst().pagu());
-                    org.junit.jupiter.api.Assertions.assertEquals(5007000, second.urusan().getFirst().pagu().getFirst().pagu());
+                    org.junit.jupiter.api.Assertions.assertEquals("5.01.03", first.program().getFirst().kodeRenja());
+                    org.junit.jupiter.api.Assertions.assertEquals("5.01.03", second.program().getFirst().kodeRenja());
+                    org.junit.jupiter.api.Assertions.assertEquals("80", first.program().getFirst().target().getFirst().realisasi());
+                    org.junit.jupiter.api.Assertions.assertEquals("60", second.program().getFirst().target().getFirst().realisasi());
+                    org.junit.jupiter.api.Assertions.assertEquals("maker-1", first.program().getFirst().target().getFirst().createdBy());
+                    org.junit.jupiter.api.Assertions.assertEquals("maker-2", second.program().getFirst().target().getFirst().createdBy());
+                    org.junit.jupiter.api.Assertions.assertEquals(4006000, first.program().getFirst().pagu().getFirst().pagu());
+                    org.junit.jupiter.api.Assertions.assertEquals(5007000, second.program().getFirst().pagu().getFirst().pagu());
                 })
                 .verifyComplete();
     }
