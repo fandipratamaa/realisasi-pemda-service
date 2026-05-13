@@ -9,17 +9,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("renja_target")
@@ -96,39 +92,6 @@ public class RenjaTargetController {
                 renjaTargetRequest.kodeOpd(),
                 renjaTargetRequest.kodeRenja()
         );
-    }
-
-    @PostMapping("/batch")
-    @Operation(summary = "Simpan batch realisasi renja target", description = "Menyimpan beberapa data realizations renja target dalam satu request.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Batch berhasil disimpan", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaTarget.class)))),
-            @ApiResponse(responseCode = "400", description = "Payload batch tidak valid", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<RenjaTarget> batchSubmitRealisasiRenjaTarget(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Daftar payload realizations renja target", required = true,
-                    content = @Content(
-                            array = @ArraySchema(schema = @Schema(implementation = RenjaTargetRequest.class)),
-                            examples = @ExampleObject(name = "ArrayRequest", value = "[\n" +
-                                    "  {\n" +
-                                    "    \"targetRealisasiId\": 10,\n" +
-                                    "    \"jenisRenjaId\": \"REN-001\",\n" +
-                                    "    \"jenisRenja\": \"PROGRAM\",\n" +
-                                    "    \"indikatorId\": \"IND-REN-123\",\n" +
-                                    "    \"indikator\": \"Persentase capaian program\",\n" +
-                                    "    \"targetId\": \"TAR-1\",\n" +
-                                    "    \"target\": \"100\",\n" +
-                                    "    \"realisasi\": 85,\n" +
-                                    "    \"satuan\": \"%\",\n" +
-                                    "    \"tahun\": \"2026\",\n" +
-                                    "    \"bulan\": \"1\",\n" +
-                                    "    \"jenisRealisasi\": \"NAIK\",\n" +
-                                    "    \"kodeOpd\": \"OPD-001\",\n" +
-                                    "    \"kodeRenja\": \"5\"\n" +
-                                    "  }\n" +
-                                    "]")))
-            @RequestBody @Valid List<RenjaTargetRequest> renjaTargetRequests) {
-        return renjaTargetService.batchSubmitRealisasiRenjaTarget(renjaTargetRequests);
     }
 
 @DeleteMapping("/{jenisRenjaId}")

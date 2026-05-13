@@ -1,7 +1,5 @@
 package cc.kertaskerja.realisasi_opd_service.renja_pagu.web;
 
-import java.util.List;
-
 import cc.kertaskerja.realisasi_opd_service.renja_pagu.domain.RenjaPagu;
 import cc.kertaskerja.realisasi_opd_service.renja_pagu.domain.RenjaPaguService;
 import cc.kertaskerja.realisasi_opd_service.renja.web.RenjaOpdHierarkiResponse;
@@ -10,7 +8,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -96,36 +93,6 @@ public class RenjaPaguController {
             @Parameter(description = "ID jenis renja", example = "RENJA-001") @PathVariable String jenisRenjaId) {
         return renjaPaguService.getRealisasiRenjaPaguByKodeOpdAndTahunAndBulanAndJenisRenjaAndKodeRenjaAndRenjaId(
                 kodeOpd, tahun, bulan, jenisRenja, kodeRenja, jenisRenjaId);
-    }
-
-    @PostMapping("/batch")
-    @Operation(summary = "Simpan batch realisasi renja pagu", description = "Menyimpan beberapa data realisasi renja pagu dalam satu request.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Batch berhasil disimpan", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaPagu.class)))),
-            @ApiResponse(responseCode = "400", description = "Payload batch tidak valid", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<RenjaPagu> batchSubmitRealisasiRenjaPagu(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Daftar payload realisasi renja pagu", required = true,
-                    content = @Content(
-                            array = @ArraySchema(schema = @Schema(implementation = RenjaPaguRequest.class)),
-                            examples = @ExampleObject(name = "ArrayRequest", value = "[\n" +
-                                    "  {\n" +
-                                    "    \"targetRealisasiId\": 10,\n" +
-                                    "    \"jenisRenjaId\": \"RENPAGU-001\",\n" +
-                                    "    \"jenisRenja\": \"PROGRAM\",\n" +
-                                    "    \"pagu\": 100000000,\n" +
-                                    "    \"realisasi\": 70000000,\n" +
-                                    "    \"satuan\": \"Rp\",\n" +
-                                    "    \"tahun\": \"2026\",\n" +
-                                    "    \"bulan\": \"1\",\n" +
-                                    "    \"jenisRealisasi\": \"NAIK\",\n" +
-                                    "    \"kodeOpd\": \"OPD-001\",\n" +
-                                    "    \"kodeRenja\": \"5\"\n" +
-                                    "  }\n" +
-                                    "]")))
-            @RequestBody @Valid List<RenjaPaguRequest> renjaPaguRequests) {
-        return renjaPaguService.batchSubmitRealisasiRenjaPagu(renjaPaguRequests);
     }
 
     @DeleteMapping("/{jenisRenjaId}")

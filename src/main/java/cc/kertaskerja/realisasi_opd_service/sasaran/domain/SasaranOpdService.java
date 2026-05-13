@@ -1,13 +1,9 @@
 package cc.kertaskerja.realisasi_opd_service.sasaran.domain;
 
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
-import cc.kertaskerja.realisasi_opd_service.sasaran.web.SasaranOpdRequest;
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @Service
 public class SasaranOpdService {
@@ -70,72 +66,4 @@ public class SasaranOpdService {
         );
     }
 
-    public Flux<SasaranOpd> batchSubmitRealisasiSasaranOpd(@Valid List<SasaranOpdRequest> sasaranOpdRequests) {
-        return Flux.fromIterable(sasaranOpdRequests)
-                .flatMap(req -> {
-                    if (req.targetRealisasiId() != null) {
-                        return sasaranOpdRepository.findById(req.targetRealisasiId())
-                                .flatMap(existing -> {
-                                    SasaranOpd updated = new SasaranOpd(
-                                            existing.id(),
-                                            existing.renjaId(),
-                                            existing.renja(),
-                                            existing.indikatorId(),
-                                            existing.indikator(),
-                                            existing.targetId(),
-                                            req.target(),
-                                            req.realisasi(),
-                                            req.satuan(),
-                                            req.tahun(),
-                                            req.bulan(),
-                                            req.jenisRealisasi(),
-                                            req.kodeOpd(),
-                                            req.rumusPerhitungan(),
-                                            req.sumberData(),
-                                            SasaranOpdStatus.UNCHECKED,
-                                            existing.createdBy(),
-                                            existing.createdDate(),
-                                            existing.lastModifiedDate(),
-                                            existing.lastModifiedBy(),
-                                            existing.version()
-                                    );
-                                    return sasaranOpdRepository.save(updated);
-                                })
-                                .switchIfEmpty(Mono.defer(() -> {
-                                    SasaranOpd baru = buildUncheckedRealisasiSasaranOpd(
-                                            req.renjaId(),
-                                            req.indikatorId(),
-                                            req.targetId(),
-                                            req.target(),
-                                            req.realisasi(),
-                                            req.satuan(),
-                                            req.tahun(),
-                                            req.bulan(),
-                                            req.jenisRealisasi(),
-                                            req.kodeOpd(),
-                                            req.rumusPerhitungan(),
-                                            req.sumberData()
-                                    );
-                                    return sasaranOpdRepository.save(baru);
-                                }));
-                    }
-                    else {
-                        SasaranOpd baru = buildUncheckedRealisasiSasaranOpd(
-                                req.renjaId(),
-                                req.indikatorId(),
-                                req.targetId(),
-                                req.target(),
-                                req.realisasi(),
-                                req.satuan(),
-                                req.tahun(),
-                                req.bulan(),
-                                req.jenisRealisasi(),
-                                req.kodeOpd(),
-                                req.rumusPerhitungan(),
-                                req.sumberData()
-                        );
-                        return sasaranOpdRepository.save(baru);
-                    }
-                });
-    }
 }

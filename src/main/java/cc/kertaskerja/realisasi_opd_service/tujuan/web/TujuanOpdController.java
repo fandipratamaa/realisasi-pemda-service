@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("tujuan_opd")
 @Tag(name = "OPD - Tujuan", description = "Endpoint realisasi tujuan tingkat OPD")
@@ -154,17 +152,4 @@ return tujuanOpdService.submitRealisasiTujuanOpd(
         );
     }
 
-    @PostMapping("/batch")
-    @Operation(summary = "Simpan batch realisasi tujuan OPD", description = "Menyimpan beberapa data realisasi tujuan OPD dalam satu request.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Batch berhasil disimpan", content = @Content(array = @ArraySchema(schema = @Schema(implementation = TujuanOpd.class)))),
-            @ApiResponse(responseCode = "400", description = "Payload batch tidak valid", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<TujuanOpd> batchSubmitRealisasiTujuanOpd(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Daftar payload realisasi tujuan OPD", required = true,
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = TujuanOpdRequest.class))))
-            @RequestBody @Valid List<TujuanOpdRequest> tujuanOpdRequests) {
-        return tujuanOpdService.batchSubmitRealisasiTujuanOpd(tujuanOpdRequests);
-    }
 }
