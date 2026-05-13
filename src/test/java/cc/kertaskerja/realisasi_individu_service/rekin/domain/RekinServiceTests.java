@@ -41,6 +41,7 @@ public class RekinServiceTests {
                 "%",
                 "2026",
                 "Januari",
+                "1.01.0.00.0.00.01.0000",
                 JenisRealisasi.NAIK
         );
 
@@ -59,6 +60,7 @@ public class RekinServiceTests {
                 "old",
                 "2026",
                 "Desember",
+                "1.01.0.00.0.00.01.0000",
                 JenisRealisasi.NAIK,
                 RekinStatus.UNCHECKED,
                 null,
@@ -106,6 +108,7 @@ public class RekinServiceTests {
                 "%",
                 "2026",
                 "Februari",
+                "1.01.0.00.0.00.01.0000",
                 JenisRealisasi.NAIK
         );
 
@@ -148,6 +151,7 @@ public class RekinServiceTests {
                 "%",
                 "2026",
                 "Maret",
+                "1.01.0.00.0.00.01.0000",
                 JenisRealisasi.NAIK
         );
 
@@ -166,6 +170,7 @@ public class RekinServiceTests {
                 "old",
                 "2026",
                 "Januari",
+                "1.01.0.00.0.00.01.0000",
                 JenisRealisasi.NAIK,
                 RekinStatus.UNCHECKED,
                 null,
@@ -195,4 +200,3 @@ public class RekinServiceTests {
                 .findFirstByNipAndIdSasaranAndTahunAndRekinId(anyString(), anyString(), anyString(), anyString());
     }
 }
-

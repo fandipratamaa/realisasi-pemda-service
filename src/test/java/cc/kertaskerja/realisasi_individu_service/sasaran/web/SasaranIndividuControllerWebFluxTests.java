@@ -34,18 +34,18 @@ public class SasaranIndividuControllerWebFluxTests {
 
     @Test
     void whenBatchSubmit_thenReturnsSaveSasaranIndividu() throws Exception {
-        SasaranIndividuRequest r1 = new SasaranIndividuRequest(null, "S1", "I1", "TAR-1", "100.0", 50.0, "unit1", "2025", "JANUARI", JenisRealisasi.NAIK, "198012312005011001", "(realisasi/target)*100", "SIMDA");
-        SasaranIndividuRequest r2 = new SasaranIndividuRequest(null, "S2", "I2", "TAR-2", "200.0", 75.0, "unit2", "2026", "FEBRUARI", JenisRealisasi.TURUN, "198012312005011002", "(realisasi/target)*100", "SAKIP");
+        SasaranIndividuRequest r1 = new SasaranIndividuRequest(null, "S1", "I1", "TAR-1", "100.0", 50.0, "unit1", "2025", "JANUARI", JenisRealisasi.NAIK, "1.01.0.00.0.00.01.0000", "198012312005011001", "(realisasi/target)*100", "SIMDA");
+        SasaranIndividuRequest r2 = new SasaranIndividuRequest(null, "S2", "I2", "TAR-2", "200.0", 75.0, "unit2", "2026", "FEBRUARI", JenisRealisasi.TURUN, "1.02.0.00.0.00.01.0000", "198012312005011002", "(realisasi/target)*100", "SAKIP");
 
         SasaranIndividu s1 = SasaranIndividuService.buildUncheckedRealisasiSasaranIndividu(
                 r1.renjaId(), r1.indikatorId(), r1.targetId(), r1.target(), r1.realisasi(),
                 r1.satuan(), r1.tahun(), r1.bulan(), r1.jenisRealisasi(),
-                r1.nip(), r1.rumusPerhitungan(), r1.sumberData()
+                r1.nip(), r1.kodeOpd(), r1.rumusPerhitungan(), r1.sumberData()
         );
         SasaranIndividu s2 = SasaranIndividuService.buildUncheckedRealisasiSasaranIndividu(
                 r2.renjaId(), r2.indikatorId(), r2.targetId(), r2.target(), r2.realisasi(),
                 r2.satuan(), r2.tahun(), r2.bulan(), r2.jenisRealisasi(),
-                r2.nip(), r2.rumusPerhitungan(), r2.sumberData()
+                r2.nip(), r2.kodeOpd(), r2.rumusPerhitungan(), r2.sumberData()
         );
 
         when(sasaranIndividuService.batchSubmitRealisasiSasaranIndividu(anyList()))
@@ -78,7 +78,7 @@ public class SasaranIndividuControllerWebFluxTests {
         SasaranIndividu result = SasaranIndividuService.buildUncheckedRealisasiSasaranIndividu(
                 "REN-001", "IND-001", "TAR-001", "100", 80.0,
                 "%", "2025", "1", JenisRealisasi.NAIK,
-                "198012312005011001", "(realisasi/target)*100", "SIMDA"
+                "198012312005011001", "1.01.0.00.0.00.01.0000", "(realisasi/target)*100", "SIMDA"
         );
 
         when(sasaranIndividuService.getRealisasiSasaranIndividuByTahunAndBulanAndNipAndRenjaId(
@@ -91,6 +91,64 @@ public class SasaranIndividuControllerWebFluxTests {
                         .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                 .get()
                 .uri("/sasaran_individu/by-tahun/2025/by-bulan/1/by-nip/198012312005011001/by-id-renja/REN-001")
+                .exchange()
+                .expectStatus().is2xxSuccessful()
+                .expectBodyList(SasaranIndividu.class)
+                .consumeWith(response -> {
+                    var body = response.getResponseBody();
+                    Assertions.assertNotNull(body);
+                    Assertions.assertEquals(1, body.size());
+                    Assertions.assertEquals(result, body.get(0));
+                });
+    }
+
+    @Test
+    void whenGetByTahunBulanAndKodeOpd_thenReturnsSasaranIndividuList() {
+        SasaranIndividu result = SasaranIndividuService.buildUncheckedRealisasiSasaranIndividu(
+                "REN-001", "IND-001", "TAR-001", "100", 80.0,
+                "%", "2025", "1", JenisRealisasi.NAIK,
+                "198012312005011001", "1.01.0.00.0.00.01.0000", "(realisasi/target)*100", "SIMDA"
+        );
+
+        when(sasaranIndividuService.getRealisasiSasaranIndividuByTahunAndBulanAndKodeOpd(
+                anyString(), anyString(), anyString()))
+                .thenReturn(Flux.just(result));
+
+        webTestClient
+                .mutateWith(csrf())
+                .mutateWith(SecurityMockServerConfigurers.mockJwt()
+                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                .get()
+                .uri("/sasaran_individu/by-kode-opd/1.01.0.00.0.00.01.0000/by-tahun/2025/by-bulan/1")
+                .exchange()
+                .expectStatus().is2xxSuccessful()
+                .expectBodyList(SasaranIndividu.class)
+                .consumeWith(response -> {
+                    var body = response.getResponseBody();
+                    Assertions.assertNotNull(body);
+                    Assertions.assertEquals(1, body.size());
+                    Assertions.assertEquals(result, body.get(0));
+                });
+    }
+
+    @Test
+    void whenGetByKodeOpdNipTahunBulan_thenReturnsSasaranIndividuList() {
+        SasaranIndividu result = SasaranIndividuService.buildUncheckedRealisasiSasaranIndividu(
+                "REN-001", "IND-001", "TAR-001", "100", 80.0,
+                "%", "2025", "1", JenisRealisasi.NAIK,
+                "198012312005011001", "1.01.0.00.0.00.01.0000", "(realisasi/target)*100", "SIMDA"
+        );
+
+        when(sasaranIndividuService.getRealisasiSasaranIndividuByTahunAndBulanAndKodeOpdAndNip(
+                anyString(), anyString(), anyString(), anyString()))
+                .thenReturn(Flux.just(result));
+
+        webTestClient
+                .mutateWith(csrf())
+                .mutateWith(SecurityMockServerConfigurers.mockJwt()
+                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                .get()
+                .uri("/sasaran_individu/by-kode-opd/1.01.0.00.0.00.01.0000/by-nip/198012312005011001/by-tahun/2025/bulan/1")
                 .exchange()
                 .expectStatus().is2xxSuccessful()
                 .expectBodyList(SasaranIndividu.class)

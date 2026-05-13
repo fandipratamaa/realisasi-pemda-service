@@ -36,20 +36,14 @@ public class RekinController {
         this.rekinService = rekinService;
     }
 
-    @GetMapping("/by-nip/{nip}/by-tahun/{tahun}")
-    @Operation(summary = "Cari realisasi rekin berdasarkan NIP dan tahun (belum digunakan di endpoint realisasi)", description = "Mengambil daftar data realisasi rekin berdasarkan `nip` dan `tahun`.")
+    @GetMapping
+    @Operation(summary = "Ambil semua realisasi rekin", description = "Mengambil seluruh data realisasi rekin.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar realisasi rekin", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Rekin.class)))),
-            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Flux<Rekin> getRealisasiRekinByNipAndTahun(
-            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
-            @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun) {
-        if (nip == null || nip.isBlank() || tahun == null || tahun.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip dan tahun tidak boleh kosong");
-        }
-        return rekinService.getRealisasiRekinByNipAndTahun(nip, tahun);
+    public Flux<Rekin> getAllRealisasiRekin() {
+        return rekinService.getAllRealisasiRekin();
     }
 
     @GetMapping("/by-nip/{nip}/by-tahun/{tahun}/by-bulan/{bulan}")
@@ -67,6 +61,41 @@ public class RekinController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip, tahun, dan bulan tidak boleh kosong");
         }
         return rekinService.getRealisasiRekinByNipAndTahunAndBulan(nip, tahun, bulan);
+    }
+
+    @GetMapping("/by-kode-opd/{kodeOpd}/by-tahun/{tahun}/by-bulan/{bulan}")
+    @Operation(summary = "Cari realisasi rekin berdasarkan kode OPD, tahun, dan bulan", description = "Mengambil daftar data realisasi rekin berdasarkan `kode_opd`, `tahun`, dan `bulan`.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi rekin", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Rekin.class)))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<Rekin> getRealisasiRekinByKodeOpdAndTahunAndBulan(
+            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi", example = "01") @PathVariable String bulan) {
+        if (kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd, tahun, dan bulan tidak boleh kosong");
+        }
+        return rekinService.getRealisasiRekinByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
+    }
+
+    @GetMapping("/by-kode-opd/{kodeOpd}/by-nip/{nip}/by-tahun/{tahun}/by-bulan/{bulan}")
+    @Operation(summary = "Cari realisasi rekin berdasarkan kode OPD, NIP, tahun, dan bulan", description = "Mengambil daftar data realisasi rekin berdasarkan `kode_opd`, `nip`, `tahun`, dan `bulan`.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi rekin", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Rekin.class)))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<Rekin> getRealisasiRekinByKodeOpdNipAndTahunAndBulan(
+            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
+            @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi", example = "01") @PathVariable String bulan) {
+        if (kodeOpd == null || kodeOpd.isBlank() || nip == null || nip.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd, nip, tahun, dan bulan tidak boleh kosong");
+        }
+        return rekinService.getRealisasiRekinByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
     }
 
     @GetMapping("/by-tahun/{tahun}/by-nip/{nip}/by-id-sasaran/{idSasaran}/rekin/{rekinId}")
@@ -115,6 +144,7 @@ public class RekinController {
                 rekinRequest.satuan(),
                 rekinRequest.tahun(),
                 rekinRequest.bulan(),
+                rekinRequest.kodeOpd(),
                 rekinRequest.jenisRealisasi()
         );
     }
@@ -158,6 +188,7 @@ public class RekinController {
                                     "    \"satuan\": \"%\",\n" +
                                     "    \"tahun\": \"2026\",\n" +
                                     "    \"bulan\": \"01\",\n" +
+                                    "    \"kodeOpd\": \"1.01.0.00.0.00.01.0000\",\n" +
                                     "    \"jenisRealisasi\": \"NAIK\"\n" +
                                     "  }\n" +
                                     "]")))

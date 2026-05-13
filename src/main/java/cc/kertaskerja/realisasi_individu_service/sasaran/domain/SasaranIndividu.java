@@ -11,6 +11,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.lang.Nullable;
 
 import java.time.Instant;
 
@@ -30,6 +31,9 @@ public record SasaranIndividu(
         String bulan,
         JenisRealisasi jenisRealisasi,
         String nip,
+        @Nullable
+        @Column("kode_opd")
+        String kodeOpd,
         String rumusPerhitungan,
         String sumberData,
         SasaranIndividuStatus status,
@@ -58,6 +62,7 @@ public record SasaranIndividu(
             String bulan,
             JenisRealisasi jenisRealisasi,
             String nip,
+            String kodeOpd,
             String rumusPerhitungan,
             String sumberData,
             SasaranIndividuStatus status
@@ -65,7 +70,7 @@ public record SasaranIndividu(
         return new SasaranIndividu(null,
                 renjaId, renja, indikatorId, indikator,
                 targetId, target, realisasi, satuan, tahun,
-                bulan, jenisRealisasi, nip, rumusPerhitungan, sumberData, status,
+                bulan, jenisRealisasi, nip, kodeOpd, rumusPerhitungan, sumberData, status,
                 null, null, null, null, 0);
     }
 

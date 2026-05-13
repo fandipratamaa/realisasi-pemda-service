@@ -27,6 +27,16 @@ public class SasaranIndividuController {
         this.sasaranIndividuService = sasaranIndividuService;
     }
 
+    @GetMapping
+    @Operation(summary = "Ambil semua realisasi sasaran individu", description = "Mengambil seluruh data realisasi sasaran individu.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi sasaran individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SasaranIndividu.class)))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<SasaranIndividu> getAllRealisasiSasaranIndividu() {
+        return sasaranIndividuService.getAllRealisasiSasaranIndividu();
+    }
+
     @GetMapping("/{nip}/by-tahun/{tahun}/bulan/{bulan}")
     @Operation(summary = "Cari realisasi sasaran individu per tahun dan bulan", description = "Mengambil realisasi sasaran individu berdasarkan NIP, tahun, dan bulan.")
     @ApiResponses(value = {
@@ -39,6 +49,21 @@ public class SasaranIndividuController {
             @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
             @Parameter(description = "Bulan realisasi", example = "1") @PathVariable String bulan) {
         return sasaranIndividuService.getRealisasiSasaranIndividuByTahunAndBulanAndNip(tahun, bulan, nip);
+    }
+
+    @GetMapping("/by-kode-opd/{kodeOpd}/by-nip/{nip}/by-tahun/{tahun}/bulan/{bulan}")
+    @Operation(summary = "Cari realisasi sasaran individu per kode OPD, NIP, tahun, dan bulan", description = "Mengambil realisasi sasaran individu berdasarkan `kode_opd`, `nip`, `tahun`, dan `bulan`.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi sasaran individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SasaranIndividu.class)))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<SasaranIndividu> getRealisasiSasaranIndividuByTahunAndBulanAndKodeOpdAndNip(
+            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "NIP", example = "198012312005011001") @PathVariable String nip,
+            @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi", example = "1") @PathVariable String bulan) {
+        return sasaranIndividuService.getRealisasiSasaranIndividuByTahunAndBulanAndKodeOpdAndNip(tahun, bulan, kodeOpd, nip);
     }
 
     @GetMapping("/by-tahun/{tahun}/by-bulan/{bulan}/by-nip/{nip}/by-id-renja/{renjaId}")
@@ -54,6 +79,20 @@ public class SasaranIndividuController {
             @Parameter(description = "NIP", example = "198012312005011001") @PathVariable String nip,
             @Parameter(description = "ID renja", example = "REN-001") @PathVariable String renjaId) {
         return sasaranIndividuService.getRealisasiSasaranIndividuByTahunAndBulanAndNipAndRenjaId(tahun, bulan, nip, renjaId);
+    }
+
+    @GetMapping("/by-kode-opd/{kodeOpd}/by-tahun/{tahun}/by-bulan/{bulan}")
+    @Operation(summary = "Cari realisasi sasaran individu per tahun, bulan, dan kode OPD", description = "Mengambil realisasi sasaran individu berdasarkan tahun, bulan, dan `kode_opd`.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi sasaran individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SasaranIndividu.class)))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<SasaranIndividu> getRealisasiSasaranIndividuByTahunAndBulanAndKodeOpd(
+            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi", example = "1") @PathVariable String bulan) {
+        return sasaranIndividuService.getRealisasiSasaranIndividuByTahunAndBulanAndKodeOpd(tahun, bulan, kodeOpd);
     }
 
     @PostMapping
@@ -78,13 +117,14 @@ public class SasaranIndividuController {
                 sasaranIndividuRequest.bulan(),
                 sasaranIndividuRequest.jenisRealisasi(),
                 sasaranIndividuRequest.nip(),
+                sasaranIndividuRequest.kodeOpd(),
                 sasaranIndividuRequest.rumusPerhitungan(),
                 sasaranIndividuRequest.sumberData()
         );
     }
 
     @PostMapping("/batch")
-    @Operation(summary = "Simpan batch realisasi sasaran individu", description = "Menyimpan beberapa data realisasi sasaran individu dalam satu request.")
+    @Operation(summary = "Simpan batch realisasi sasaran individu", description = "Menyimpan beberapa data realisasi sasaran individu dalam satu request. Payload mendukung field `kodeOpd` (opsional selama masa transisi).")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Batch berhasil disimpan", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SasaranIndividu.class)))),
             @ApiResponse(responseCode = "400", description = "Payload batch tidak valid", content = @Content),

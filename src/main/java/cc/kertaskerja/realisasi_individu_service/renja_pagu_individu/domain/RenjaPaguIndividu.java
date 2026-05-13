@@ -10,6 +10,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.lang.Nullable;
 
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import cc.kertaskerja.renja.domain.JenisRenja;
@@ -26,6 +27,9 @@ public record RenjaPaguIndividu(
 
         @Column("nip")
         String nip,
+        @Nullable
+        @Column("kode_opd")
+        String kodeOpd,
         @Column("id_indikator")
         String idIndikator,
         String indikator,
@@ -61,6 +65,7 @@ public record RenjaPaguIndividu(
             String kodeRenja,
             JenisRenja jenisRenja,
             String nip,
+            String kodeOpd,
             String idIndikator,
             String indikator,
             Integer pagu,
@@ -76,6 +81,7 @@ public record RenjaPaguIndividu(
                 kodeRenja,
                 jenisRenja,
                 nip,
+                kodeOpd,
                 idIndikator,
                 indikator,
                 pagu,

@@ -31,6 +31,14 @@ public class RenjaPaguIndividuService {
         return renjaPaguIndividuRepository.findAllByNipAndTahunAndBulan(nip, tahun, bulan);
     }
 
+    public Flux<RenjaPaguIndividu> getRealisasiRenjaPaguIndividuByTahunAndBulanAndKodeOpd(String tahun, String bulan, String kodeOpd) {
+        return renjaPaguIndividuRepository.findAllByTahunAndBulanAndKodeOpd(tahun, bulan, kodeOpd);
+    }
+
+    public Flux<RenjaPaguIndividu> getRealisasiRenjaPaguIndividuByNipAndTahunAndBulanAndKodeOpd(String nip, String tahun, String bulan, String kodeOpd) {
+        return renjaPaguIndividuRepository.findAllByNipAndTahunAndBulanAndKodeOpd(nip, tahun, bulan, kodeOpd);
+    }
+
     public Flux<RenjaPaguIndividu> getRealisasiRenjaPaguIndividuByFilters(
             String tahun, String nip, JenisRenja jenisRenja, String kodeRenja) {
         return renjaPaguIndividuRepository.findAllByTahunAndNipAndJenisRenjaAndKodeRenja(
@@ -45,6 +53,7 @@ public Mono<RenjaPaguIndividu> submitRealisasiRenjaPaguIndividu(
             String kodeRenja,
             JenisRenja jenisRenja,
             String nip,
+            String kodeOpd,
             String idIndikator,
             String indikator,
             Integer pagu,
@@ -57,6 +66,7 @@ public Mono<RenjaPaguIndividu> submitRealisasiRenjaPaguIndividu(
                         kodeRenja,
                         jenisRenja,
                         nip,
+                        kodeOpd,
                         idIndikator,
                         indikator,
                         pagu,
@@ -72,6 +82,7 @@ public Mono<RenjaPaguIndividu> submitRealisasiRenjaPaguIndividu(
             String kodeRenja,
             JenisRenja jenisRenja,
             String nip,
+            String kodeOpd,
             String idIndikator,
             String indikator,
             Integer pagu,
@@ -84,6 +95,7 @@ public Mono<RenjaPaguIndividu> submitRealisasiRenjaPaguIndividu(
                 kodeRenja,
                 jenisRenja,
                 nip,
+                kodeOpd,
                 idIndikator,
                 indikator,
                 pagu,
@@ -106,6 +118,7 @@ public Mono<RenjaPaguIndividu> submitRealisasiRenjaPaguIndividu(
                                         req.kodeRenja(),
                                         req.jenisRenja(),
                                         req.nip(),
+                                        req.kodeOpd(),
                                         req.idIndikator(),
                                         req.indikator(),
                                         req.pagu(),
@@ -128,6 +141,7 @@ public Mono<RenjaPaguIndividu> submitRealisasiRenjaPaguIndividu(
                                     req.kodeRenja(),
                                     req.jenisRenja(),
                                     req.nip(),
+                                    req.kodeOpd(),
                                     req.idIndikator(),
                                     req.indikator(),
                                     req.pagu(),
@@ -146,6 +160,7 @@ public Mono<RenjaPaguIndividu> submitRealisasiRenjaPaguIndividu(
                 existing.kodeRenja(),
                 existing.jenisRenja(),
                 existing.nip(),
+                req.kodeOpd(),
                 existing.idIndikator(),
                 existing.indikator(),
                 req.pagu(),

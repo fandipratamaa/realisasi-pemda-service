@@ -1,6 +1,5 @@
 package cc.kertaskerja.realisasi_opd_service.renja_target.web;
 
-import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import cc.kertaskerja.realisasi_opd_service.renja.web.RenjaOpdHierarkiResponse;
 import cc.kertaskerja.realisasi_opd_service.renja.web.RenjaOpdHierarkiService;
 import cc.kertaskerja.realisasi_opd_service.renja_target.domain.RenjaTargetService;

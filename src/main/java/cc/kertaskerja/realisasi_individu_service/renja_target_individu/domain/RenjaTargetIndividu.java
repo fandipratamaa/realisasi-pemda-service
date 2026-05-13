@@ -12,6 +12,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.lang.Nullable;
 
 import java.time.Instant;
 
@@ -26,6 +27,9 @@ public record RenjaTargetIndividu(
 
         @Column("nip")
         String nip,
+        @Nullable
+        @Column("kode_opd")
+        String kodeOpd,
         @Column("id_indikator")
         String idIndikator,
         String indikator,
@@ -63,6 +67,7 @@ public static RenjaTargetIndividu of(
             String kodeRenja,
             JenisRenja jenisRenja,
             String nip,
+            String kodeOpd,
             String idIndikator,
             String indikator,
             String targetId,
@@ -79,6 +84,7 @@ public static RenjaTargetIndividu of(
                 kodeRenja,
                 jenisRenja,
                 nip,
+                kodeOpd,
                 idIndikator,
                 indikator,
                 targetId,

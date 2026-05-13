@@ -36,6 +36,7 @@ public class SasaranIndividuServiceTest {
         String bulan = "JANUARI";
         JenisRealisasi jenisRealisasi = JenisRealisasi.NAIK;
         String nip = "198012312005011001";
+        String kodeOpd = "1.01.0.00.0.00.01.0000";
         String rumusPerhitungan = "(realisasi/target)*100";
         String sumberData = "SIMDA";
 
@@ -52,6 +53,7 @@ public class SasaranIndividuServiceTest {
                 bulan,
                 jenisRealisasi,
                 nip,
+                kodeOpd,
                 rumusPerhitungan,
                 sumberData,
                 SasaranIndividuStatus.UNCHECKED
@@ -61,7 +63,7 @@ public class SasaranIndividuServiceTest {
 
         Mono<SasaranIndividu> result = sasaranIndividuService.submitRealisasiSasaranIndividu(
                 renjaId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan,
-                jenisRealisasi, nip, rumusPerhitungan, sumberData);
+                jenisRealisasi, nip, kodeOpd, rumusPerhitungan, sumberData);
 
         StepVerifier.create(result)
                 .expectNextMatches(sasaranIndividu ->
@@ -93,6 +95,7 @@ public class SasaranIndividuServiceTest {
         String bulan = "JANUARI";
         JenisRealisasi jenisRealisasi = JenisRealisasi.NAIK;
         String nip = "198012312005011001";
+        String kodeOpd = "1.01.0.00.0.00.01.0000";
         String rumusPerhitungan = "(realisasi/target)*100";
         String sumberData = "SIMDA";
 
@@ -100,7 +103,7 @@ public class SasaranIndividuServiceTest {
 
         Mono<SasaranIndividu> result = sasaranIndividuService.submitRealisasiSasaranIndividu(
                 renjaId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan,
-                jenisRealisasi, nip, rumusPerhitungan, sumberData);
+                jenisRealisasi, nip, kodeOpd, rumusPerhitungan, sumberData);
 
         StepVerifier.create(result)
                 .expectErrorMatches(throwable -> throwable instanceof RuntimeException &&
@@ -128,6 +131,7 @@ public class SasaranIndividuServiceTest {
                 bulan,
                 JenisRealisasi.NAIK,
                 nip,
+                "1.01.0.00.0.00.01.0000",
                 "(realisasi/target)*100",
                 "SIMDA",
                 SasaranIndividuStatus.UNCHECKED

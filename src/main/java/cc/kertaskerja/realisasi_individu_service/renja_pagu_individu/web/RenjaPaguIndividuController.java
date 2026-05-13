@@ -35,6 +35,16 @@ public class RenjaPaguIndividuController {
         this.renjaPaguIndividuService = renjaPaguIndividuService;
     }
 
+    @GetMapping
+    @Operation(summary = "Ambil semua realisasi renja pagu individu", description = "Mengambil seluruh data realisasi renja pagu individu.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi renja pagu individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaPaguIndividu.class)))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<RenjaPaguIndividu> getAllRealisasiRenjaPaguIndividu() {
+        return renjaPaguIndividuService.getAllRealisasiRenjaPaguIndividu();
+    }
+
     @GetMapping("/by-nip/{nip}/by-tahun/{tahun}/by-bulan/{bulan}")
     @Operation(summary = "Cari realisasi renja pagu individu berdasarkan NIP, tahun, dan bulan", description = "Mengambil daftar realisasi renja pagu individu berdasarkan NIP, tahun, dan bulan.")
     @ApiResponses(value = {
@@ -46,6 +56,35 @@ public class RenjaPaguIndividuController {
             @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
             @Parameter(description = "Bulan realisasi", example = "1") @PathVariable String bulan) {
         return renjaPaguIndividuService.getRealisasiRenjaPaguIndividuByNipAndTahunAndBulan(nip, tahun, bulan);
+    }
+
+    @GetMapping("/by-kode-opd/{kodeOpd}/by-tahun/{tahun}/by-bulan/{bulan}")
+    @Operation(summary = "Cari realisasi renja pagu individu berdasarkan tahun, bulan, dan kode OPD", description = "Mengambil realisasi renja pagu individu berdasarkan tahun, bulan, dan `kode_opd`.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi renja pagu individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaPaguIndividu.class)))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<RenjaPaguIndividu> getRealisasiRenjaPaguIndividuByTahunAndBulanAndKodeOpd(
+            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi", example = "1") @PathVariable String bulan) {
+        return renjaPaguIndividuService.getRealisasiRenjaPaguIndividuByTahunAndBulanAndKodeOpd(tahun, bulan, kodeOpd);
+    }
+
+    @GetMapping("/by-kode-opd/{kodeOpd}/by-nip/{nip}/by-tahun/{tahun}/by-bulan/{bulan}")
+    @Operation(summary = "Cari realisasi renja pagu individu berdasarkan kode OPD, NIP, tahun, dan bulan", description = "Mengambil realisasi renja pagu individu berdasarkan `kode_opd`, `nip`, `tahun`, dan `bulan`.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi renja pagu individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaPaguIndividu.class)))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<RenjaPaguIndividu> getRealisasiRenjaPaguIndividuByNipAndTahunAndBulanAndKodeOpd(
+            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
+            @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi", example = "1") @PathVariable String bulan) {
+        return renjaPaguIndividuService.getRealisasiRenjaPaguIndividuByNipAndTahunAndBulanAndKodeOpd(nip, tahun, bulan, kodeOpd);
     }
 
     @GetMapping("/by-tahun/{tahun}/by-nip/{nip}/by-jenis-renja/{jenisRenja}/by-kode-renja/{kodeRenja}")
@@ -77,6 +116,7 @@ public class RenjaPaguIndividuController {
                 renjaPaguIndividuRequest.kodeRenja(),
                 renjaPaguIndividuRequest.jenisRenja(),
                 renjaPaguIndividuRequest.nip(),
+                renjaPaguIndividuRequest.kodeOpd(),
                 renjaPaguIndividuRequest.idIndikator(),
                 renjaPaguIndividuRequest.indikator(),
                 renjaPaguIndividuRequest.pagu(),
@@ -89,7 +129,7 @@ public class RenjaPaguIndividuController {
     }
 
     @PostMapping("/batch")
-    @Operation(summary = "Simpan batch realisasi renja pagu individu", description = "Menyimpan beberapa data realisasi renja pagu individu dalam satu request.")
+    @Operation(summary = "Simpan batch realisasi renja pagu individu", description = "Menyimpan beberapa data realisasi renja pagu individu dalam satu request. Payload mendukung field `kodeOpd` (opsional selama masa transisi).")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Batch berhasil disimpan", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaPaguIndividu.class)))),
             @ApiResponse(responseCode = "400", description = "Payload batch tidak valid", content = @Content),
@@ -105,6 +145,7 @@ public class RenjaPaguIndividuController {
                                     "    \"kodeRenja\": \"1.02.01\",\n" +
                                     "    \"jenisRenja\": \"PROGRAM\",\n" +
                                     "    \"nip\": \"198012312005011001\",\n" +
+                                    "    \"kodeOpd\": \"1.01.0.00.0.00.01.0000\",\n" +
                                     "    \"idIndikator\": \"IND-REN-123\",\n" +
                                     "    \"indikator\": \"Persentase capaian renja\",\n" +
                                     "    \"pagu\": 100000000,\n" +
