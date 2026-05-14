@@ -32,6 +32,7 @@ public record SasaranOpd(
         String kodeOpd,
         String rumusPerhitungan,
         String sumberData,
+        String definisiOperational,
         SasaranOpdStatus status,
 
         @CreatedBy
@@ -60,12 +61,13 @@ public record SasaranOpd(
             String kodeOpd,
             String rumusPerhitungan,
             String sumberData,
+            String definisiOperational,
             SasaranOpdStatus status
     ) {
         return new SasaranOpd(null,
                 renjaId, renja, indikatorId, indikator,
                 targetId, target, realisasi, satuan, tahun,
-                bulan, jenisRealisasi, kodeOpd, rumusPerhitungan, sumberData, status,
+                bulan, jenisRealisasi, kodeOpd, rumusPerhitungan, sumberData, definisiOperational, status,
                 null, null, null, null, 0);
     }
 

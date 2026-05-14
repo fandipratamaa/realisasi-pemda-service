@@ -32,6 +32,7 @@ public record TujuanOpd(
         String kodeOpd,
         String rumusPerhitungan,
         String sumberData,
+        String definisiOperational,
         TujuanOpdStatus status,
 
         @CreatedBy
@@ -60,12 +61,13 @@ public record TujuanOpd(
             String kodeOpd,
             String rumusPerhitungan,
             String sumberData,
+            String definisiOperational,
             TujuanOpdStatus status
     ) {
         return new TujuanOpd(null,
                 tujuanId, tujuan, indikatorId, indikator,
                 targetId, target, realisasi, satuan, tahun, bulan,
-                jenisRealisasi, kodeOpd, rumusPerhitungan, sumberData, status,
+                jenisRealisasi, kodeOpd, rumusPerhitungan, sumberData, definisiOperational, status,
                 null, null, null, null, 0);
     }
 

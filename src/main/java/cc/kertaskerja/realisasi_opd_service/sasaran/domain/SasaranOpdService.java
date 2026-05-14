@@ -49,19 +49,19 @@ public class SasaranOpdService {
         return sasaranOpdRepository.findById(id);
     }
 
-    public Mono<SasaranOpd> submitRealisasiSasaranOpd(String renjaId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi, String kodeOpd, String rumusPerhitungan, String sumberData) {
-        return Mono.just(buildUncheckedRealisasiSasaranOpd(renjaId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan, jenisRealisasi, kodeOpd, rumusPerhitungan, sumberData))
+    public Mono<SasaranOpd> submitRealisasiSasaranOpd(String renjaId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi, String kodeOpd, String rumusPerhitungan, String sumberData, String definisiOperational) {
+        return Mono.just(buildUncheckedRealisasiSasaranOpd(renjaId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan, jenisRealisasi, kodeOpd, rumusPerhitungan, sumberData, definisiOperational))
                 .flatMap(sasaranOpdRepository::save);
     }
 
-    public static SasaranOpd buildUncheckedRealisasiSasaranOpd(String renjaId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi, String kodeOpd, String rumusPerhitungan, String sumberData) {
+    public static SasaranOpd buildUncheckedRealisasiSasaranOpd(String renjaId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi, String kodeOpd, String rumusPerhitungan, String sumberData, String definisiOperational) {
         return SasaranOpd.of(
                 renjaId,
                 "Realisasi Renja Opd " + renjaId,
                 indikatorId,
                 "Realisasi Indikator Opd " + indikatorId,
                 targetId, target, realisasi, satuan, tahun,
-                bulan, jenisRealisasi, kodeOpd, rumusPerhitungan, sumberData,
+                bulan, jenisRealisasi, kodeOpd, rumusPerhitungan, sumberData, definisiOperational,
                 SasaranOpdStatus.UNCHECKED
         );
     }

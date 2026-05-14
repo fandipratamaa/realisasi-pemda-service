@@ -37,6 +37,7 @@ public class SasaranOpdServiceTest {
         String kodeOpd = "OPD001";
         String rumusPerhitungan = "(realisasi/target)*100";
         String sumberData = "SIMDA";
+        String definisiOperational = "Definisi indikator sasaran";
 
         SasaranOpd expectedSasaranOpd = SasaranOpd.of(
                 sasaranId,
@@ -53,6 +54,7 @@ public class SasaranOpdServiceTest {
                 kodeOpd,
                 rumusPerhitungan,
                 sumberData,
+                definisiOperational,
                 SasaranOpdStatus.UNCHECKED
         );
 
@@ -60,7 +62,7 @@ public class SasaranOpdServiceTest {
 
         // Act
         Mono<SasaranOpd> result = sasaranOpdService.submitRealisasiSasaranOpd(
-                sasaranId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan, jenisRealisasi, kodeOpd, rumusPerhitungan, sumberData);
+                sasaranId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan, jenisRealisasi, kodeOpd, rumusPerhitungan, sumberData, definisiOperational);
 
         // Assert
         StepVerifier.create(result)
@@ -77,6 +79,7 @@ public class SasaranOpdServiceTest {
                                 sasaranOpd.kodeOpd().equals(expectedSasaranOpd.kodeOpd()) &&
                                 sasaranOpd.rumusPerhitungan().equals(expectedSasaranOpd.rumusPerhitungan()) &&
                                 sasaranOpd.sumberData().equals(expectedSasaranOpd.sumberData()) &&
+                                sasaranOpd.definisiOperational().equals(expectedSasaranOpd.definisiOperational()) &&
                                 sasaranOpd.status() == SasaranOpdStatus.UNCHECKED)
                 .verifyComplete();
     }
@@ -96,12 +99,13 @@ public class SasaranOpdServiceTest {
         String kodeOpd = "OPD001";
         String rumusPerhitungan = "(realisasi/target)*100";
         String sumberData = "SIMDA";
+        String definisiOperational = "Definisi indikator sasaran";
 
         when(sasaranOpdRepository.save(any(SasaranOpd.class))).thenReturn(Mono.error(new RuntimeException("Unexpected error")));
 
         // Act
         Mono<SasaranOpd> result = sasaranOpdService.submitRealisasiSasaranOpd(
-                sasaranId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan, jenisRealisasi, kodeOpd, rumusPerhitungan, sumberData);
+                sasaranId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan, jenisRealisasi, kodeOpd, rumusPerhitungan, sumberData, definisiOperational);
 
         // Assert
         StepVerifier.create(result)
