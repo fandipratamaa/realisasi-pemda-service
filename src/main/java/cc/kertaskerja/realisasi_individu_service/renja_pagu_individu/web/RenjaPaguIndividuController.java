@@ -27,7 +27,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("renja_pagu_individu")
-@Tag(name = "Individu - Renja Pagu", description = "Endpoint realisasi renja pagu tingkat individu")
+@Tag(name = "Individu - Renja Pagu", description = "Endpoint realisasi renja pagu tingkat individu. Role `super_admin`, `admin_opd`, dan `level_1` hanya diizinkan mengakses endpoint `GET` pada resource ini, role `level_2` dan `level_3` dapat mengakses seluruh endpoint pada resource ini, sedangkan role `level_4` tidak diizinkan mengakses resource ini.")
 public class RenjaPaguIndividuController {
     private final RenjaPaguIndividuService renjaPaguIndividuService;
 
@@ -36,7 +36,7 @@ public class RenjaPaguIndividuController {
     }
 
     @GetMapping
-    @Operation(summary = "Ambil semua realisasi renja pagu individu", description = "Mengambil seluruh data realisasi renja pagu individu.")
+    @Operation(summary = "Ambil semua realisasi renja pagu individu", description = "Mengambil seluruh data realisasi renja pagu individu. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar realisasi renja pagu individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaPaguIndividu.class)))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
@@ -46,7 +46,7 @@ public class RenjaPaguIndividuController {
     }
 
     @GetMapping("/by-nip/{nip}/by-tahun/{tahun}/by-bulan/{bulan}")
-    @Operation(summary = "Cari realisasi renja pagu individu berdasarkan NIP, tahun, dan bulan", description = "Mengambil daftar realisasi renja pagu individu berdasarkan NIP, tahun, dan bulan.")
+    @Operation(summary = "Cari realisasi renja pagu individu berdasarkan NIP, tahun, dan bulan", description = "Mengambil daftar realisasi renja pagu individu berdasarkan NIP, tahun, dan bulan. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar realisasi renja pagu individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaPaguIndividu.class)))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
@@ -59,7 +59,7 @@ public class RenjaPaguIndividuController {
     }
 
     @GetMapping("/by-kode-opd/{kodeOpd}/by-tahun/{tahun}/by-bulan/{bulan}")
-    @Operation(summary = "Cari realisasi renja pagu individu berdasarkan tahun, bulan, dan kode OPD", description = "Mengambil realisasi renja pagu individu berdasarkan tahun, bulan, dan `kode_opd`.")
+    @Operation(summary = "Cari realisasi renja pagu individu berdasarkan tahun, bulan, dan kode OPD", description = "Mengambil realisasi renja pagu individu berdasarkan tahun, bulan, dan `kode_opd`. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar realisasi renja pagu individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaPaguIndividu.class)))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
@@ -73,7 +73,7 @@ public class RenjaPaguIndividuController {
     }
 
     @GetMapping("/by-kode-opd/{kodeOpd}/by-nip/{nip}/by-tahun/{tahun}/by-bulan/{bulan}")
-    @Operation(summary = "Cari realisasi renja pagu individu berdasarkan kode OPD, NIP, tahun, dan bulan", description = "Mengambil realisasi renja pagu individu berdasarkan `kode_opd`, `nip`, `tahun`, dan `bulan`.")
+    @Operation(summary = "Cari realisasi renja pagu individu berdasarkan kode OPD, NIP, tahun, dan bulan", description = "Mengambil realisasi renja pagu individu berdasarkan `kode_opd`, `nip`, `tahun`, dan `bulan`. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar realisasi renja pagu individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaPaguIndividu.class)))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
@@ -88,7 +88,7 @@ public class RenjaPaguIndividuController {
     }
 
     @GetMapping("/by-tahun/{tahun}/by-nip/{nip}/by-jenis-renja/{jenisRenja}/by-kode-renja/{kodeRenja}")
-    @Operation(summary = "Cari realisasi renja pagu individu berdasarkan filter lengkap", description = "Mengambil daftar realisasi renja pagu individu berdasarkan tahun, NIP, jenis renja, dan kode renja.")
+    @Operation(summary = "Cari realisasi renja pagu individu berdasarkan filter lengkap", description = "Mengambil daftar realisasi renja pagu individu berdasarkan tahun, NIP, jenis renja, dan kode renja. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar realisasi renja pagu individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaPaguIndividu.class)))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
@@ -102,10 +102,11 @@ public class RenjaPaguIndividuController {
     }
 
     @PostMapping
-    @Operation(summary = "Simpan realisasi renja pagu individu (belum digunakan di endpoint realisasi)", description = "Menyimpan satu data realisasi renja pagu individu.")
+    @Operation(summary = "Simpan realisasi renja pagu individu (belum digunakan di endpoint realisasi)", description = "Menyimpan satu data realisasi renja pagu individu. Role `super_admin` dan `admin_opd` tidak diizinkan mengakses endpoint ini.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data realisasi renja pagu individu tersimpan", content = @Content(schema = @Schema(implementation = RenjaPaguIndividu.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden untuk role super_admin dan admin_opd", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     public Mono<RenjaPaguIndividu> submitRealisasiRenjaPaguIndividu(
@@ -129,10 +130,11 @@ public class RenjaPaguIndividuController {
     }
 
     @PostMapping("/batch")
-    @Operation(summary = "Simpan batch realisasi renja pagu individu", description = "Menyimpan beberapa data realisasi renja pagu individu dalam satu request. Payload mendukung field `kodeOpd` (opsional selama masa transisi).")
+    @Operation(summary = "Simpan batch realisasi renja pagu individu", description = "Menyimpan beberapa data realisasi renja pagu individu dalam satu request. Payload mendukung field `kodeOpd` (opsional selama masa transisi). Role `super_admin` dan `admin_opd` tidak diizinkan mengakses endpoint ini.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Batch berhasil disimpan", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenjaPaguIndividu.class)))),
             @ApiResponse(responseCode = "400", description = "Payload batch tidak valid", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden untuk role super_admin dan admin_opd", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     public Flux<RenjaPaguIndividu> batchSubmitRealisasiRenjaPaguIndividu(
@@ -161,9 +163,10 @@ public class RenjaPaguIndividuController {
     }
 
     @DeleteMapping("/by-tahun/{tahun}/by-nip/{nip}/by-jenis-renja/{jenisRenja}/by-kode-renja/{kodeRenja} (belum digunakan di endpoint realisasi)")
-    @Operation(summary = "Hapus realisasi renja pagu individu berdasarkan filter", description = "Menghapus semua data realisasi renja pagu individu berdasarkan tahun, NIP, jenis renja, dan kode renja.")
+    @Operation(summary = "Hapus realisasi renja pagu individu berdasarkan filter", description = "Menghapus semua data realisasi renja pagu individu berdasarkan tahun, NIP, jenis renja, dan kode renja. Role `super_admin` dan `admin_opd` tidak diizinkan mengakses endpoint ini.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data berhasil dihapus", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden untuk role super_admin dan admin_opd", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     public Mono<Void> deleteRealisasiRenjaPaguIndividuByFilters(

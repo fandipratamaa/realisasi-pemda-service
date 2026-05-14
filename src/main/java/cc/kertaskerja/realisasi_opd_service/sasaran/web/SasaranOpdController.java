@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("sasaran_opd")
-@Tag(name = "OPD - Sasaran", description = "Endpoint realisasi sasaran tingkat OPD")
+@Tag(name = "OPD - Sasaran", description = "Endpoint realisasi sasaran tingkat OPD. Role `level_1`, `level_2`, `level_3`, dan `level_4` hanya diizinkan mengakses endpoint `GET` pada resource ini.")
 public class SasaranOpdController {
     private final SasaranOpdService sasaranOpdService;
 
@@ -126,10 +126,11 @@ public class SasaranOpdController {
     }
 
     @PostMapping
-    @Operation(summary = "Simpan realisasi sasaran OPD", description = "Menyimpan satu data realisasi sasaran OPD.")
+    @Operation(summary = "Simpan realisasi sasaran OPD", description = "Menyimpan satu data realisasi sasaran OPD. Role `level_1`, `level_2`, `level_3`, dan `level_4` tidak diizinkan mengakses endpoint ini.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data realisasi sasaran OPD tersimpan", content = @Content(schema = @Schema(implementation = SasaranOpd.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden untuk role level_1, level_2, level_3, dan level_4", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     public Mono<SasaranOpd> submitRealisasiSasaranOpd(

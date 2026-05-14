@@ -19,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("sasaran_individu")
-@Tag(name = "Individu - Sasaran", description = "Endpoint realisasi sasaran tingkat individu")
+@Tag(name = "Individu - Sasaran", description = "Endpoint realisasi sasaran tingkat individu. Role `super_admin` dan `admin_opd` hanya diizinkan mengakses endpoint `GET` pada resource ini, sedangkan role `level_1`, `level_2`, `level_3`, dan `level_4` dapat mengakses seluruh endpoint pada resource ini.")
 public class SasaranIndividuController {
     private final SasaranIndividuService sasaranIndividuService;
 
@@ -28,7 +28,7 @@ public class SasaranIndividuController {
     }
 
     @GetMapping
-    @Operation(summary = "Ambil semua realisasi sasaran individu", description = "Mengambil seluruh data realisasi sasaran individu.")
+    @Operation(summary = "Ambil semua realisasi sasaran individu", description = "Mengambil seluruh data realisasi sasaran individu. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar realisasi sasaran individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SasaranIndividu.class)))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
@@ -38,7 +38,7 @@ public class SasaranIndividuController {
     }
 
     @GetMapping("/{nip}/by-tahun/{tahun}/bulan/{bulan}")
-    @Operation(summary = "Cari realisasi sasaran individu per tahun dan bulan", description = "Mengambil realisasi sasaran individu berdasarkan NIP, tahun, dan bulan.")
+    @Operation(summary = "Cari realisasi sasaran individu per tahun dan bulan", description = "Mengambil realisasi sasaran individu berdasarkan NIP, tahun, dan bulan. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar realisasi sasaran individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SasaranIndividu.class)))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
@@ -52,7 +52,7 @@ public class SasaranIndividuController {
     }
 
     @GetMapping("/by-kode-opd/{kodeOpd}/by-nip/{nip}/by-tahun/{tahun}/bulan/{bulan}")
-    @Operation(summary = "Cari realisasi sasaran individu per kode OPD, NIP, tahun, dan bulan", description = "Mengambil realisasi sasaran individu berdasarkan `kode_opd`, `nip`, `tahun`, dan `bulan`.")
+    @Operation(summary = "Cari realisasi sasaran individu per kode OPD, NIP, tahun, dan bulan", description = "Mengambil realisasi sasaran individu berdasarkan `kode_opd`, `nip`, `tahun`, dan `bulan`. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar realisasi sasaran individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SasaranIndividu.class)))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
@@ -67,7 +67,7 @@ public class SasaranIndividuController {
     }
 
     @GetMapping("/by-tahun/{tahun}/by-bulan/{bulan}/by-nip/{nip}/by-id-renja/{renjaId}")
-    @Operation(summary = "Cari realisasi sasaran individu per tahun, bulan, NIP, dan renja", description = "Mengambil realisasi sasaran individu berdasarkan tahun, bulan, NIP, dan `renjaId`.")
+    @Operation(summary = "Cari realisasi sasaran individu per tahun, bulan, NIP, dan renja", description = "Mengambil realisasi sasaran individu berdasarkan tahun, bulan, NIP, dan `renjaId`. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar realisasi sasaran individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SasaranIndividu.class)))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
@@ -82,7 +82,7 @@ public class SasaranIndividuController {
     }
 
     @GetMapping("/by-kode-opd/{kodeOpd}/by-tahun/{tahun}/by-bulan/{bulan}")
-    @Operation(summary = "Cari realisasi sasaran individu per tahun, bulan, dan kode OPD", description = "Mengambil realisasi sasaran individu berdasarkan tahun, bulan, dan `kode_opd`.")
+    @Operation(summary = "Cari realisasi sasaran individu per tahun, bulan, dan kode OPD", description = "Mengambil realisasi sasaran individu berdasarkan tahun, bulan, dan `kode_opd`. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar realisasi sasaran individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SasaranIndividu.class)))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
@@ -96,10 +96,11 @@ public class SasaranIndividuController {
     }
 
     @PostMapping
-    @Operation(summary = "Simpan realisasi sasaran individu", description = "Menyimpan satu data realisasi sasaran individu.")
+    @Operation(summary = "Simpan realisasi sasaran individu", description = "Menyimpan satu data realisasi sasaran individu. Role `super_admin` dan `admin_opd` tidak diizinkan mengakses endpoint ini.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data realisasi sasaran individu tersimpan", content = @Content(schema = @Schema(implementation = SasaranIndividu.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden untuk role super_admin dan admin_opd", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     public Mono<SasaranIndividu> submitRealisasiSasaranIndividu(
@@ -124,10 +125,11 @@ public class SasaranIndividuController {
     }
 
     @PostMapping("/batch")
-    @Operation(summary = "Simpan batch realisasi sasaran individu", description = "Menyimpan beberapa data realisasi sasaran individu dalam satu request. Payload mendukung field `kodeOpd` (opsional selama masa transisi).")
+    @Operation(summary = "Simpan batch realisasi sasaran individu", description = "Menyimpan beberapa data realisasi sasaran individu dalam satu request. Payload mendukung field `kodeOpd` (opsional selama masa transisi). Role `super_admin` dan `admin_opd` tidak diizinkan mengakses endpoint ini.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Batch berhasil disimpan", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SasaranIndividu.class)))),
             @ApiResponse(responseCode = "400", description = "Payload batch tidak valid", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden untuk role super_admin dan admin_opd", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     public Flux<SasaranIndividu> batchSubmitRealisasiSasaranIndividu(
@@ -138,9 +140,10 @@ public class SasaranIndividuController {
     }
 
     @DeleteMapping("/by-sasaran-id/{sasaranId}")
-    @Operation(summary = "Hapus realisasi sasaran individu berdasarkan sasaran ID", description = "Menghapus data realisasi sasaran individu berdasarkan `sasaranId`.")
+    @Operation(summary = "Hapus realisasi sasaran individu berdasarkan sasaran ID", description = "Menghapus data realisasi sasaran individu berdasarkan `sasaranId`. Role `super_admin` dan `admin_opd` tidak diizinkan mengakses endpoint ini.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data realisasi sasaran individu terhapus", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden untuk role super_admin dan admin_opd", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     public Mono<Void> deleteRealisasiSasaranIndividuBySasaranId(

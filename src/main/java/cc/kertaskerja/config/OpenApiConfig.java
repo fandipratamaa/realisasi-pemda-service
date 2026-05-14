@@ -17,7 +17,7 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("Realisasi Pemda Service API")
-                        .description("Dokumentasi API untuk layanan realisasi pemda dan opd.")
+                        .description("Dokumentasi API untuk layanan realisasi pemda, opd, dan individu. Role `super_admin` hanya dapat mengakses seluruh endpoint grup pemda dan opd, serta endpoint `GET` pada grup individu untuk resource renaksi, rekin, sasaran_individu, renja_target_individu, dan renja_pagu_individu. Role `admin_opd` hanya dapat mengakses seluruh endpoint grup opd, serta endpoint `GET` pada grup individu untuk resource yang sama. Role `level_1` hanya dapat mengakses endpoint `GET` pada `tujuan_opd` dan `sasaran_opd`, endpoint `GET` pada `renja_target_individu` dan `renja_pagu_individu`, serta seluruh endpoint pada `renaksi`, `rekin`, dan `sasaran_individu`. Role `level_2` dan `level_3` hanya dapat mengakses endpoint `GET` pada `tujuan_opd` dan `sasaran_opd`, serta seluruh endpoint pada seluruh service individu. Role `level_4` hanya dapat mengakses endpoint `GET` pada `tujuan_opd` dan `sasaran_opd`, serta seluruh endpoint pada `renaksi`, `rekin`, dan `sasaran_individu`, namun tidak dapat mengakses semua endpoint `renja_target_individu` dan `renja_pagu_individu`.")
                         .version("v1"))
                 .components(new Components()
                         .addSecuritySchemes("bearerAuth", new SecurityScheme()
