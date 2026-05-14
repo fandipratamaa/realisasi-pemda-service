@@ -27,6 +27,10 @@ public record RenjaPaguIndividuRequest(
         @Schema(description = "NIP pelaksana", example = "198012312005011001")
         String nip,
 
+        @Nullable
+        @Schema(description = "Kode OPD (opsional selama masa transisi)", example = "1.01.0.00.0.00.01.0000", nullable = true)
+        String kodeOpd,
+
         @NotNull(message = "ID indikator tidak boleh kosong")
         @NotEmpty(message = "ID indikator tidak boleh kosong")
         @Schema(description = "ID indikator renja", example = "IND-REN-123")

@@ -76,6 +76,11 @@ public record RekinRequest(
         @Schema(description = "Bulan realisasi", example = "01")
         String bulan,
 
+        @NotNull(message = "Kode OPD tidak boleh kosong")
+        @NotEmpty(message = "Kode OPD tidak boleh kosong")
+        @Schema(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000")
+        String kodeOpd,
+
         @NotNull(message = "Pilih jenis NAIK atau TURUN")
         @Schema(description = "Jenis perhitungan capaian", example = "NAIK", allowableValues = {"NAIK", "TURUN"})
         JenisRealisasi jenisRealisasi

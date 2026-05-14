@@ -11,6 +11,10 @@ public interface RenjaPaguIndividuRepository extends ReactiveCrudRepository<Renj
 
     Flux<RenjaPaguIndividu> findAllByNipAndTahunAndBulan(String nip, String tahun, String bulan);
 
+    Flux<RenjaPaguIndividu> findAllByTahunAndBulanAndKodeOpd(String tahun, String bulan, String kodeOpd);
+
+    Flux<RenjaPaguIndividu> findAllByNipAndTahunAndBulanAndKodeOpd(String nip, String tahun, String bulan, String kodeOpd);
+
     Flux<RenjaPaguIndividu> findAllByTahunAndNipAndJenisRenjaAndKodeRenja(
             String tahun, String nip, JenisRenja jenisRenja, String kodeRenja);
 

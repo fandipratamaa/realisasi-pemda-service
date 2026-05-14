@@ -41,6 +41,10 @@ public class RenaksiService {
         return renaksiRepository.findAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
     }
 
+    public Flux<Renaksi> getRealisasiRenaksiByKodeOpdAndNipAndTahunAndBulan(String kodeOpd, String nip, String tahun, String bulan) {
+        return renaksiRepository.findAllByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
+    }
+
     public Mono<Renaksi> submitRealisasiRenaksi(
             String renaksiId,
             String renaksi,

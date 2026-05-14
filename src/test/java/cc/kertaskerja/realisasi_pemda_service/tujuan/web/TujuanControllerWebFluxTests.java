@@ -9,11 +9,14 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
+
+import cc.kertaskerja.config.SecurityConfig;
 
 import java.util.List;
 
@@ -22,6 +25,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
 
 @WebFluxTest(TujuanController.class)
+@Import(SecurityConfig.class)
 public class TujuanControllerWebFluxTests {
     @Autowired
     private WebTestClient webTestClient;
@@ -81,6 +85,72 @@ public class TujuanControllerWebFluxTests {
                 .expectBodyList(Tujuan.class)
                 .hasSize(1)
                 .contains(mockTujuans.get(0));
+    }
+
+    @Test
+    void whenSuperAdminGetsPemdaEndpoint_thenAllowed() {
+        List<Tujuan> mockTujuans = List.of(
+                Tujuan.of("TUJ-123", "Test-Tujuan",
+                        "IND-TUJ-123", "Produk-A",
+                        "TAR-1", "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
+                        "BPS", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED));
+        when(tujuanService.getRealisasiTujuanByTahun("2025"))
+                .thenReturn(Flux.fromIterable(mockTujuans));
+
+        webTestClient
+                .mutateWith(SecurityMockServerConfigurers.mockJwt()
+                        .authorities(new SimpleGrantedAuthority("super_admin")))
+                .get()
+                .uri("/tujuans/by-tahun/2025")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Tujuan.class)
+                .hasSize(1)
+                .contains(mockTujuans.get(0));
+    }
+
+    @Test
+    void whenAdminOpdGetsPemdaEndpoint_thenForbidden() {
+        webTestClient
+                .mutateWith(SecurityMockServerConfigurers.mockJwt()
+                        .authorities(new SimpleGrantedAuthority("admin_opd")))
+                .get()
+                .uri("/tujuans/by-tahun/2025")
+                .exchange()
+                .expectStatus().isForbidden();
+    }
+
+    @Test
+    void whenLevel2GetsPemdaEndpoint_thenForbidden() {
+        webTestClient
+                .mutateWith(SecurityMockServerConfigurers.mockJwt()
+                        .authorities(new SimpleGrantedAuthority("level_2")))
+                .get()
+                .uri("/tujuans/by-tahun/2025")
+                .exchange()
+                .expectStatus().isForbidden();
+    }
+
+    @Test
+    void whenLevel3GetsPemdaEndpoint_thenForbidden() {
+        webTestClient
+                .mutateWith(SecurityMockServerConfigurers.mockJwt()
+                        .authorities(new SimpleGrantedAuthority("level_3")))
+                .get()
+                .uri("/tujuans/by-tahun/2025")
+                .exchange()
+                .expectStatus().isForbidden();
+    }
+
+    @Test
+    void whenLevel4GetsPemdaEndpoint_thenForbidden() {
+        webTestClient
+                .mutateWith(SecurityMockServerConfigurers.mockJwt()
+                        .authorities(new SimpleGrantedAuthority("level_4")))
+                .get()
+                .uri("/tujuans/by-tahun/2025")
+                .exchange()
+                .expectStatus().isForbidden();
     }
 
     @Test

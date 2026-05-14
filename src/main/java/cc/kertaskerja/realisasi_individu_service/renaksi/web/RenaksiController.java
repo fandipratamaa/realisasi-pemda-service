@@ -2,7 +2,6 @@ package cc.kertaskerja.realisasi_individu_service.renaksi.web;
 
 import cc.kertaskerja.realisasi_individu_service.renaksi.domain.Renaksi;
 import cc.kertaskerja.realisasi_individu_service.renaksi.domain.RenaksiService;
-import cc.kertaskerja.realisasi_opd_service.renaksi.domain.RenaksiOpd;
 import cc.kertaskerja.realisasi_opd_service.renaksi.domain.RenaksiOpdService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,18 +29,26 @@ import java.util.List;
 
 @RestController
 @RequestMapping("renaksi")
-@Tag(name = "Individu - Renaksi", description = "Endpoint realisasi renaksi tingkat individu")
+@Tag(name = "Individu - Renaksi", description = "Endpoint realisasi renaksi tingkat individu. Role `super_admin` dan `admin_opd` hanya diizinkan mengakses endpoint `GET` pada resource ini, sedangkan role `level_1`, `level_2`, `level_3`, dan `level_4` dapat mengakses seluruh endpoint pada resource ini.")
 public class RenaksiController {
     private final RenaksiService renaksiService;
-    private final RenaksiOpdService renaksiOpdService;
 
     public RenaksiController(RenaksiService renaksiService, RenaksiOpdService renaksiOpdService) {
         this.renaksiService = renaksiService;
-        this.renaksiOpdService = renaksiOpdService;
+    }
+
+    @GetMapping
+    @Operation(summary = "Ambil semua realisasi renaksi", description = "Mengambil seluruh data realisasi renaksi. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi renaksi", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Renaksi.class)))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<Renaksi> getAllRealisasiRenaksi() {
+        return renaksiService.getAllRealisasiRenaksi();
     }
 
     @GetMapping("/by-nip/{nip}/by-tahun/{tahun}/by-bulan/{bulan}")
-    @Operation(summary = "Cari realisasi renaksi berdasarkan NIP, tahun dan bulan", description = "Mengambil daftar data realisasi renaksi berdasarkan `nip`, `tahun` dan `bulan`.")
+    @Operation(summary = "Cari realisasi renaksi berdasarkan NIP, tahun dan bulan", description = "Mengambil daftar data realisasi renaksi berdasarkan `nip`, `tahun` dan `bulan`. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar realisasi renaksi", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Renaksi.class)))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
@@ -57,10 +64,28 @@ public class RenaksiController {
         return renaksiService.getRealisasiRenaksiByNipAndTahunAndBulan(nip, tahun, bulan);
     }
 
-    @GetMapping("/by-kodeOpd/{kodeOpd}/by-tahun/{tahun}/by-bulan/{bulan}")
-    @Operation(summary = "Cari realisasi renaksi berdasarkan kode OPD, tahun dan bulan", description = "Mengambil daftar data realized renaksi berdasarkan `kodeOpd`, `tahun` dan `bulan`.")
+    @GetMapping("/by-kode-opd/{kodeOpd}/by-nip/{nip}/by-tahun/{tahun}/by-bulan/{bulan}")
+    @Operation(summary = "Cari realisasi renaksi berdasarkan kode OPD, NIP, tahun dan bulan", description = "Mengambil daftar data realisasi renaksi berdasarkan `kode_opd`, `nip`, `tahun` dan `bulan`. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realization renaksi", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Renaksi.class)))),
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi renaksi", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Renaksi.class)))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<Renaksi> getRealisasiRenaksiByKodeOpdNipTahunBulan(
+            @Parameter(description = "Kode OPD", example = "4.01.01.") @PathVariable String kodeOpd,
+            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
+            @Parameter(description = "Tahun realisasi", example = "2026") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi", example = "Januari") @PathVariable String bulan) {
+        if (kodeOpd == null || kodeOpd.isBlank() || nip == null || nip.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd, nip, tahun, dan bulan tidak boleh kosong");
+        }
+        return renaksiService.getRealisasiRenaksiByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
+    }
+
+    @GetMapping("/by-kode-opd/{kodeOpd}/by-tahun/{tahun}/by-bulan/{bulan}")
+    @Operation(summary = "Cari realisasi renaksi berdasarkan kode OPD, tahun dan bulan", description = "Mengambil daftar data realisasi renaksi berdasarkan `kodeOpd`, `tahun` dan `bulan`. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi renaksi", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Renaksi.class)))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
@@ -74,28 +99,12 @@ public class RenaksiController {
         return renaksiService.getRealisasiRenaksiByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
     }
 
-    @GetMapping({"/opd/by-kodeOpd/{kodeOpd}/by-tahun/{tahun}/by-bulan/{bulan}", "/opd/by-kode-opd/{kodeOpd}/by-tahun/{tahun}/by-bulan/{bulan}"})
-    @Operation(summary = "Cari realisasi renaksi OPD berdasarkan kode OPD, tahun dan bulan", description = "Mengambil daftar data realisasi renaksi OPD berdasarkan `kodeOpd`, `tahun` dan `bulan`.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realisasi renaksi OPD", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenaksiOpd.class)))),
-            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<RenaksiOpd> getRealisasiRenaksiOpdByKodeOpdTahunBulan(
-            @Parameter(description = "Kode OPD", example = "4.01.01.") @PathVariable String kodeOpd,
-            @Parameter(description = "Tahun realisasi", example = "2026") @PathVariable String tahun,
-            @Parameter(description = "Bulan realisasi", example = "Januari") @PathVariable String bulan) {
-        if (kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd, tahun, dan bulan tidak boleh kosong");
-        }
-        return renaksiOpdService.getRealisasiRenaksiByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
-    }
-
     @PostMapping
-    @Operation(summary = "Simpan realisasi renaksi (belum digunakan di endpoint realisasi)", description = "Menyimpan satu data realisasi renaksi.")
+    @Operation(summary = "Simpan realisasi renaksi (belum digunakan di endpoint realisasi)", description = "Menyimpan satu data realisasi renaksi. Role `super_admin` dan `admin_opd` tidak diizinkan mengakses endpoint ini.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data realisasi renaksi tersimpan", content = @Content(schema = @Schema(implementation = Renaksi.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden untuk role super_admin dan admin_opd", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     public Mono<Renaksi> submitRealisasiRenaksi(
@@ -120,9 +129,10 @@ public class RenaksiController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Hapus realisasi renaksi (belum digunakan di endpoint realisasi)", description = "Menghapus satu data realisasi renaksi berdasarkan ID internal.")
+    @Operation(summary = "Hapus realisasi renaksi (belum digunakan di endpoint realisasi)", description = "Menghapus satu data realisasi renaksi berdasarkan ID internal. Role `super_admin` dan `admin_opd` tidak diizinkan mengakses endpoint ini.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data realisasi renaksi terhapus", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden untuk role super_admin dan admin_opd", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "404", description = "Data tidak ditemukan", content = @Content)
     })
@@ -132,10 +142,11 @@ public class RenaksiController {
     }
 
     @PostMapping("/batch")
-    @Operation(summary = "Simpan batch realisasi renaksi", description = "Menyimpan beberapa data realisasi renaksi dalam satu request.")
+    @Operation(summary = "Simpan batch realisasi renaksi", description = "Menyimpan beberapa data realisasi renaksi dalam satu request. Payload wajib menyertakan field `kodeOpd`. Role `super_admin` dan `admin_opd` tidak diizinkan mengakses endpoint ini.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Batch berhasil disimpan", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Renaksi.class)))),
             @ApiResponse(responseCode = "400", description = "Payload batch tidak valid", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden untuk role super_admin dan admin_opd", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     public Flux<Renaksi> batchSubmitRealisasiRenaksi(
@@ -156,6 +167,7 @@ public class RenaksiController {
                                     "    \"satuan\": \"%\",\n" +
                                     "    \"bulan\": \"Januari\",\n" +
                                     "    \"tahun\": \"2026\",\n" +
+                                    "    \"kodeOpd\": \"1.01.0.00.0.00.01.0000\",\n" +
                                     "    \"jenisRealisasi\": \"NAIK\"\n" +
                                     "  }\n" +
                                     "]")))

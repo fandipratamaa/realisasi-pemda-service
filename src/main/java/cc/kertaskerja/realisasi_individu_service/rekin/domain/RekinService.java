@@ -29,6 +29,14 @@ public class RekinService {
         return rekinRepository.findAllByNipAndTahunAndBulan(nip, tahun, bulan);
     }
 
+    public Flux<Rekin> getRealisasiRekinByKodeOpdAndTahunAndBulan(String kodeOpd, String tahun, String bulan) {
+        return rekinRepository.findAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
+    }
+
+    public Flux<Rekin> getRealisasiRekinByKodeOpdAndNipAndTahunAndBulan(String kodeOpd, String nip, String tahun, String bulan) {
+        return rekinRepository.findAllByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
+    }
+
     public Mono<Rekin> getRealisasiRekinByNipIdSasaranTahunRekinId(String nip, String idSasaran, String tahun, String rekinId) {
         return rekinRepository.findFirstByNipAndIdSasaranAndTahunAndRekinId(nip, idSasaran, tahun, rekinId);
     }
@@ -41,10 +49,10 @@ public class RekinService {
             String indikatorId, String indikator,
             String nip, String idSasaran, String sasaran,
             String targetId, String target, Integer realisasi,
-            String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi) {
+            String satuan, String tahun, String bulan, String kodeOpd, JenisRealisasi jenisRealisasi) {
         return Mono.just(buildUncheckedRealisasiRekin(
                 rekinId, rekin, indikatorId, indikator, nip, idSasaran, sasaran, targetId, target,
-                realisasi, satuan, tahun, bulan, jenisRealisasi))
+                realisasi, satuan, tahun, bulan, kodeOpd, jenisRealisasi))
                 .flatMap(rekinRepository::save);
     }
 
@@ -56,7 +64,7 @@ public static Rekin buildUncheckedRealisasiRekin(String rekinId, String rekin,
             String indikatorId, String indikator,
             String nip, String idSasaran, String sasaran,
             String targetId, String target, Integer realisasi,
-            String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi) {
+            String satuan, String tahun, String bulan, String kodeOpd, JenisRealisasi jenisRealisasi) {
         return Rekin.of(
                 rekinId,
                 rekin,
@@ -71,6 +79,7 @@ public static Rekin buildUncheckedRealisasiRekin(String rekinId, String rekin,
                 satuan,
                 tahun,
                 bulan,
+                kodeOpd,
                 jenisRealisasi,
                 RekinStatus.UNCHECKED);
     }
@@ -96,6 +105,7 @@ public static Rekin buildUncheckedRealisasiRekin(String rekinId, String rekin,
                                             req.satuan(),
                                             req.tahun(),
                                             req.bulan(),
+                                            req.kodeOpd(),
                                             req.jenisRealisasi());
                                     return rekinRepository.save(baru);
                                 }));
@@ -122,6 +132,7 @@ public static Rekin buildUncheckedRealisasiRekin(String rekinId, String rekin,
                                         req.satuan(),
                                         req.tahun(),
                                         req.bulan(),
+                                        req.kodeOpd(),
                                         req.jenisRealisasi());
                                 return rekinRepository.save(baru);
                             }));
@@ -144,6 +155,7 @@ public static Rekin buildUncheckedRealisasiRekin(String rekinId, String rekin,
                 req.satuan(),
                 req.tahun(),
                 req.bulan(),
+                req.kodeOpd(),
                 req.jenisRealisasi(),
                 RekinStatus.UNCHECKED,
                 existing.createdBy(),

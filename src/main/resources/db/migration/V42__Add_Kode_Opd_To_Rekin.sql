@@ -1,0 +1,2 @@
+ALTER TABLE rekin
+ADD COLUMN kode_opd VARCHAR(255) NULL;

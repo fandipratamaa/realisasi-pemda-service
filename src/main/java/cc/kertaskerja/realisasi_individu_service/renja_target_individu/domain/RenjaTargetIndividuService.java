@@ -30,6 +30,14 @@ public class RenjaTargetIndividuService {
         return renjaTargetIndividuRepository.findAllByTahunAndNipAndBulan(tahun, nip, bulan);
     }
 
+    public Flux<RenjaTargetIndividu> getRealisasiRenjaTargetIndividuByTahunAndBulanAndKodeOpd(String tahun, String bulan, String kodeOpd) {
+        return renjaTargetIndividuRepository.findAllByTahunAndBulanAndKodeOpd(tahun, bulan, kodeOpd);
+    }
+
+    public Flux<RenjaTargetIndividu> getRealisasiRenjaTargetIndividuByTahunAndNipAndBulanAndKodeOpd(String tahun, String nip, String bulan, String kodeOpd) {
+        return renjaTargetIndividuRepository.findAllByTahunAndNipAndBulanAndKodeOpd(tahun, nip, bulan, kodeOpd);
+    }
+
     public Mono<RenjaTargetIndividu> getRealisasiRenjaTargetIndividuByTahunNipJenisRenjaKodeRenja(String tahun, String nip, JenisRenja jenisRenja, String kodeRenja) {
         return renjaTargetIndividuRepository.findFirstByNipAndTahunAndKodeRenjaAndJenisRenja(nip, tahun, kodeRenja, jenisRenja);
     }
@@ -42,6 +50,7 @@ public class RenjaTargetIndividuService {
             String kodeRenja,
             JenisRenja jenisRenja,
             String nip,
+            String kodeOpd,
             String idIndikator,
             String indikator,
             String targetId,
@@ -55,6 +64,7 @@ public class RenjaTargetIndividuService {
                         kodeRenja,
                         jenisRenja,
                         nip,
+                        kodeOpd,
                         idIndikator,
                         indikator,
                         targetId,
@@ -71,6 +81,7 @@ public static RenjaTargetIndividu buildUncheckedRealisasiRenjaTargetIndividu(
             String kodeRenja,
             JenisRenja jenisRenja,
             String nip,
+            String kodeOpd,
             String idIndikator,
             String indikator,
             String targetId,
@@ -84,6 +95,7 @@ public static RenjaTargetIndividu buildUncheckedRealisasiRenjaTargetIndividu(
                 kodeRenja,
                 jenisRenja,
                 nip,
+                kodeOpd,
                 idIndikator,
                 indikator,
                 targetId,
@@ -110,6 +122,7 @@ public static RenjaTargetIndividu buildUncheckedRealisasiRenjaTargetIndividu(
                                                 req.kodeRenja(),
                                                 req.jenisRenja(),
                                                 req.nip(),
+                                                req.kodeOpd(),
                                                 req.idIndikator(),
                                                 req.indikator(),
                                                 req.targetId(),
@@ -136,6 +149,7 @@ public static RenjaTargetIndividu buildUncheckedRealisasiRenjaTargetIndividu(
                                             req.kodeRenja(),
                                             req.jenisRenja(),
                                             req.nip(),
+                                            req.kodeOpd(),
                                             req.idIndikator(),
                                             req.indikator(),
                                             req.targetId(),
@@ -155,6 +169,7 @@ public static RenjaTargetIndividu buildUncheckedRealisasiRenjaTargetIndividu(
                 existing.kodeRenja(),
                 existing.jenisRenja(),
                 existing.nip(),
+                req.kodeOpd(),
                 existing.idIndikator(),
                 existing.indikator(),
                 existing.targetId(),

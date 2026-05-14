@@ -55,6 +55,10 @@ public record SasaranIndividuRequest(
         @Schema(description = "Jenis perhitungan capaian", example = "NAIK", allowableValues = {"NAIK", "TURUN"})
         JenisRealisasi jenisRealisasi,
 
+        @Nullable
+        @Schema(description = "Kode OPD (opsional selama masa transisi)", example = "1.01.0.00.0.00.01.0000", nullable = true)
+        String kodeOpd,
+
         @NotEmpty(message = "NIP tidak boleh kosong")
         @NotNull(message = "NIP tidak boleh kosong")
         @Schema(description = "NIP pegawai", example = "198012312005011001")
