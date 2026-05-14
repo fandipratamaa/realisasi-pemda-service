@@ -68,6 +68,11 @@ public record SasaranOpdRequest(
         @NotEmpty(message = "Sumber data tidak boleh kosong")
         @NotNull(message = "Sumber data tidak boleh kosong")
         @Schema(description = "Sumber data realisasi", example = "SIMDA")
-        String sumberData
+        String sumberData,
+
+        @NotEmpty(message = "Definisi operational tidak boleh kosong")
+        @NotNull(message = "Definisi operational tidak boleh kosong")
+        @Schema(description = "Definisi operasional indikator", example = "Persentase layanan yang selesai tepat waktu")
+        String definisiOperational
 ) {
 }

@@ -49,19 +49,19 @@ public class TujuanOpdService {
         return tujuanOpdRepository.findById(id);
     }
 
-    public Mono<TujuanOpd> submitRealisasiTujuanOpd(String tujuanId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi, String kodeOpd, String rumusPerhitungan, String sumberData) {
-        return Mono.just(buildUncheckedRealisasiTujuanOpd(tujuanId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan, jenisRealisasi, kodeOpd, rumusPerhitungan, sumberData))
+    public Mono<TujuanOpd> submitRealisasiTujuanOpd(String tujuanId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi, String kodeOpd, String rumusPerhitungan, String sumberData, String definisiOperational) {
+        return Mono.just(buildUncheckedRealisasiTujuanOpd(tujuanId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan, jenisRealisasi, kodeOpd, rumusPerhitungan, sumberData, definisiOperational))
                 .flatMap(tujuanOpdRepository::save);
     }
 
-    public static TujuanOpd buildUncheckedRealisasiTujuanOpd(String tujuanId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi, String kodeOpd, String rumusPerhitungan, String sumberData) {
+    public static TujuanOpd buildUncheckedRealisasiTujuanOpd(String tujuanId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi, String kodeOpd, String rumusPerhitungan, String sumberData, String definisiOperational) {
         return TujuanOpd.of(
                 tujuanId,
                 "Realisasi Tujuan Opd " + tujuanId,
                 indikatorId,
                 "Realisasi Indikator Opd " + indikatorId,
                 targetId, target, realisasi, satuan, tahun, bulan,
-                jenisRealisasi, kodeOpd, rumusPerhitungan, sumberData,
+                jenisRealisasi, kodeOpd, rumusPerhitungan, sumberData, definisiOperational,
                 TujuanOpdStatus.UNCHECKED
         );
     }

@@ -15,7 +15,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @WebFluxTest(TujuanOpdController.class)
@@ -44,17 +43,18 @@ public class TujuanOpdControllerWebFluxTests {
                 "1.01.0.00.0.00.01.0000",
                 "(realisasi/target)*100",
                 "BPS",
+                "Definisi indikator tujuan",
                 TujuanOpdStatus.UNCHECKED
         );
 
-        when(tujuanOpdService.getRealisasiTujuanOpdByKodeOpd(anyString()))
+        when(tujuanOpdService.getAllRealisasiTujuanOpd())
                 .thenReturn(Flux.just(result));
 
         webTestClient
                 .mutateWith(SecurityMockServerConfigurers.mockJwt()
                         .authorities(new SimpleGrantedAuthority("level_1")))
                 .get()
-                .uri("/tujuan_opd/1.01.0.00.0.00.01.0000")
+                .uri("/tujuan_opd")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(TujuanOpd.class)
@@ -92,17 +92,18 @@ public class TujuanOpdControllerWebFluxTests {
                 "1.01.0.00.0.00.01.0000",
                 "(realisasi/target)*100",
                 "BPS",
+                "Definisi indikator tujuan",
                 TujuanOpdStatus.UNCHECKED
         );
 
-        when(tujuanOpdService.getRealisasiTujuanOpdByKodeOpd(anyString()))
+        when(tujuanOpdService.getAllRealisasiTujuanOpd())
                 .thenReturn(Flux.just(result));
 
         webTestClient
                 .mutateWith(SecurityMockServerConfigurers.mockJwt()
                         .authorities(new SimpleGrantedAuthority("level_2")))
                 .get()
-                .uri("/tujuan_opd/1.01.0.00.0.00.01.0000")
+                .uri("/tujuan_opd")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(TujuanOpd.class)
@@ -140,17 +141,18 @@ public class TujuanOpdControllerWebFluxTests {
                 "1.01.0.00.0.00.01.0000",
                 "(realisasi/target)*100",
                 "BPS",
+                "Definisi indikator tujuan",
                 TujuanOpdStatus.UNCHECKED
         );
 
-        when(tujuanOpdService.getRealisasiTujuanOpdByKodeOpd(anyString()))
+        when(tujuanOpdService.getAllRealisasiTujuanOpd())
                 .thenReturn(Flux.just(result));
 
         webTestClient
                 .mutateWith(SecurityMockServerConfigurers.mockJwt()
                         .authorities(new SimpleGrantedAuthority("level_3")))
                 .get()
-                .uri("/tujuan_opd/1.01.0.00.0.00.01.0000")
+                .uri("/tujuan_opd")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(TujuanOpd.class)
@@ -188,17 +190,18 @@ public class TujuanOpdControllerWebFluxTests {
                 "1.01.0.00.0.00.01.0000",
                 "(realisasi/target)*100",
                 "BPS",
+                "Definisi indikator tujuan",
                 TujuanOpdStatus.UNCHECKED
         );
 
-        when(tujuanOpdService.getRealisasiTujuanOpdByKodeOpd(anyString()))
+        when(tujuanOpdService.getAllRealisasiTujuanOpd())
                 .thenReturn(Flux.just(result));
 
         webTestClient
                 .mutateWith(SecurityMockServerConfigurers.mockJwt()
                         .authorities(new SimpleGrantedAuthority("level_4")))
                 .get()
-                .uri("/tujuan_opd/1.01.0.00.0.00.01.0000")
+                .uri("/tujuan_opd")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(TujuanOpd.class)

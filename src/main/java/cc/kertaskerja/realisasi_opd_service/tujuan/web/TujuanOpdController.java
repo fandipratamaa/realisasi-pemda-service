@@ -58,34 +58,6 @@ public class TujuanOpdController {
         return tujuanOpdService.getRealisasiTujuanOpdByTujuanId(tujuanId);
     }
 
-    @GetMapping("/{kodeOpd}")
-    @Operation(summary = "Cari realisasi tujuan OPD berdasarkan kode OPD", description = "Mengambil seluruh realisasi tujuan untuk satu OPD.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realisasi tujuan OPD", content = @Content(array = @ArraySchema(schema = @Schema(implementation = TujuanOpd.class)))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<TujuanOpd> getRealisasiTujuanOpdByKodeOpd(
-            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd) {
-        return tujuanOpdService.getRealisasiTujuanOpdByKodeOpd(kodeOpd);
-    }
-
-    @GetMapping("/{kodeOpd}/by-tahun/{tahun}")
-    @Operation(summary = "Cari realisasi tujuan OPD per tahun", description = "Mengambil realisasi tujuan OPD berdasarkan kode OPD dan tahun, dapat difilter lagi dengan `tujuanId`.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realisasi tujuan OPD", content = @Content(array = @ArraySchema(schema = @Schema(implementation = TujuanOpd.class)))),
-            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<TujuanOpd> getRealisasiTujuanOpdByTahunAndKodeOpd(
-            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
-            @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
-            @Parameter(description = "Filter opsional ID tujuan", example = "TUJ-123") @RequestParam(required = false) String tujuanId) {
-        if (tujuanId != null && !tujuanId.isBlank()) {
-            return tujuanOpdService.getRealisasiTujuanOpdByTahunAndTujuanIdAndKodeOpd(tahun, tujuanId, kodeOpd);
-        }
-return tujuanOpdService.getRealisasiTujuanOpdByTahunAndKodeOpd(tahun, kodeOpd);
-    }
-
     @GetMapping("/{kodeOpd}/tahun/{tahun}/bulan/{bulan}")
     @Operation(summary = "Cari realisasi tujuan OPD per tahun dan bulan", description = "Mengambil realisasi tujuan OPD berdasarkan kode OPD, tahun, dan bulan.")
     @ApiResponses(value = {
@@ -98,20 +70,6 @@ return tujuanOpdService.getRealisasiTujuanOpdByTahunAndKodeOpd(tahun, kodeOpd);
             @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
             @Parameter(description = "Bulan realisasi", example = "1") @PathVariable String bulan) {
         return tujuanOpdService.getRealisasiTujuanOpdByTahunAndKodeOpdAndBulan(tahun, kodeOpd, bulan);
-    }
-
-    @GetMapping("/{kodeOpd}/by-periode/{tahunAwal}/{tahunAkhir}/rpjmd")
-    @Operation(summary = "Cari realisasi tujuan OPD periode RPJMD", description = "Mengambil realisasi tujuan OPD pada rentang tahun RPJMD.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realisasi tujuan OPD periode RPJMD", content = @Content(array = @ArraySchema(schema = @Schema(implementation = TujuanOpd.class)))),
-            @ApiResponse(responseCode = "400", description = "Parameter periode tidak valid", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<TujuanOpd> getRealisasiTujuanOpdByPeriodeRpjmd(
-            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
-            @Parameter(description = "Tahun awal periode", example = "2025") @PathVariable String tahunAwal,
-            @Parameter(description = "Tahun akhir periode", example = "2030") @PathVariable String tahunAkhir) {
-        return tujuanOpdService.getRealisasiTujuanOpdByPeriodeRpjmd(tahunAwal, tahunAkhir, kodeOpd);
     }
 
     @GetMapping("/by-indikator/{indikatorId}")
@@ -149,7 +107,8 @@ return tujuanOpdService.submitRealisasiTujuanOpd(
                 tujuanOpdRequest.jenisRealisasi(),
                 tujuanOpdRequest.kodeOpd(),
                 tujuanOpdRequest.rumusPerhitungan(),
-                tujuanOpdRequest.sumberData()
+                tujuanOpdRequest.sumberData(),
+                tujuanOpdRequest.definisiOperational()
         );
     }
 
