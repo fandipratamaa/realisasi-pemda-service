@@ -37,8 +37,8 @@ public class SasaranIndividuService {
         return sasaranIndividuRepository.findAllByTahunAndBulanAndNipAndRenjaId(tahun, bulan, nip, renjaId);
     }
 
-    public Mono<SasaranIndividu> submitRealisasiSasaranIndividu(String renjaId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi, String nip, String kodeOpd, String rumusPerhitungan, String sumberData) {
-        return Mono.just(buildUncheckedRealisasiSasaranIndividu(renjaId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan, jenisRealisasi, nip, kodeOpd, rumusPerhitungan, sumberData))
+    public Mono<SasaranIndividu> submitRealisasiSasaranIndividu(String renjaId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi, String nip, String namaPegawai, String kodeOpd, String rumusPerhitungan, String sumberData) {
+        return Mono.just(buildUncheckedRealisasiSasaranIndividu(renjaId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan, jenisRealisasi, nip, namaPegawai, kodeOpd, rumusPerhitungan, sumberData))
                 .flatMap(sasaranIndividuRepository::save);
     }
 
@@ -46,14 +46,14 @@ public class SasaranIndividuService {
         return sasaranIndividuRepository.deleteByRenjaId(sasaranId);
     }
 
-    public static SasaranIndividu buildUncheckedRealisasiSasaranIndividu(String renjaId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi, String nip, String kodeOpd, String rumusPerhitungan, String sumberData) {
+    public static SasaranIndividu buildUncheckedRealisasiSasaranIndividu(String renjaId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, JenisRealisasi jenisRealisasi, String nip, String namaPegawai, String kodeOpd, String rumusPerhitungan, String sumberData) {
         return SasaranIndividu.of(
                 renjaId,
                 "Realisasi Renja Individu " + renjaId,
                 indikatorId,
                 "Realisasi Indikator Individu " + indikatorId,
                 targetId, target, realisasi, satuan, tahun,
-                bulan, jenisRealisasi, nip, kodeOpd, rumusPerhitungan, sumberData,
+                bulan, jenisRealisasi, nip, namaPegawai, kodeOpd, rumusPerhitungan, sumberData,
                 SasaranIndividuStatus.UNCHECKED
         );
     }
@@ -78,6 +78,7 @@ public class SasaranIndividuService {
                                             req.bulan(),
                                             req.jenisRealisasi(),
                                             req.nip(),
+                                            req.namaPegawai(),
                                             req.kodeOpd(),
                                             req.rumusPerhitungan(),
                                             req.sumberData(),
@@ -102,6 +103,7 @@ public class SasaranIndividuService {
                                             req.bulan(),
                                             req.jenisRealisasi(),
                                             req.nip(),
+                                            req.namaPegawai(),
                                             req.kodeOpd(),
                                             req.rumusPerhitungan(),
                                             req.sumberData()
@@ -121,6 +123,7 @@ public class SasaranIndividuService {
                                 req.bulan(),
                                 req.jenisRealisasi(),
                                 req.nip(),
+                                req.namaPegawai(),
                                 req.kodeOpd(),
                                 req.rumusPerhitungan(),
                                 req.sumberData()

@@ -125,6 +125,7 @@ public class RenjaTargetIndividuController {
                 renjaTargetIndividuRequest.kodeRenja(),
                 renjaTargetIndividuRequest.jenisRenja(),
                 renjaTargetIndividuRequest.nip(),
+                renjaTargetIndividuRequest.namaPegawai(),
                 renjaTargetIndividuRequest.kodeOpd(),
                 renjaTargetIndividuRequest.idIndikator(),
                 renjaTargetIndividuRequest.indikator(),
@@ -155,8 +156,9 @@ public class RenjaTargetIndividuController {
                                     "    \"targetRealisasiId\": 10,\n" +
                                     "    \"kodeRenja\": \"1.02.01\",\n" +
                                     "    \"jenisRenja\": \"PROGRAM\",\n" +
-                                    "    \"nip\": \"198012312005011001\",\n" +
-                                    "    \"kodeOpd\": \"1.01.0.00.0.00.01.0000\",\n" +
+                                     "    \"nip\": \"198012312005011001\",\n" +
+                                     "    \"namaPegawai\": \"Budi Santoso\",\n" +
+                                     "    \"kodeOpd\": \"1.01.0.00.0.00.01.0000\",\n" +
                                     "    \"idIndikator\": \"IND-REN-123\",\n" +
                                     "    \"indikator\": \"Persentase capaian renja\",\n" +
                                     "    \"targetId\": \"TAR-1\",\n" +

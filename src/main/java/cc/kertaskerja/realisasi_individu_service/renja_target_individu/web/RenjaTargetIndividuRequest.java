@@ -28,6 +28,11 @@ public record RenjaTargetIndividuRequest(
         @Schema(description = "NIP pelaksana", example = "198012312005011001")
         String nip,
 
+        @NotNull(message = "Nama pegawai tidak boleh kosong")
+        @NotEmpty(message = "Nama pegawai tidak boleh kosong")
+        @Schema(description = "Nama pegawai", example = "Budi Santoso")
+        String namaPegawai,
+
         @Nullable
         @Schema(description = "Kode OPD (opsional selama masa transisi)", example = "1.01.0.00.0.00.01.0000", nullable = true)
         String kodeOpd,

@@ -27,6 +27,9 @@ public record RenjaPaguIndividu(
 
         @Column("nip")
         String nip,
+        @JsonProperty("nama_pegawai")
+        @Column("nama_pegawai")
+        String namaPegawai,
         @Nullable
         @Column("kode_opd")
         String kodeOpd,
@@ -65,6 +68,7 @@ public record RenjaPaguIndividu(
             String kodeRenja,
             JenisRenja jenisRenja,
             String nip,
+            String namaPegawai,
             String kodeOpd,
             String idIndikator,
             String indikator,
@@ -81,6 +85,7 @@ public record RenjaPaguIndividu(
                 kodeRenja,
                 jenisRenja,
                 nip,
+                namaPegawai,
                 kodeOpd,
                 idIndikator,
                 indikator,

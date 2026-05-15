@@ -24,6 +24,9 @@ public record Renaksi(
 
         @Column("nip")
         String nip,
+        @JsonProperty("nama_pegawai")
+        @Column("nama_pegawai")
+        String namaPegawai,
 
         @Column("rekin_id")
         String rekinId,
@@ -65,6 +68,7 @@ public record Renaksi(
             String renaksiId,
             String renaksi,
             String nip,
+            String namaPegawai,
             String rekin_id,
             String rekin,
             String targetId,
@@ -82,6 +86,7 @@ public record Renaksi(
                 renaksiId,
                 renaksi,
                 nip,
+                namaPegawai,
                 rekin_id,
                 rekin,
                 targetId,

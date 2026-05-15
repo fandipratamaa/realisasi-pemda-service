@@ -47,11 +47,11 @@ public class RekinService {
 
     public Mono<Rekin> submitRealisasiRekin(String rekinId, String rekin,
             String indikatorId, String indikator,
-            String nip, String idSasaran, String sasaran,
+            String nip, String namaPegawai, String idSasaran, String sasaran,
             String targetId, String target, Integer realisasi,
             String satuan, String tahun, String bulan, String kodeOpd, JenisRealisasi jenisRealisasi) {
         return Mono.just(buildUncheckedRealisasiRekin(
-                rekinId, rekin, indikatorId, indikator, nip, idSasaran, sasaran, targetId, target,
+                rekinId, rekin, indikatorId, indikator, nip, namaPegawai, idSasaran, sasaran, targetId, target,
                 realisasi, satuan, tahun, bulan, kodeOpd, jenisRealisasi))
                 .flatMap(rekinRepository::save);
     }
@@ -62,7 +62,7 @@ public class RekinService {
 
 public static Rekin buildUncheckedRealisasiRekin(String rekinId, String rekin,
             String indikatorId, String indikator,
-            String nip, String idSasaran, String sasaran,
+            String nip, String namaPegawai, String idSasaran, String sasaran,
             String targetId, String target, Integer realisasi,
             String satuan, String tahun, String bulan, String kodeOpd, JenisRealisasi jenisRealisasi) {
         return Rekin.of(
@@ -71,6 +71,7 @@ public static Rekin buildUncheckedRealisasiRekin(String rekinId, String rekin,
                 indikatorId,
                 indikator,
                 nip,
+                namaPegawai,
                 idSasaran,
                 sasaran,
                 targetId,
@@ -97,6 +98,7 @@ public static Rekin buildUncheckedRealisasiRekin(String rekinId, String rekin,
                                             req.indikatorId(),
                                             req.indikator(),
                                             req.nip(),
+                                            req.namaPegawai(),
                                             req.idSasaran(),
                                             req.sasaran(),
                                             req.targetId(),
@@ -124,6 +126,7 @@ public static Rekin buildUncheckedRealisasiRekin(String rekinId, String rekin,
                                         req.indikatorId(),
                                         req.indikator(),
                                         req.nip(),
+                                        req.namaPegawai(),
                                         req.idSasaran(),
                                         req.sasaran(),
                                         req.targetId(),
@@ -147,6 +150,7 @@ public static Rekin buildUncheckedRealisasiRekin(String rekinId, String rekin,
                 existing.indikatorId(),
                 existing.indikator(),
                 existing.nip(),
+                req.namaPegawai(),
                 existing.idSasaran(),
                 existing.sasaran(),
                 existing.targetId(),

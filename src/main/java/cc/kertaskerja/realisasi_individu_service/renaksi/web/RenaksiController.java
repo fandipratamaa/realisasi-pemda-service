@@ -115,6 +115,7 @@ public class RenaksiController {
                 renaksiRequest.renaksiId(),
                 renaksiRequest.renaksi(),
                 renaksiRequest.nip(),
+                renaksiRequest.namaPegawai(),
                 renaksiRequest.rekinId(),
                 renaksiRequest.rekin(),
                 renaksiRequest.targetId(),
@@ -158,8 +159,9 @@ public class RenaksiController {
                                     "    \"targetRealisasiId\": \"1\",\n" +
                                     "    \"renaksiId\": \"RENAKSI-001\",\n" +
                                     "    \"renaksi\": \"Renaksi Peningkatan Infrastruktur\",\n" +
-                                    "    \"nip\": \"198012312005011001\",\n" +
-                                    "    \"rekinId\": \"REKIN-001\",\n" +
+                                     "    \"nip\": \"198012312005011001\",\n" +
+                                     "    \"namaPegawai\": \"Budi Santoso\",\n" +
+                                     "    \"rekinId\": \"REKIN-001\",\n" +
                                     "    \"rekin\": \"Rekin Peningkatan Infrastruktur\",\n" +
                                     "    \"targetId\": \"TAR-1\",\n" +
                                     "    \"target\": \"100\",\n" +

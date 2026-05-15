@@ -27,6 +27,9 @@ public record RenjaTargetIndividu(
 
         @Column("nip")
         String nip,
+        @JsonProperty("nama_pegawai")
+        @Column("nama_pegawai")
+        String namaPegawai,
         @Nullable
         @Column("kode_opd")
         String kodeOpd,
@@ -67,6 +70,7 @@ public static RenjaTargetIndividu of(
             String kodeRenja,
             JenisRenja jenisRenja,
             String nip,
+            String namaPegawai,
             String kodeOpd,
             String idIndikator,
             String indikator,
@@ -84,6 +88,7 @@ public static RenjaTargetIndividu of(
                 kodeRenja,
                 jenisRenja,
                 nip,
+                namaPegawai,
                 kodeOpd,
                 idIndikator,
                 indikator,

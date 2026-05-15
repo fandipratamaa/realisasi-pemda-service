@@ -64,6 +64,11 @@ public record SasaranIndividuRequest(
         @Schema(description = "NIP pegawai", example = "198012312005011001")
         String nip,
 
+        @NotEmpty(message = "Nama pegawai tidak boleh kosong")
+        @NotNull(message = "Nama pegawai tidak boleh kosong")
+        @Schema(description = "Nama pegawai", example = "Budi Santoso")
+        String namaPegawai,
+
         @NotEmpty(message = "Rumus perhitungan tidak boleh kosong")
         @NotNull(message = "Rumus perhitungan tidak boleh kosong")
         @Schema(description = "Rumus perhitungan indikator", example = "(realisasi/target)*100")

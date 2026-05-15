@@ -31,6 +31,9 @@ public record SasaranIndividu(
         String bulan,
         JenisRealisasi jenisRealisasi,
         String nip,
+        @JsonProperty("nama_pegawai")
+        @Column("nama_pegawai")
+        String namaPegawai,
         @Nullable
         @Column("kode_opd")
         String kodeOpd,
@@ -62,6 +65,7 @@ public record SasaranIndividu(
             String bulan,
             JenisRealisasi jenisRealisasi,
             String nip,
+            String namaPegawai,
             String kodeOpd,
             String rumusPerhitungan,
             String sumberData,
@@ -70,7 +74,7 @@ public record SasaranIndividu(
         return new SasaranIndividu(null,
                 renjaId, renja, indikatorId, indikator,
                 targetId, target, realisasi, satuan, tahun,
-                bulan, jenisRealisasi, nip, kodeOpd, rumusPerhitungan, sumberData, status,
+                bulan, jenisRealisasi, nip, namaPegawai, kodeOpd, rumusPerhitungan, sumberData, status,
                 null, null, null, null, 0);
     }
 

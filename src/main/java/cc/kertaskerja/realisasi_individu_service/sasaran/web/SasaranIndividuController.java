@@ -118,6 +118,7 @@ public class SasaranIndividuController {
                 sasaranIndividuRequest.bulan(),
                 sasaranIndividuRequest.jenisRealisasi(),
                 sasaranIndividuRequest.nip(),
+                sasaranIndividuRequest.namaPegawai(),
                 sasaranIndividuRequest.kodeOpd(),
                 sasaranIndividuRequest.rumusPerhitungan(),
                 sasaranIndividuRequest.sumberData()

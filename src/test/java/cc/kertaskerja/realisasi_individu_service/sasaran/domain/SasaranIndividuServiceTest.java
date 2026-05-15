@@ -36,6 +36,7 @@ public class SasaranIndividuServiceTest {
         String bulan = "JANUARI";
         JenisRealisasi jenisRealisasi = JenisRealisasi.NAIK;
         String nip = "198012312005011001";
+        String namaPegawai = "Anon";
         String kodeOpd = "1.01.0.00.0.00.01.0000";
         String rumusPerhitungan = "(realisasi/target)*100";
         String sumberData = "SIMDA";
@@ -53,6 +54,7 @@ public class SasaranIndividuServiceTest {
                 bulan,
                 jenisRealisasi,
                 nip,
+                namaPegawai,
                 kodeOpd,
                 rumusPerhitungan,
                 sumberData,
@@ -63,7 +65,7 @@ public class SasaranIndividuServiceTest {
 
         Mono<SasaranIndividu> result = sasaranIndividuService.submitRealisasiSasaranIndividu(
                 renjaId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan,
-                jenisRealisasi, nip, kodeOpd, rumusPerhitungan, sumberData);
+                jenisRealisasi, nip, namaPegawai, kodeOpd, rumusPerhitungan, sumberData);
 
         StepVerifier.create(result)
                 .expectNextMatches(sasaranIndividu ->
@@ -77,6 +79,7 @@ public class SasaranIndividuServiceTest {
                                 sasaranIndividu.bulan().equals(expected.bulan()) &&
                                 sasaranIndividu.jenisRealisasi() == expected.jenisRealisasi() &&
                                 sasaranIndividu.nip().equals(expected.nip()) &&
+                                sasaranIndividu.namaPegawai().equals(expected.namaPegawai()) &&
                                 sasaranIndividu.rumusPerhitungan().equals(expected.rumusPerhitungan()) &&
                                 sasaranIndividu.sumberData().equals(expected.sumberData()) &&
                                 sasaranIndividu.status() == SasaranIndividuStatus.UNCHECKED)
@@ -95,6 +98,7 @@ public class SasaranIndividuServiceTest {
         String bulan = "JANUARI";
         JenisRealisasi jenisRealisasi = JenisRealisasi.NAIK;
         String nip = "198012312005011001";
+        String namaPegawai = "Anon";
         String kodeOpd = "1.01.0.00.0.00.01.0000";
         String rumusPerhitungan = "(realisasi/target)*100";
         String sumberData = "SIMDA";
@@ -103,7 +107,7 @@ public class SasaranIndividuServiceTest {
 
         Mono<SasaranIndividu> result = sasaranIndividuService.submitRealisasiSasaranIndividu(
                 renjaId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan,
-                jenisRealisasi, nip, kodeOpd, rumusPerhitungan, sumberData);
+                jenisRealisasi, nip, namaPegawai, kodeOpd, rumusPerhitungan, sumberData);
 
         StepVerifier.create(result)
                 .expectErrorMatches(throwable -> throwable instanceof RuntimeException &&
@@ -131,6 +135,7 @@ public class SasaranIndividuServiceTest {
                 bulan,
                 JenisRealisasi.NAIK,
                 nip,
+                "Anon",
                 "1.01.0.00.0.00.01.0000",
                 "(realisasi/target)*100",
                 "SIMDA",

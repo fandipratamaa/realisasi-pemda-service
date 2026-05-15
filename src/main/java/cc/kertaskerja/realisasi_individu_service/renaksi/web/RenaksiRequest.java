@@ -28,6 +28,11 @@ public record RenaksiRequest(
         @Schema(description = "NIP pelaksana", example = "198012312005011001")
         String nip,
 
+        @NotNull(message = "Nama pegawai tidak boleh kosong")
+        @NotEmpty(message = "Nama pegawai tidak boleh kosong")
+        @Schema(description = "Nama pegawai", example = "Budi Santoso")
+        String namaPegawai,
+
         @NotNull(message = "ID Rekin tidak boleh kosong")
         @NotEmpty(message = "ID Rekin tidak boleh kosong")
         @Schema(description = "ID rekin", example = "REKIN-001")

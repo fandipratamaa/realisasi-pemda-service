@@ -29,6 +29,9 @@ public record Rekin(
 
         @Column("nip")
         String nip,
+        @JsonProperty("nama_pegawai")
+        @Column("nama_pegawai")
+        String namaPegawai,
         @Column("id_sasaran")
         String idSasaran,
         @Column("sasaran")
@@ -70,6 +73,7 @@ public record Rekin(
             String indikatorId,
             String indikator,
             String nip,
+            String namaPegawai,
             String idSasaran,
             String sasaran,
             String targetId,
@@ -88,6 +92,7 @@ public record Rekin(
                 indikatorId,
                 indikator,
                 nip,
+                namaPegawai,
                 idSasaran,
                 sasaran,
                 targetId,

@@ -137,6 +137,7 @@ public class RekinController {
                 rekinRequest.indikatorId(),
                 rekinRequest.indikator(),
                 rekinRequest.nip(),
+                rekinRequest.namaPegawai(),
                 rekinRequest.idSasaran(),
                 rekinRequest.sasaran(),
                 rekinRequest.targetId(),
@@ -182,8 +183,9 @@ public class RekinController {
                                     "    \"rekin\": \"Rekin Peningkatan Infrastruktur\",\n" +
                                     "    \"indikatorId\": \"IND-REK-123\",\n" +
                                     "    \"indikator\": \"Persentase capaian rekin\",\n" +
-                                    "    \"nip\": \"198012312005011001\",\n" +
-                                    "    \"idSasaran\": \"SAS-001\",\n" +
+                                     "    \"nip\": \"198012312005011001\",\n" +
+                                     "    \"namaPegawai\": \"Budi Santoso\",\n" +
+                                     "    \"idSasaran\": \"SAS-001\",\n" +
                                     "    \"sasaran\": \"Meningkatkan kualitas layanan\",\n" +
                                     "    \"targetId\": \"TAR-1\",\n" +
                                     "    \"target\": \"100\",\n" +

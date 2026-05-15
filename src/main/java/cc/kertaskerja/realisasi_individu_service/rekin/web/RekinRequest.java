@@ -28,6 +28,11 @@ public record RekinRequest(
         @Schema(description = "NIP pelaksana", example = "198012312005011001")
         String nip,
 
+        @NotNull(message = "Nama pegawai tidak boleh kosong")
+        @NotEmpty(message = "Nama pegawai tidak boleh kosong")
+        @Schema(description = "Nama pegawai", example = "Budi Santoso")
+        String namaPegawai,
+
         @NotNull(message = "ID sasaran tidak boleh kosong")
         @NotEmpty(message = "ID sasaran tidak boleh kosong")
         @Schema(description = "ID sasaran", example = "SAS-001")

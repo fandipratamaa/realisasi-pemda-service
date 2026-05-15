@@ -38,6 +38,7 @@ public class RenaksiControllerWebFluxTests {
                 "RENAKSI-1",
                 "Renaksi A",
                 "198012312005011001",
+                "Anon",
                 "REKIN-1",
                 "Rekin A",
                 "TAR-1",
@@ -53,6 +54,7 @@ public class RenaksiControllerWebFluxTests {
                 "RENAKSI-2",
                 "Renaksi B",
                 "198012312005011001",
+                "Anon",
                 "REKIN-1",
                 "Rekin A",
                 "TAR-2",
@@ -96,6 +98,7 @@ public class RenaksiControllerWebFluxTests {
                 "RENAKSI-1",
                 "Renaksi A",
                 nip,
+                "Anon",
                 "REKIN-1",
                 "Rekin A",
                 "TAR-1",
@@ -127,4 +130,3 @@ public class RenaksiControllerWebFluxTests {
                 });
     }
 }
-
