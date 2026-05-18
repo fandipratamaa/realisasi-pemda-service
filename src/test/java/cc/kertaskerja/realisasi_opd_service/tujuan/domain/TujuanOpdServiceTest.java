@@ -50,6 +50,7 @@ class TujuanOpdServiceTest {
                 .thenReturn(Flux.just(tujuan));
         when(indikatorTujuanOpdRepository.findAll()).thenReturn(Flux.just(indikator));
         when(targetIndikatorTujuanOpdRepository.findAll()).thenReturn(Flux.just(target));
+        when(penetapanTujuanOpdClient.fetchTujuanOpd("5.01.5.05.0.00.01.0000", 2026)).thenReturn(Mono.just(List.of()));
 
         StepVerifier.create(tujuanOpdService.getRealisasiTujuanOpdByTahunAndKodeOpdAndBulan("2026", "5.01.5.05.0.00.01.0000", "3"))
                 .assertNext(response -> {
@@ -214,6 +215,7 @@ class TujuanOpdServiceTest {
                 .thenReturn(Flux.just(tujuan));
         when(indikatorTujuanOpdRepository.findAll()).thenReturn(Flux.just(indikator));
         when(targetIndikatorTujuanOpdRepository.findAll()).thenReturn(Flux.just(target));
+        when(penetapanTujuanOpdClient.fetchTujuanOpd("5.01.5.05.0.00.01.0000", 2026)).thenReturn(Mono.just(List.of()));
 
         StepVerifier.create(tujuanOpdService.getRealisasiTujuanOpdByTahunAndKodeOpdAndBulan("2026", "5.01.5.05.0.00.01.0000", "3"))
                 .assertNext(response -> {
