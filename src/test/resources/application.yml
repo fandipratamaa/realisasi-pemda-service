@@ -15,7 +15,7 @@ spring:
 
 integration:
   penetapan:
-    base-url: http://localhost:8080
+    base-url: https://penetapan-service-staging.zeabur.app
     read-through-enabled: false
     connect-timeout: 5s
     read-timeout: 10s
