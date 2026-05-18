@@ -1,0 +1,21 @@
+spring:
+  r2dbc:
+    username: postgres
+    password: root
+    url: r2dbc:postgresql://localhost:5432/kertaskerja_realisasi_pemda
+  flyway:
+    user: ${spring.r2dbc.username}
+    password: ${spring.r2dbc.password}
+    url: jdbc:postgresql://localhost:5432/kertaskerja_realisasi_pemda
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://auth.kertaskerja.cc/realms/TestRealm
+
+integration:
+  penetapan:
+    base-url: http://localhost:8080
+    read-through-enabled: false
+    connect-timeout: 5s
+    read-timeout: 10s
