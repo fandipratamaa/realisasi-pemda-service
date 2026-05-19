@@ -40,4 +40,18 @@ public record SasaranOpd(
                 kodeOpd, kodeSasaranOpd, tahun, bulan,
                 null, null, null, null);
     }
+
+    public record CapaianResult(Double capaian, String keteranganCapaian) {}
+
+    public static CapaianResult hitungCapaian(Double realisasi, Double target) {
+        if (realisasi == null || target == null || target == 0) {
+            return new CapaianResult(null, null);
+        }
+        double calculatedCapaian = realisasi / target * 100;
+        String keteranganCapaian = null;
+        if (calculatedCapaian > 100) {
+            keteranganCapaian = "nilai capaian lebih dari 100% (" + String.format("%.2f%%", calculatedCapaian) + ")";
+        }
+        return new CapaianResult(Math.min(calculatedCapaian, 100), keteranganCapaian);
+    }
 }

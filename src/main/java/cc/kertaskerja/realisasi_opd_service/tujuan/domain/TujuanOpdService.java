@@ -100,21 +100,14 @@ public class TujuanOpdService {
                                 TujuanOpdResponse.TargetResponse matchedTarget = targetMap.get(t.kodeTarget());
                                 Double targetPenetapan = t.target();
                                 Double realisasiValue = matchedTarget != null ? matchedTarget.realisasi() : null;
-                                Double capaian = null;
-                                String keteranganCapaian = null;
-                                if (realisasiValue != null && targetPenetapan != null && targetPenetapan != 0) {
-                                    capaian = realisasiValue / targetPenetapan * 100;
-                                    if (capaian > 100) {
-                                        keteranganCapaian = "nilai capaian lebih dari 100% (" + String.format("%.2f%%", capaian) + ")";
-                                    }
-                                }
+                                var capaianResult = TujuanOpd.hitungCapaian(realisasiValue, targetPenetapan);
                                 return new TujuanOpdPenetapanResponse.TargetPenetapan(
                                         t.kodeTarget(),
                                         t.satuan(),
                                         targetPenetapan,
                                         realisasiValue,
-                                        capaian,
-                                        keteranganCapaian
+                                        capaianResult.capaian(),
+                                        capaianResult.keteranganCapaian()
                                 );
                             })
                             .toList();
@@ -183,20 +176,14 @@ public class TujuanOpdService {
                                 if (matchedTarget == null) {
                                     return t;
                                 }
-                                Double capaian = null;
-                                String keteranganCapaian = null;
-                                if (t.realisasi() != null && matchedTarget.target() != null && matchedTarget.target() != 0) {
-                                    capaian = t.realisasi() / matchedTarget.target() * 100;
-                                    if (capaian > 100) {
-                                        keteranganCapaian = "nilai capaian lebih dari 100% (" + String.format("%.2f%%", capaian) + ")";
-                                    }
-                                }
+                                var capaianResult = TujuanOpd.hitungCapaian(t.realisasi(), matchedTarget.target());
                                 return new TujuanOpdResponse.TargetResponse(
                                         t.id(), t.kodeTarget(),
                                         matchedTarget.target(),
                                         matchedTarget.satuan(),
                                         t.tahun(), t.bulan(), t.realisasi(),
-                                        capaian, keteranganCapaian
+                                        capaianResult.capaian(),
+                                        capaianResult.keteranganCapaian()
                                 );
                             })
                             .toList();
