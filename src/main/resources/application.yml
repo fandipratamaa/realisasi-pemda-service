@@ -35,3 +35,10 @@ logging:
     org.springframework.security: DEBUG
     org.springframework.web.server: DEBUG
     reactor.netty.http.server: DEBUG
+
+integration:
+  penetapan:
+    base-url: https://penetapan-service-staging.zeabur.app
+    read-through-enabled: true
+    connect-timeout: 5s
+    read-timeout: 10s
