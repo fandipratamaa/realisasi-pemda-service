@@ -16,9 +16,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -64,23 +66,30 @@ public class TujuanOpdService {
                 .flatMapMany(penetapanList -> {
                     if (bulan == null || bulan.isBlank()) {
                         return Flux.fromIterable(penetapanList)
-                                .map(p -> mergePenetapanWithRealisasi(p, null));
+                                .map(p -> mergePenetapanWithRealisasi(p, null, Set.of()))
+                                .filter(response -> !response.indikator().isEmpty());
                     }
 
+                    Mono<Set<String>> hiddenTargetKeys = getHiddenTargetKeysForPreviousMonths(kodeOpd, tahun, bulan);
                     Mono<Map<String, TujuanOpdResponse>> realisasiMap =
                             getRealisasiTujuanOpdByTahunAndKodeOpdAndBulan(String.valueOf(tahun), kodeOpd, bulan)
                                     .collectMap(TujuanOpdResponse::kodeTujuanOpd);
 
-                    return realisasiMap.flatMapMany(rMap ->
-                            Flux.fromIterable(penetapanList)
-                                    .map(p -> mergePenetapanWithRealisasi(p, rMap.get(p.kodeTujuanOpd())))
+                    return Mono.zip(realisasiMap, hiddenTargetKeys).flatMapMany(tuple -> {
+                                Map<String, TujuanOpdResponse> rMap = tuple.getT1();
+                                Set<String> hiddenKeys = tuple.getT2();
+                                return Flux.fromIterable(penetapanList)
+                                        .map(p -> mergePenetapanWithRealisasi(p, rMap.get(p.kodeTujuanOpd()), hiddenKeys))
+                                        .filter(response -> !response.indikator().isEmpty());
+                            }
                     );
                 });
     }
 
     private TujuanOpdPenetapanResponse mergePenetapanWithRealisasi(
             PenetapanTujuanOpd.TujuanPenetapanData penetapan,
-            TujuanOpdResponse realisasi
+            TujuanOpdResponse realisasi,
+            Set<String> hiddenTargetKeys
     ) {
         Map<String, TujuanOpdResponse.IndikatorResponse> indikatorMap = realisasi != null
                 ? realisasi.indikator().stream()
@@ -96,6 +105,7 @@ public class TujuanOpdService {
                             : Map.of();
 
                     List<TujuanOpdPenetapanResponse.TargetPenetapan> targetList = ind.target().stream()
+                            .filter(t -> !hiddenTargetKeys.contains(buildTargetKey(penetapan.kodeTujuanOpd(), ind.kodeIndikator(), t.kodeTarget())))
                             .map(t -> {
                                 TujuanOpdResponse.TargetResponse matchedTarget = targetMap.get(t.kodeTarget());
                                 Double targetPenetapan = t.target();
@@ -112,6 +122,10 @@ public class TujuanOpdService {
                             })
                             .toList();
 
+                    if (targetList.isEmpty()) {
+                        return null;
+                    }
+
                     return new TujuanOpdPenetapanResponse.IndikatorPenetapan(
                             ind.kodeIndikator(),
                             ind.indikator(),
@@ -121,6 +135,7 @@ public class TujuanOpdService {
                             targetList
                     );
                 })
+                .filter(Objects::nonNull)
                 .toList();
 
         return new TujuanOpdPenetapanResponse(
@@ -132,6 +147,30 @@ public class TujuanOpdService {
                 penetapan.versi(),
                 indikatorList
         );
+    }
+
+    // Sembunyikan data penetapan yang sudah di isi realisasinya di bulan tertentu
+    private Mono<Set<String>> getHiddenTargetKeysForPreviousMonths(String kodeOpd, int tahun, String bulan) {
+        Integer activeMonth = parseInteger(bulan);
+        if (activeMonth == null || activeMonth <= 1) {
+            return Mono.just(Set.of());
+        }
+
+        return tujuanOpdRepository.findAllByTahunAndKodeOpd(String.valueOf(tahun), kodeOpd)
+                .filter(tujuan -> {
+                    Integer tujuanMonth = parseInteger(tujuan.bulan());
+                    return tujuanMonth != null && tujuanMonth < activeMonth;
+                })
+                .flatMap(this::toResponseFromStoredData)
+                .flatMapIterable(response -> response.indikator().stream()
+                        .flatMap(indikator -> indikator.target().stream()
+                                .map(target -> buildTargetKey(response.kodeTujuanOpd(), indikator.kodeIndikator(), target.kodeTarget())))
+                        .toList())
+                .collect(Collectors.toCollection(HashSet::new));
+    }
+
+    private String buildTargetKey(String kodeTujuanOpd, String kodeIndikator, String kodeTarget) {
+        return kodeTujuanOpd + "|" + kodeIndikator + "|" + kodeTarget;
     }
 
     private Mono<TujuanOpdResponse> enrichWithPenetapan(Mono<TujuanOpdResponse> responseMono, String kodeOpd, String tahun) {
