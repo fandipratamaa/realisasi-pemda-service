@@ -13,5 +13,7 @@ public interface TujuanOpdRepository extends ReactiveCrudRepository<TujuanOpd, L
             String bulan
     );
 
+    Flux<TujuanOpd> findAllByTahunAndKodeOpd(String tahun, String kodeOpd);
+
     Flux<TujuanOpd> findAllByTahunAndKodeOpdAndBulan(String tahun, String kodeOpd, String bulan);
 }

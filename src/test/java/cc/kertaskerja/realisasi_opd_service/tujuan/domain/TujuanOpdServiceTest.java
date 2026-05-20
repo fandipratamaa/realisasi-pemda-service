@@ -1,6 +1,7 @@
 package cc.kertaskerja.realisasi_opd_service.tujuan.domain;
 
 import cc.kertaskerja.integration.penetapan.PenetapanTujuanOpdClient;
+import cc.kertaskerja.integration.penetapan.tujuan_opd.PenetapanTujuanOpd;
 import cc.kertaskerja.realisasi_opd_service.tujuan.domain.indikator.IndikatorTujuanOpd;
 import cc.kertaskerja.realisasi_opd_service.tujuan.domain.indikator.IndikatorTujuanOpdRepository;
 import cc.kertaskerja.realisasi_opd_service.tujuan.domain.target.TargetIndikatorTujuanOpd;
@@ -162,7 +163,8 @@ class TujuanOpdServiceTest {
                 "OPD-001", "KODE-2", "2026", "1")).thenReturn(Mono.empty());
 
         when(tujuanOpdRepository.save(any(TujuanOpd.class)))
-                .thenReturn(Mono.just(saved1), Mono.just(saved2));
+                .thenReturn(Mono.just(saved1))
+                .thenReturn(Mono.just(saved2));
 
         when(indikatorTujuanOpdRepository.findFirstByTujuanOpdIdAndKodeIndikatorAndKodeOpdAndTahunAndBulan(
                 any(), any(), any(), any(), any())).thenReturn(Mono.empty());
@@ -171,7 +173,8 @@ class TujuanOpdServiceTest {
         IndikatorTujuanOpd ind2 = new IndikatorTujuanOpd(4L, 2L, "KODE-IND-2", "OPD-001",
                 "2026", "1", null, null, null, null);
         when(indikatorTujuanOpdRepository.save(any(IndikatorTujuanOpd.class)))
-                .thenReturn(Mono.just(ind1), Mono.just(ind2));
+                .thenReturn(Mono.just(ind1))
+                .thenReturn(Mono.just(ind2));
 
         when(targetIndikatorTujuanOpdRepository.findFirstByIndikatorTujuanIdAndKodeTargetAndTahunAndBulan(
                 any(), any(), any(), any())).thenReturn(Mono.empty());
@@ -180,12 +183,15 @@ class TujuanOpdServiceTest {
         TargetIndikatorTujuanOpd tgt2 = new TargetIndikatorTujuanOpd(6L, 4L, "KODE-TAR-2",
                 BigDecimal.valueOf(50), "2026", "1", null, null, null, null);
         when(targetIndikatorTujuanOpdRepository.save(any(TargetIndikatorTujuanOpd.class)))
-                .thenReturn(Mono.just(tgt1), Mono.just(tgt2));
+                .thenReturn(Mono.just(tgt1))
+                .thenReturn(Mono.just(tgt2));
 
         when(indikatorTujuanOpdRepository.findAll())
-                .thenReturn(Flux.just(ind1), Flux.just(ind2));
+                .thenReturn(Flux.just(ind1))
+                .thenReturn(Flux.just(ind2));
         when(targetIndikatorTujuanOpdRepository.findAll())
-                .thenReturn(Flux.just(tgt1), Flux.just(tgt2));
+                .thenReturn(Flux.just(tgt1))
+                .thenReturn(Flux.just(tgt2));
         when(penetapanTujuanOpdClient.fetchTujuanOpd("OPD-001", 2026)).thenReturn(Mono.just(List.of()));
 
         StepVerifier.create(tujuanOpdService.batchSubmitRealisasiTujuanOpd(List.of(req1, req2)))
@@ -222,6 +228,102 @@ class TujuanOpdServiceTest {
                     org.junit.jupiter.api.Assertions.assertEquals("TUJ-ORPHAN", response.kodeTujuanOpd());
                     org.junit.jupiter.api.Assertions.assertTrue(response.indikator().getFirst().target().stream()
                             .anyMatch(t -> "TGT-ORPHAN".equals(t.kodeTarget())));
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void getPenetapanWithRealisasi_ShouldHideTargetsFromPreviousMonthsButKeepCurrentMonthTargetsVisible() {
+        String kodeOpd = "5.01.5.05.0.00.01.0000";
+        TujuanOpd januaryTujuan = new TujuanOpd(1L, kodeOpd, "TUJ-1",
+                "2026", "1", "tester", Instant.now(), Instant.now(), "tester");
+        TujuanOpd februaryTujuan = new TujuanOpd(2L, kodeOpd, "TUJ-2",
+                "2026", "2", "tester", Instant.now(), Instant.now(), "tester");
+
+        IndikatorTujuanOpd januaryIndikator = new IndikatorTujuanOpd(10L, 1L, "IND-1", kodeOpd,
+                "2026", "1", Instant.now(), Instant.now(), "tester", null);
+        IndikatorTujuanOpd februaryIndikator = new IndikatorTujuanOpd(20L, 2L, "IND-2", kodeOpd,
+                "2026", "2", Instant.now(), Instant.now(), "tester", null);
+
+        TargetIndikatorTujuanOpd januaryTarget = new TargetIndikatorTujuanOpd(100L, 10L, "TGT-HIDDEN", BigDecimal.ZERO,
+                "2026", "1", Instant.now(), Instant.now(), "tester", null);
+        TargetIndikatorTujuanOpd februaryTarget = new TargetIndikatorTujuanOpd(200L, 20L, "TGT-VISIBLE", BigDecimal.valueOf(55),
+                "2026", "2", Instant.now(), Instant.now(), "tester", null);
+
+        PenetapanTujuanOpd.TujuanPenetapanData hiddenTujuan = new PenetapanTujuanOpd.TujuanPenetapanData(
+                11L,
+                kodeOpd,
+                "TUJ-1",
+                "Tujuan Tersembunyi",
+                "2026-2031",
+                2026,
+                1,
+                List.of(new PenetapanTujuanOpd.IndikatorPenetapanData(
+                        12L,
+                        11L,
+                        "IND-1",
+                        "Indikator Tersembunyi",
+                        "Rumus 1",
+                        "Sumber 1",
+                        "Definisi 1",
+                        2026,
+                        List.of(new PenetapanTujuanOpd.TargetPenetapanData(
+                                13L,
+                                12L,
+                                "TGT-HIDDEN",
+                                "persen",
+                                2026,
+                                100.0
+                        ))
+                ))
+        );
+
+        PenetapanTujuanOpd.TujuanPenetapanData visibleTujuan = new PenetapanTujuanOpd.TujuanPenetapanData(
+                21L,
+                kodeOpd,
+                "TUJ-2",
+                "Tujuan Februari",
+                "2026-2031",
+                2026,
+                1,
+                List.of(new PenetapanTujuanOpd.IndikatorPenetapanData(
+                        22L,
+                        21L,
+                        "IND-2",
+                        "Indikator Februari",
+                        "Rumus 2",
+                        "Sumber 2",
+                        "Definisi 2",
+                        2026,
+                        List.of(new PenetapanTujuanOpd.TargetPenetapanData(
+                                23L,
+                                22L,
+                                "TGT-VISIBLE",
+                                "persen",
+                                2026,
+                                200.0
+                        ))
+                ))
+        );
+
+        when(penetapanTujuanOpdClient.fetchTujuanOpd(kodeOpd, 2026))
+                .thenReturn(Mono.just(List.of(hiddenTujuan, visibleTujuan)));
+        when(tujuanOpdRepository.findAllByTahunAndKodeOpd("2026", kodeOpd))
+                .thenReturn(Flux.just(januaryTujuan, februaryTujuan));
+        when(tujuanOpdRepository.findAllByTahunAndKodeOpdAndBulan("2026", kodeOpd, "2"))
+                .thenReturn(Flux.just(februaryTujuan));
+        when(indikatorTujuanOpdRepository.findAll())
+                .thenReturn(Flux.just(januaryIndikator, februaryIndikator));
+        when(targetIndikatorTujuanOpdRepository.findAll())
+                .thenReturn(Flux.just(januaryTarget, februaryTarget));
+
+        StepVerifier.create(tujuanOpdService.getPenetapanWithRealisasi(kodeOpd, 2026, "2"))
+                .assertNext(response -> {
+                    org.junit.jupiter.api.Assertions.assertEquals("TUJ-2", response.kodeTujuanOpd());
+                    org.junit.jupiter.api.Assertions.assertEquals(1, response.indikator().size());
+                    org.junit.jupiter.api.Assertions.assertEquals(1, response.indikator().getFirst().target().size());
+                    org.junit.jupiter.api.Assertions.assertEquals("TGT-VISIBLE", response.indikator().getFirst().target().getFirst().kodeTarget());
+                    org.junit.jupiter.api.Assertions.assertEquals(55.0, response.indikator().getFirst().target().getFirst().realisasi());
                 })
                 .verifyComplete();
     }
