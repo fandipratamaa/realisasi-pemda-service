@@ -6,8 +6,8 @@ import cc.kertaskerja.realisasi_opd_service.sasaran.domain.target.TargetIndikato
 import cc.kertaskerja.realisasi_opd_service.sasaran.domain.target.TargetIndikatorSasaranOpdRepository;
 import cc.kertaskerja.realisasi_opd_service.sasaran.domain.indikator.IndikatorSasaranOpd;
 import cc.kertaskerja.realisasi_opd_service.sasaran.domain.indikator.IndikatorSasaranOpdRepository;
+import cc.kertaskerja.realisasi_opd_service.sasaran.web.PenetapanSasaranOpdListResponse;
 import cc.kertaskerja.realisasi_opd_service.sasaran.web.SasaranOpdPenetapanResponse;
-import cc.kertaskerja.realisasi_opd_service.sasaran.web.SasaranOpdRequest;
 import cc.kertaskerja.realisasi_opd_service.sasaran.web.SasaranOpdResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -48,33 +47,29 @@ public class SasaranOpdService {
                 .flatMap(response -> enrichWithPenetapan(Mono.just(response), kodeOpd, tahun));
     }
 
-    public Mono<SasaranOpdResponse> submitRealisasiSasaranOpd(SasaranOpdRequest req) {
-        return upsertHierarchy(req)
-                .flatMap(sasaran -> toResponseFromStoredData(sasaran).next())
-                .flatMap(response -> enrichWithPenetapan(Mono.just(response), req.kodeOpd(), req.tahun()));
-    }
-
-    public Flux<SasaranOpdResponse> batchSubmitRealisasiSasaranOpd(List<SasaranOpdRequest> sasaranOpdRequests) {
-        return Flux.fromIterable(sasaranOpdRequests)
-                .flatMap(this::submitRealisasiSasaranOpd);
-    }
-
-    public Flux<SasaranOpdPenetapanResponse> getPenetapanWithRealisasi(String kodeOpd, int tahun, String bulan) {
+    public Mono<PenetapanSasaranOpdListResponse> getPenetapanWithRealisasi(String kodeOpd, int tahun, String bulan) {
         return penetapanClient.fetchSasaranOpd(kodeOpd, tahun)
-                .flatMapMany(penetapanList -> {
+                .flatMap(penetapanList -> {
+                    String rootKodeOpd = penetapanList.isEmpty() ? kodeOpd : penetapanList.getFirst().kodeOpd();
+                    Integer effectiveTahun = penetapanList.isEmpty() ? tahun : penetapanList.getFirst().tahunAktif();
+
                     if (bulan == null || bulan.isBlank()) {
-                        return Flux.fromIterable(penetapanList)
-                                .map(p -> mergePenetapanWithRealisasi(p, null));
+                        List<SasaranOpdPenetapanResponse> items = penetapanList.stream()
+                                .map(p -> mergePenetapanWithRealisasi(p, null))
+                                .toList();
+                        return Mono.just(new PenetapanSasaranOpdListResponse(rootKodeOpd, effectiveTahun, items));
                     }
 
                     Mono<Map<String, SasaranOpdResponse>> realisasiMap =
-                            getRealisasiSasaranOpdByTahunAndKodeOpdAndBulan(String.valueOf(tahun), kodeOpd, bulan)
+                            getRealisasiSasaranOpdByTahunAndKodeOpdAndBulan(String.valueOf(effectiveTahun), kodeOpd, bulan)
                                     .collectMap(SasaranOpdResponse::kodeSasaranOpd);
 
-                    return realisasiMap.flatMapMany(rMap ->
-                            Flux.fromIterable(penetapanList)
-                                    .map(p -> mergePenetapanWithRealisasi(p, rMap.get(p.kodeSasaranOpd())))
-                    );
+                    return realisasiMap.map(rMap -> {
+                        List<SasaranOpdPenetapanResponse> items = penetapanList.stream()
+                                .map(p -> mergePenetapanWithRealisasi(p, rMap.get(p.kodeSasaranOpd())))
+                                .toList();
+                        return new PenetapanSasaranOpdListResponse(rootKodeOpd, effectiveTahun, items);
+                    });
                 });
     }
 
@@ -83,19 +78,19 @@ public class SasaranOpdService {
             SasaranOpdResponse realisasi
     ) {
         Map<String, SasaranOpdResponse.IndikatorResponse> indikatorMap = realisasi != null
-                ? realisasi.indikator().stream()
+                ? realisasi.indikators().stream()
                         .collect(Collectors.toMap(SasaranOpdResponse.IndikatorResponse::kodeIndikator, i -> i))
                 : Map.of();
 
-        List<SasaranOpdPenetapanResponse.IndikatorPenetapan> indikatorList = penetapan.indikator().stream()
+        List<SasaranOpdPenetapanResponse.IndikatorPenetapan> indikatorList = penetapan.indikators().stream()
                 .map(ind -> {
                     SasaranOpdResponse.IndikatorResponse matchedInd = indikatorMap.get(ind.kodeIndikator());
                     Map<String, SasaranOpdResponse.TargetResponse> targetMap = matchedInd != null
-                            ? matchedInd.target().stream()
+                            ? matchedInd.targets().stream()
                                     .collect(Collectors.toMap(SasaranOpdResponse.TargetResponse::kodeTarget, t -> t))
                             : Map.of();
 
-                    List<SasaranOpdPenetapanResponse.TargetPenetapan> targetList = ind.target().stream()
+                    List<SasaranOpdPenetapanResponse.TargetPenetapan> targetList = ind.targets().stream()
                             .map(t -> {
                                 SasaranOpdResponse.TargetResponse matchedTarget = targetMap.get(t.kodeTarget());
                                 Double targetPenetapan = t.target();
@@ -124,12 +119,9 @@ public class SasaranOpdService {
                 .toList();
 
         return new SasaranOpdPenetapanResponse(
-                penetapan.kodeOpd(),
+                penetapan.id(),
                 penetapan.kodeSasaranOpd(),
                 penetapan.sasaranOpd(),
-                penetapan.periode(),
-                penetapan.tahunAktif(),
-                penetapan.versi(),
                 indikatorList
         );
     }
@@ -158,19 +150,19 @@ public class SasaranOpdService {
             SasaranOpdResponse response,
             PenetapanSasaranOpd.SasaranPenetapanData penetapan
     ) {
-        Map<String, PenetapanSasaranOpd.IndikatorPenetapanData> indikatorPenetapanMap = penetapan.indikator().stream()
+        Map<String, PenetapanSasaranOpd.IndikatorPenetapanData> indikatorPenetapanMap = penetapan.indikators().stream()
                 .collect(Collectors.toMap(PenetapanSasaranOpd.IndikatorPenetapanData::kodeIndikator, i -> i));
 
-        List<SasaranOpdResponse.IndikatorResponse> enrichedIndikator = response.indikator().stream()
+        List<SasaranOpdResponse.IndikatorResponse> enrichedIndikator = response.indikators().stream()
                 .map(ind -> {
                     PenetapanSasaranOpd.IndikatorPenetapanData matchedInd = indikatorPenetapanMap.get(ind.kodeIndikator());
                     if (matchedInd == null) {
                         return ind;
                     }
-                    Map<String, PenetapanSasaranOpd.TargetPenetapanData> targetPenetapanMap = matchedInd.target().stream()
+                    Map<String, PenetapanSasaranOpd.TargetPenetapanData> targetPenetapanMap = matchedInd.targets().stream()
                             .collect(Collectors.toMap(PenetapanSasaranOpd.TargetPenetapanData::kodeTarget, t -> t));
 
-                    List<SasaranOpdResponse.TargetResponse> enrichedTargets = ind.target().stream()
+                    List<SasaranOpdResponse.TargetResponse> enrichedTargets = ind.targets().stream()
                             .map(t -> {
                                 PenetapanSasaranOpd.TargetPenetapanData matchedTarget = targetPenetapanMap.get(t.kodeTarget());
                                 if (matchedTarget == null) {
@@ -206,58 +198,6 @@ public class SasaranOpdService {
                 response.tahun(), response.bulan(),
                 enrichedIndikator
         );
-    }
-
-    private Mono<SasaranOpd> upsertHierarchy(SasaranOpdRequest req) {
-        return sasaranOpdRepository.findFirstByKodeOpdAndKodeSasaranOpdAndTahunAndBulan(
-                        req.kodeOpd(), req.kodeSasaranOpd(), req.tahun(), req.bulan())
-                .switchIfEmpty(Mono.defer(() -> sasaranOpdRepository.save(SasaranOpd.of(
-                        req.kodeOpd(),
-                        req.kodeSasaranOpd(),
-                        req.tahun(),
-                        req.bulan()
-                ))))
-                .flatMap(sasaran -> indikatorSasaranOpdRepository.findFirstBySasaranOpdIdAndKodeIndikatorAndKodeOpdAndTahunAndBulan(
-                                sasaran.id(), req.kodeIndikatorSasaranOpd(), req.kodeOpd(), req.tahun(), req.bulan())
-                        .switchIfEmpty(Mono.defer(() -> indikatorSasaranOpdRepository.save(new IndikatorSasaranOpd(
-                                null,
-                                sasaran.id(),
-                                req.kodeIndikatorSasaranOpd(),
-                                req.kodeOpd(),
-                                req.tahun(),
-                                req.bulan(),
-                                null,
-                                null,
-                                null,
-                                null
-                        ))))
-                        .flatMap(indikator -> targetIndikatorSasaranOpdRepository.findFirstByIndikatorSasaranIdAndKodeTargetAndTahunAndBulan(
-                                        indikator.id(), req.kodeTargetSasaranOpd(), req.tahun(), req.bulan())
-                                .flatMap(existing -> targetIndikatorSasaranOpdRepository.save(new TargetIndikatorSasaranOpd(
-                                        existing.id(),
-                                        existing.indikatorSasaranId(),
-                                        existing.kodeTarget(),
-                                                BigDecimal.valueOf(req.realisasi()),
-                                                existing.tahun(),
-                                                existing.bulan(),
-                                                existing.createdDate(),
-                                                null,
-                                                existing.createdBy(),
-                                                null
-                                        )))
-                                        .switchIfEmpty(Mono.defer(() -> targetIndikatorSasaranOpdRepository.save(new TargetIndikatorSasaranOpd(
-                                                null,
-                                                indikator.id(),
-                                                req.kodeTargetSasaranOpd(),
-                                                BigDecimal.valueOf(req.realisasi()),
-                                        req.tahun(),
-                                        req.bulan(),
-                                        null,
-                                        null,
-                                        null,
-                                        null
-                                ))))
-                                .thenReturn(sasaran)));
     }
 
     private Flux<SasaranOpdResponse> toResponseFromStoredData(SasaranOpd sasaran) {

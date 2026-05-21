@@ -5,15 +5,24 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public class PenetapanSasaranOpd {
+    public record PenetapanSasaranOpdRoot(
+            @JsonProperty("kode_opd") String kodeOpd,
+            @JsonProperty("tahun_aktif") Integer tahunAktif,
+            Integer versi,
+            @JsonProperty("is_locked") Boolean isLocked,
+            @JsonProperty("sasaran_opds") List<SasaranPenetapanData> sasaranOpds
+    ) {}
+
     public record SasaranPenetapanData(
             Long id,
-            @JsonProperty("kode_opd") String kodeOpd,
             @JsonProperty("kode_sasaran_opd") String kodeSasaranOpd,
             @JsonProperty("sasaran_opd") String sasaranOpd,
             String periode,
+            @JsonProperty("kode_opd") String kodeOpd,
             @JsonProperty("tahun_aktif") Integer tahunAktif,
             Integer versi,
-            List<IndikatorPenetapanData> indikator
+            @JsonProperty("is_locked") Boolean isLocked,
+            List<IndikatorPenetapanData> indikators
     ) {}
 
     public record IndikatorPenetapanData(
@@ -25,7 +34,7 @@ public class PenetapanSasaranOpd {
             @JsonProperty("sumber_data") String sumberData,
             @JsonProperty("definisi_operasional") String definisiOperasional,
             @JsonProperty("tahun_aktif") Integer tahunAktif,
-            List<TargetPenetapanData> target
+            List<TargetPenetapanData> targets
     ) {}
 
     public record TargetPenetapanData(

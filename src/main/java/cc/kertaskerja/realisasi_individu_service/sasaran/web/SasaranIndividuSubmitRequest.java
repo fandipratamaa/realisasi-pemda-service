@@ -1,27 +1,27 @@
-package cc.kertaskerja.realisasi_opd_service.sasaran.web;
+package cc.kertaskerja.realisasi_individu_service.sasaran.web;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
-@Schema(name = "SasaranOpdRequest", description = "Payload untuk membuat/memperbarui realisasi sasaran OPD")
-public record SasaranOpdRequest(
+@Schema(name = "SasaranIndividuSubmitRequest", description = "Payload untuk membuat/memperbarui realisasi sasaran individu")
+public record SasaranIndividuSubmitRequest(
 
-        @NotNull(message = "Kode sasaran opd tidak boleh kosong")
-        @NotEmpty(message = "Kode sasaran opd tidak boleh kosong")
+        @NotNull(message = "Kode sasaran OPD tidak boleh kosong")
+        @NotEmpty(message = "Kode sasaran OPD tidak boleh kosong")
         @Schema(description = "Kode sasaran OPD", example = "KODE-SAS-OPD-001")
         String kodeSasaranOpd,
 
-        @NotNull(message = "Kode indikator sasaran opd tidak boleh kosong")
-        @NotEmpty(message = "Kode indikator sasaran opd tidak boleh kosong")
-        @Schema(description = "Kode indikator sasaran OPD", example = "KODE-IND-SAS-OPD-001")
-        String kodeIndikatorSasaranOpd,
+        @NotNull(message = "Kode indikator tidak boleh kosong")
+        @NotEmpty(message = "Kode indikator tidak boleh kosong")
+        @Schema(description = "Kode indikator", example = "KODE-IND-001")
+        String kodeIndikator,
 
-        @NotNull(message = "Kode target sasaran opd tidak boleh kosong")
-        @NotEmpty(message = "Kode target sasaran opd tidak boleh kosong")
-        @Schema(description = "Kode target sasaran OPD", example = "KODE-TAR-SAS-OPD-001")
-        String kodeTargetSasaranOpd,
+        @NotNull(message = "Kode target tidak boleh kosong")
+        @NotEmpty(message = "Kode target tidak boleh kosong")
+        @Schema(description = "Kode target", example = "KODE-TAR-001")
+        String kodeTarget,
 
         @NotNull(message = "Realisasi harus terdefinisi")
         @PositiveOrZero(message = "Realisasi tidak boleh negatif")

@@ -5,8 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public record SasaranOpdPenetapanResponse(
-        @JsonProperty("kode_opd")
-        String kodeOpd,
+        Long id,
 
         @JsonProperty("kode_sasaran_opd")
         String kodeSasaranOpd,
@@ -14,14 +13,7 @@ public record SasaranOpdPenetapanResponse(
         @JsonProperty("sasaran_opd")
         String sasaranOpd,
 
-        String periode,
-
-        @JsonProperty("tahun_aktif")
-        Integer tahunAktif,
-
-        Integer versi,
-
-        List<IndikatorPenetapan> indikator
+        List<IndikatorPenetapan> indikators
 ) {
     public record IndikatorPenetapan(
             @JsonProperty("kode_indikator")
@@ -38,7 +30,7 @@ public record SasaranOpdPenetapanResponse(
             @JsonProperty("definisi_operasional")
             String definisiOperasional,
 
-            List<TargetPenetapan> target
+            List<TargetPenetapan> targets
     ) {
     }
 

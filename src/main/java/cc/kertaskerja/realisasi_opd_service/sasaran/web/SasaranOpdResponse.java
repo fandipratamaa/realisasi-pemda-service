@@ -14,7 +14,7 @@ public record SasaranOpdResponse(
         String sasaranOpd,
         Integer tahun,
         Integer bulan,
-        List<IndikatorResponse> indikator
+        List<IndikatorResponse> indikators
 ) {
     public record IndikatorResponse(
             Long id,
@@ -29,7 +29,7 @@ public record SasaranOpdResponse(
             String definisiOperasional,
             Integer tahun,
             Integer bulan,
-            List<TargetResponse> target
+            List<TargetResponse> targets
     ) {
     }
 

@@ -9,13 +9,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Component
 public class PenetapanSasaranOpdClient {
 
-    private static final Logger log = LoggerFactory.getLogger(PenetapanTujuanOpdClient.class);
+    private static final Logger log = LoggerFactory.getLogger(PenetapanSasaranOpdClient.class);
     private final WebClient webClient;
     private final PenetapanProperties properties;
     private final ObjectMapper objectMapper;
@@ -41,28 +40,40 @@ public class PenetapanSasaranOpdClient {
                 .bodyToMono(String.class)
                 .map(this::parseSasaranOpdPayload)
                 .onErrorResume(e -> {
-                    log.warn("Failed to fetch penetapan sasaran OPD for kodeOpd={}, tahun={}: {}",
-                            kodeOpd, tahun, e.getMessage());
+                    log.warn("Failed to fetch penetapan sasaran OPD for kodeOpd={}, tahun={}", kodeOpd, tahun, e);
                     return Mono.just(List.of());
                 });
     }
 
     private List<PenetapanSasaranOpd.SasaranPenetapanData> parseSasaranOpdPayload(String payload) {
         try {
-            JsonNode root = objectMapper.readTree(payload);
-            JsonNode dataNode = root;
-            if (root != null && root.isObject() && root.has("data")) {
-                dataNode = root.get("data");
+            JsonNode rootNode = objectMapper.readTree(payload);
+            JsonNode dataNode = rootNode;
+            if (rootNode != null && rootNode.isObject() && rootNode.has("data")) {
+                dataNode = rootNode.get("data");
             }
 
-            if (dataNode == null || !dataNode.isArray()) {
+            PenetapanSasaranOpd.PenetapanSasaranOpdRoot root = objectMapper.treeToValue(dataNode, PenetapanSasaranOpd.PenetapanSasaranOpdRoot.class);
+            if (root == null || root.sasaranOpds() == null) {
+                log.warn("PenetapanSasaranOpdRoot or sasaranOpds is null");
                 return List.of();
             }
 
-            PenetapanSasaranOpd.SasaranPenetapanData[] rows = objectMapper.treeToValue(dataNode, PenetapanSasaranOpd.SasaranPenetapanData[].class);
-            return Arrays.asList(rows);
+            return root.sasaranOpds().stream()
+                    .map(s -> new PenetapanSasaranOpd.SasaranPenetapanData(
+                            s.id(),
+                            s.kodeSasaranOpd(),
+                            s.sasaranOpd(),
+                            s.periode(),
+                            root.kodeOpd(),
+                            root.tahunAktif(),
+                            root.versi(),
+                            root.isLocked(),
+                            s.indikators()
+                    ))
+                    .toList();
         } catch (Exception e) {
-            log.warn("Failed to parse penetapan sasaran OPD payload: {}", e.getMessage());
+            log.warn("Failed to parse penetapan sasaran OPD payload", e);
             return List.of();
         }
     }

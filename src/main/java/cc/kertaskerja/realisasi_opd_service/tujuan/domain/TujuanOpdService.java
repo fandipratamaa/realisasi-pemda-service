@@ -150,7 +150,6 @@ public class TujuanOpdService {
                 penetapan.id(),
                 penetapan.kodeTujuanOpd(),
                 penetapan.tujuanOpd(),
-                penetapan.periode(),
                 indikatorList
         );
     }

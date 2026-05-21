@@ -67,8 +67,10 @@ class SasaranOpdControllerWebFluxTests {
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$[0].kode_sasaran_opd").isEqualTo("SAS-OPD-193")
-                .jsonPath("$[0].indikator[0].kode_indikator").isEqualTo("IND-59")
-                .jsonPath("$[0].indikator[0].target[0].realisasi").isEqualTo(80.0);
+                .jsonPath("$.kode_opd").isEqualTo("5.01.5.05.0.00.01.0000")
+                .jsonPath("$.tahun").isEqualTo(2026)
+                .jsonPath("$.sasaran_opds[0].kode_sasaran_opd").isEqualTo("SAS-OPD-193")
+                .jsonPath("$.sasaran_opds[0].indikators[0].kode_indikator").isEqualTo("IND-59")
+                .jsonPath("$.sasaran_opds[0].indikators[0].targets[0].realisasi").isEqualTo(80.0);
     }
 }
