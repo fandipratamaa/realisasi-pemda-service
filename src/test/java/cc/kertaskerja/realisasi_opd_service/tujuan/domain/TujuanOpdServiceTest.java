@@ -306,8 +306,35 @@ class TujuanOpdServiceTest {
                 ))
         );
 
+        PenetapanTujuanOpd.TujuanPenetapanData unfilledTujuan = new PenetapanTujuanOpd.TujuanPenetapanData(
+                31L,
+                "TUJ-3",
+                "Tujuan Belum Diisi",
+                "2026-2031",
+                kodeOpd,
+                2026,
+                1,
+                null,
+                List.of(new PenetapanTujuanOpd.IndikatorPenetapanData(
+                        32L,
+                        "IND-3",
+                        "Indikator Baru",
+                        "Rumus 3",
+                        "Sumber 3",
+                        "Definisi 3",
+                        2026,
+                        List.of(new PenetapanTujuanOpd.TargetPenetapanData(
+                                33L,
+                                "TGT-UNFILLED",
+                                "persen",
+                                2026,
+                                150.0
+                        ))
+                ))
+        );
+
         when(penetapanTujuanOpdClient.fetchTujuanOpd(kodeOpd, 2026))
-                .thenReturn(Mono.just(List.of(hiddenTujuan, visibleTujuan)));
+                .thenReturn(Mono.just(List.of(hiddenTujuan, visibleTujuan, unfilledTujuan)));
         when(tujuanOpdRepository.findAllByTahunAndKodeOpd("2026", kodeOpd))
                 .thenReturn(Flux.just(januaryTujuan, februaryTujuan));
         when(tujuanOpdRepository.findAllByTahunAndKodeOpdAndBulan("2026", kodeOpd, "2"))
@@ -319,6 +346,7 @@ class TujuanOpdServiceTest {
 
         StepVerifier.create(tujuanOpdService.getPenetapanWithRealisasi(kodeOpd, 2026, "2"))
                 .assertNext(wrapper -> {
+                    org.junit.jupiter.api.Assertions.assertEquals(Integer.valueOf(2), wrapper.bulan());
                     org.junit.jupiter.api.Assertions.assertEquals(2, wrapper.tujuanOpds().size());
 
                     TujuanOpdPenetapanResponse visible = wrapper.tujuanOpds().stream()
@@ -330,11 +358,18 @@ class TujuanOpdServiceTest {
                     org.junit.jupiter.api.Assertions.assertEquals("TGT-VISIBLE", visible.indikators().getFirst().targets().getFirst().kodeTarget());
                     org.junit.jupiter.api.Assertions.assertEquals(55.0, visible.indikators().getFirst().targets().getFirst().realisasi());
 
-                    TujuanOpdPenetapanResponse hidden = wrapper.tujuanOpds().stream()
-                            .filter(t -> "TUJ-1".equals(t.kodeTujuanOpd()))
+                    TujuanOpdPenetapanResponse unfilled = wrapper.tujuanOpds().stream()
+                            .filter(t -> "TUJ-3".equals(t.kodeTujuanOpd()))
                             .findFirst()
                             .orElseThrow();
-                    org.junit.jupiter.api.Assertions.assertEquals(0, hidden.indikators().size());
+                    org.junit.jupiter.api.Assertions.assertEquals(1, unfilled.indikators().size());
+                    org.junit.jupiter.api.Assertions.assertEquals(1, unfilled.indikators().getFirst().targets().size());
+                    org.junit.jupiter.api.Assertions.assertEquals("TGT-UNFILLED", unfilled.indikators().getFirst().targets().getFirst().kodeTarget());
+                    org.junit.jupiter.api.Assertions.assertNull(unfilled.indikators().getFirst().targets().getFirst().realisasi());
+
+                    boolean tu1Exists = wrapper.tujuanOpds().stream()
+                            .anyMatch(t -> "TUJ-1".equals(t.kodeTujuanOpd()));
+                    org.junit.jupiter.api.Assertions.assertFalse(tu1Exists);
                 })
                 .verifyComplete();
     }

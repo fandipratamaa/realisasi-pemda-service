@@ -73,7 +73,7 @@ public class TujuanOpdService {
                                 .map(p -> mergePenetapanWithRealisasi(p, null, Set.of()))
                                 .filter(response -> !response.indikators().isEmpty())
                                 .toList();
-                        return Mono.just(new PenetapanTujuanOpdListResponse(rootKodeOpd, effectiveTahun, items));
+                        return Mono.just(new PenetapanTujuanOpdListResponse(rootKodeOpd, effectiveTahun, null, items));
                     }
 
                     Mono<Set<String>> hiddenTargetKeys = getHiddenTargetKeysForPreviousMonths(kodeOpd, effectiveTahun, bulan);
@@ -86,8 +86,9 @@ public class TujuanOpdService {
                                 Set<String> hiddenKeys = tuple.getT2();
                                 List<TujuanOpdPenetapanResponse> items = penetapanList.stream()
                                         .map(p -> mergePenetapanWithRealisasi(p, rMap.get(p.kodeTujuanOpd()), hiddenKeys))
+                                        .filter(response -> !response.indikators().isEmpty())
                                         .toList();
-                                return new PenetapanTujuanOpdListResponse(rootKodeOpd, effectiveTahun, items);
+                                return new PenetapanTujuanOpdListResponse(rootKodeOpd, effectiveTahun, parseInteger(bulan), items);
                             }
                     );
                 });

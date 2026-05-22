@@ -11,6 +11,9 @@ public record PenetapanTujuanOpdListResponse(
         @JsonProperty("tahun")
         Integer tahun,
 
+        @JsonProperty("bulan")
+        Integer bulan,
+
         List<TujuanOpdPenetapanResponse> tujuanOpds
 ) {
 }
