@@ -18,9 +18,12 @@ public record SasaranIndividu(
         String kodeOpd,
         @Column("kode_sasaran_opd")
         String kodeSasaranOpd,
+        String nip,
+        @Column("nama_pegawai")
+        String namaPegawai,
         String tahun,
         String bulan,
-
+        
         @CreatedBy
         @Column("created_by")
         String createdBy,
@@ -33,11 +36,13 @@ public record SasaranIndividu(
     public static SasaranIndividu of(
             String kodeOpd,
             String kodeSasaranOpd,
+            String nip,
+            String namaPegawai,
             String tahun,
             String bulan
     ) {
         return new SasaranIndividu(null,
-                kodeOpd, kodeSasaranOpd, tahun, bulan,
+                kodeOpd, kodeSasaranOpd, nip, namaPegawai, tahun, bulan,
                 null, null, null, null);
     }
 

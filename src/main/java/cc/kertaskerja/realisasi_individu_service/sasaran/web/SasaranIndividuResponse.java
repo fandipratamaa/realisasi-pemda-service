@@ -10,6 +10,9 @@ public record SasaranIndividuResponse(
         String kodeOpd,
         @JsonProperty("kode_sasaran_opd")
         String kodeSasaranOpd,
+        String nip,
+        @JsonProperty("nama_pegawai")
+        String namaPegawai,
         @JsonProperty("sasaran_opd")
         String sasaranOpd,
         Integer tahun,

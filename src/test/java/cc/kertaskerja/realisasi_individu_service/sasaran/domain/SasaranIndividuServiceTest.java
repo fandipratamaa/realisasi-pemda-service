@@ -44,7 +44,7 @@ public class SasaranIndividuServiceTest {
         String bulan = "1";
 
         SasaranIndividu sasaran = new SasaranIndividu(
-                1L, kodeOpd, "SAS-001", tahun, bulan,
+                1L, kodeOpd, "SAS-001", "123456", "John Doe", tahun, bulan,
                 null, null, null, null
         );
 

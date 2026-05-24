@@ -41,6 +41,16 @@ public record SasaranIndividuSubmitRequest(
         @NotEmpty(message = "Kode opd tidak boleh kosong")
         @NotNull(message = "Kode opd tidak boleh kosong")
         @Schema(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000")
-        String kodeOpd
+        String kodeOpd,
+
+        @NotEmpty(message = "NIP tidak boleh kosong")
+        @NotNull(message = "NIP tidak boleh kosong")
+        @Schema(description = "NIP pegawai", example = "198001012010011001")
+        String nip,
+
+        @NotEmpty(message = "Nama pegawai tidak boleh kosong")
+        @NotNull(message = "Nama pegawai tidak boleh kosong")
+        @Schema(description = "Nama pegawai", example = "John Doe")
+        String namaPegawai
 ) {
 }

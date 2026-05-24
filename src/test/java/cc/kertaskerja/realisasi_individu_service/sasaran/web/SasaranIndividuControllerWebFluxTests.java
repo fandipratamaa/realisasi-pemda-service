@@ -30,7 +30,7 @@ public class SasaranIndividuControllerWebFluxTests {
                 "1.01.0.00.0.00.01.0000", 2026, null, List.of()
         );
 
-        when(sasaranIndividuService.getPenetapanWithRealisasi(any(), anyInt(), any()))
+        when(sasaranIndividuService.getPenetapanWithRealisasi(any(), any(), anyInt(), any()))
                 .thenReturn(Mono.just(response));
 
         var result = webTestClient
@@ -38,7 +38,7 @@ public class SasaranIndividuControllerWebFluxTests {
                 .mutateWith(SecurityMockServerConfigurers.mockJwt()
                         .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                 .get()
-                .uri("/sasaran_individu/1.01.0.00.0.00.01.0000/tahun/2026/penetapan")
+                .uri("/sasaran_individu/1.01.0.00.0.00.01.0000/nip/123456/tahun/2026/penetapan")
                 .exchange()
                 .expectStatus().is2xxSuccessful()
                 .expectBody(PenetapanSasaranIndividuListResponse.class)
@@ -54,7 +54,7 @@ public class SasaranIndividuControllerWebFluxTests {
     @Test
     void whenGetRealisasiBulanan_thenReturnsSasaranIndividuResponseList() {
         SasaranIndividuResponse sasaran = new SasaranIndividuResponse(
-                1L, "1.01.0.00.0.00.01.0000", "SAS-001", "Sasaran Test",
+                1L, "1.01.0.00.0.00.01.0000", "SAS-001", "198001012010011001", "John Doe", "Sasaran Test",
                 2025, 1, List.of()
         );
 

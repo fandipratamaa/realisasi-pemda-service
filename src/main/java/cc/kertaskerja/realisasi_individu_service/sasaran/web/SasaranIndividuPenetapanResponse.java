@@ -13,6 +13,11 @@ public record SasaranIndividuPenetapanResponse(
         @JsonProperty("sasaran_opd")
         String sasaranOpd,
 
+        String nip,
+
+        @JsonProperty("nama_pegawai")
+        String namaPegawai,
+
         List<SasaranIndividuPenetapanResponse.IndikatorPenetapan> indikators
 ) {
     public record IndikatorPenetapan(

@@ -75,12 +75,7 @@ public class SasaranIndividuService {
                 .flatMap(response -> enrichWithPenetapan(Mono.just(response), req.kodeOpd(), req.tahun()));
     }
 
-    public Flux<SasaranIndividuResponse> batchSubmitRealisasiSasaranIndividu(List<SasaranIndividuSubmitRequest> requests) {
-        return Flux.fromIterable(requests)
-                .flatMap(this::submitRealisasiSasaranIndividu);
-    }
-
-    public Mono<PenetapanSasaranIndividuListResponse> getPenetapanWithRealisasi(String kodeOpd, int tahun, String bulan) {
+    public Mono<PenetapanSasaranIndividuListResponse> getPenetapanWithRealisasi(String kodeOpd, String nip, int tahun, String bulan) {
         return penetapanClient.fetchSasaranOpd(kodeOpd, tahun)
                 .flatMap(penetapanList -> {
                     String rootKodeOpd = penetapanList.isEmpty() ? kodeOpd : penetapanList.getFirst().kodeOpd();
@@ -94,9 +89,10 @@ public class SasaranIndividuService {
                         return Mono.just(new PenetapanSasaranIndividuListResponse(rootKodeOpd, effectiveTahun, null, items));
                     }
 
-                    Mono<Set<String>> hiddenTargetKeys = getHiddenTargetKeysForPreviousMonths(kodeOpd, effectiveTahun, bulan);
+                    Mono<Set<String>> hiddenTargetKeys = getHiddenTargetKeysForPreviousMonths(kodeOpd, nip, effectiveTahun, bulan);
                     Mono<Map<String, SasaranIndividuResponse>> realisasiMap =
                             getRealisasiSasaranIndividuByTahunAndKodeOpdAndBulan(String.valueOf(effectiveTahun), kodeOpd, bulan)
+                                    .filter(r -> r.nip().equals(nip))
                                     .collectMap(SasaranIndividuResponse::kodeSasaranOpd);
 
                     return Mono.zip(realisasiMap, hiddenTargetKeys).map(tuple -> {
@@ -167,17 +163,20 @@ public class SasaranIndividuService {
                 penetapan.id(),
                 penetapan.kodeSasaranOpd(),
                 penetapan.sasaranOpd(),
+                realisasi != null ? realisasi.nip() : null,
+                realisasi != null ? realisasi.namaPegawai() : null,
                 indikatorList
         );
     }
 
-    private Mono<Set<String>> getHiddenTargetKeysForPreviousMonths(String kodeOpd, int tahun, String bulan) {
+    private Mono<Set<String>> getHiddenTargetKeysForPreviousMonths(String kodeOpd, String nip, int tahun, String bulan) {
         Integer activeMonth = parseInteger(bulan);
         if (activeMonth == null) {
             return Mono.just(Set.of());
         }
 
         return sasaranIndividuRepository.findAllByTahunAndKodeOpd(String.valueOf(tahun), kodeOpd)
+                .filter(sasaran -> sasaran.nip().equals(nip))
                 .filter(sasaran -> {
                     Integer sasaranMonth = parseInteger(sasaran.bulan());
                     return sasaranMonth != null && !sasaranMonth.equals(activeMonth);
@@ -262,6 +261,7 @@ public class SasaranIndividuService {
 
         return new SasaranIndividuResponse(
                 response.id(), response.kodeOpd(), response.kodeSasaranOpd(),
+                response.nip(), response.namaPegawai(),
                 penetapan.sasaranOpd(),
                 response.tahun(), response.bulan(),
                 enrichedIndikator
@@ -274,6 +274,8 @@ public class SasaranIndividuService {
                 .switchIfEmpty(Mono.defer(() -> sasaranIndividuRepository.save(SasaranIndividu.of(
                         req.kodeOpd(),
                         req.kodeSasaranOpd(),
+                        req.nip(),
+                        req.namaPegawai(),
                         req.tahun(),
                         req.bulan()
                 ))))
@@ -405,6 +407,8 @@ public class SasaranIndividuService {
                         sasaran.id(),
                         sasaran.kodeOpd(),
                         sasaran.kodeSasaranOpd(),
+                        sasaran.nip(),
+                        sasaran.namaPegawai(),
                         null,
                         parseInteger(sasaran.tahun()),
                         parseInteger(sasaran.bulan()),
