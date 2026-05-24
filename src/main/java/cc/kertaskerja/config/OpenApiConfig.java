@@ -48,7 +48,8 @@ public class OpenApiConfig {
                         "/iku_opd/**",
                         "/renaksi_opd/**",
                         "/renja_target/**",
-                        "/renja_pagu/**")
+                        "/renja_pagu/**",
+                        "/renja/**")
                 .build();
     }
 
@@ -59,8 +60,9 @@ public class OpenApiConfig {
                 .pathsToMatch(
                         "/rekin/**",
                         "/sasaran_individu/**",
-                        "/renja_pagu_individu/**", 
-                        "/renja_target_individu/**", 
+                        "/renja_pagu_individu/**",
+                        "/renja_target_individu/**",
+                        "/renja_individu/**",
                         "/renaksi/**")
                 .build();
     }

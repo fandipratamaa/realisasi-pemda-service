@@ -63,27 +63,6 @@ public class SasaranIndividuController {
                 ));
     }
 
-    @PostMapping("/create/batch")
-    @Operation(summary = "Simpan batch realisasi sasaran individu", description = "Menyimpan beberapa data realisasi sasaran individu dalam satu request. Role `super_admin` dan `admin_opd` tidak diizinkan mengakses endpoint ini.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Batch berhasil disimpan", content = @Content(schema = @Schema(implementation = SasaranIndividuSubmitListResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Payload batch tidak valid", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Forbidden untuk role super_admin dan admin_opd", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Mono<SasaranIndividuSubmitListResponse> batchSubmitRealisasiSasaranIndividu(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Daftar payload realisasi sasaran individu", required = true,
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = SasaranIndividuSubmitRequest.class))))
-            @RequestBody @Valid List<SasaranIndividuSubmitRequest> requests) {
-        return sasaranIndividuService.batchSubmitRealisasiSasaranIndividu(requests)
-                .collectList()
-                .map(items -> {
-                    String kodeOpd = items.isEmpty() ? null : items.getFirst().kodeOpd();
-                    Integer tahun = items.isEmpty() ? null : items.getFirst().tahun();
-                    return new SasaranIndividuSubmitListResponse(kodeOpd, tahun, items);
-                });
-    }
-
     @GetMapping("/{kodeOpd}/nip/{nip}/tahun/{tahun}/penetapan")
     @Operation(summary = "Integrasi penetapan dengan realisasi sasaran Individu", description = "Menggabungkan data penetapan (dari external service) dengan data realisasi sasaran Individu berdasarkan kode OPD, NIP, dan tahun. Parameter bulan bersifat opsional; jika tidak dikirim, hanya data penetapan tanpa realisasi yang dikembalikan.")
     @ApiResponses(value = {

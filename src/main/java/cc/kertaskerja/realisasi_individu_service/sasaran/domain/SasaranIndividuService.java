@@ -75,11 +75,6 @@ public class SasaranIndividuService {
                 .flatMap(response -> enrichWithPenetapan(Mono.just(response), req.kodeOpd(), req.tahun()));
     }
 
-    public Flux<SasaranIndividuResponse> batchSubmitRealisasiSasaranIndividu(List<SasaranIndividuSubmitRequest> requests) {
-        return Flux.fromIterable(requests)
-                .flatMap(this::submitRealisasiSasaranIndividu);
-    }
-
     public Mono<PenetapanSasaranIndividuListResponse> getPenetapanWithRealisasi(String kodeOpd, String nip, int tahun, String bulan) {
         return penetapanClient.fetchSasaranOpd(kodeOpd, tahun)
                 .flatMap(penetapanList -> {
