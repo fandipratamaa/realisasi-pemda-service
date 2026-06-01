@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,16 +33,6 @@ public class RekinController {
 
     public RekinController(RekinService rekinService) {
         this.rekinService = rekinService;
-    }
-
-    @GetMapping
-    @Operation(summary = "Ambil semua realisasi rekin", description = "Mengambil seluruh data realisasi rekin. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realisasi rekin", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Rekin.class)))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<Rekin> getAllRealisasiRekin() {
-        return rekinService.getAllRealisasiRekin();
     }
 
     @GetMapping("/by-nip/{nip}/by-tahun/{tahun}/by-bulan/{bulan}")
@@ -80,45 +69,6 @@ public class RekinController {
         return rekinService.getRealisasiRekinByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
     }
 
-    @GetMapping("/by-kode-opd/{kodeOpd}/by-nip/{nip}/by-tahun/{tahun}/by-bulan/{bulan}")
-    @Operation(summary = "Cari realisasi rekin berdasarkan kode OPD, NIP, tahun, dan bulan", description = "Mengambil daftar data realisasi rekin berdasarkan `kode_opd`, `nip`, `tahun`, dan `bulan`. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realisasi rekin", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Rekin.class)))),
-            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<Rekin> getRealisasiRekinByKodeOpdNipAndTahunAndBulan(
-            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
-            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
-            @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
-            @Parameter(description = "Bulan realisasi", example = "01") @PathVariable String bulan) {
-        if (kodeOpd == null || kodeOpd.isBlank() || nip == null || nip.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd, nip, tahun, dan bulan tidak boleh kosong");
-        }
-        return rekinService.getRealisasiRekinByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
-    }
-
-    @GetMapping("/by-tahun/{tahun}/by-nip/{nip}/by-id-sasaran/{idSasaran}/rekin/{rekinId}")
-    @Operation(summary = "Cari realisasi rekin berdasarkan tahun, NIP, ID sasaran, dan rekin", description = "Mengambil satu data realisasi rekin berdasarkan `tahun`, `nip`, `idSasaran`, dan `rekinId`. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Data realisasi rekin ditemukan", content = @Content(schema = @Schema(implementation = Rekin.class))),
-            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Mono<Rekin> getRealisasiRekinByTahunNipIdSasaranRekinId(
-            @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
-            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
-            @Parameter(description = "ID sasaran", example = "SAS-001") @PathVariable String idSasaran,
-            @Parameter(description = "ID rekin", example = "REKIN-001") @PathVariable String rekinId) {
-        if (tahun == null || tahun.isBlank()
-                || nip == null || nip.isBlank()
-                || idSasaran == null || idSasaran.isBlank()
-                || rekinId == null || rekinId.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter tahun, nip, idSasaran, dan rekinId tidak boleh kosong");
-        }
-        return rekinService.getRealisasiRekinByNipIdSasaranTahunRekinId(nip, idSasaran, tahun, rekinId);
-    }
-
     @PostMapping
     @Operation(summary = "Simpan realisasi rekin (belum digunakan di endpoint realisasi)", description = "Menyimpan satu data realisasi rekin. Role `super_admin` dan `admin_opd` tidak diizinkan mengakses endpoint ini.")
     @ApiResponses(value = {
@@ -149,19 +99,6 @@ public class RekinController {
                 rekinRequest.kodeOpd(),
                 rekinRequest.jenisRealisasi()
         );
-    }
-
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Hapus realisasi rekin (belum digunakan di endpoint realisasi)", description = "Menghapus satu data realisasi rekin berdasarkan ID internal. Role `super_admin` dan `admin_opd` tidak diizinkan mengakses endpoint ini.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Data realisasi rekin terhapus", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Forbidden untuk role super_admin dan admin_opd", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Data tidak ditemukan", content = @Content)
-    })
-    public Mono<Void> deleteRealisasiRekin(
-            @Parameter(description = "ID internal realisasi rekin", example = "1") @PathVariable Long id) {
-        return rekinService.deleteRealisasiRekin(id);
     }
 
     @PostMapping("/batch")

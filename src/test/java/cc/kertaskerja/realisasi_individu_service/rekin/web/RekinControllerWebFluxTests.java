@@ -70,48 +70,6 @@ public class RekinControllerWebFluxTests {
                     Assertions.assertEquals(result, body.get(0));
                 });
     }
-
-    @Test
-    void whenGetByKodeOpdNipTahunBulan_thenReturnsList() {
-        Rekin result = RekinService.buildUncheckedRealisasiRekin(
-                "REKIN-001",
-                "Rekin Peningkatan Infrastruktur",
-                "IND-001",
-                "Persentase capaian rekin",
-                "198012312005011001",
-                "Anon",
-                "SAS-001",
-                "Meningkatkan kualitas layanan",
-                "TAR-001",
-                "100",
-                85,
-                "%",
-                "2025",
-                "01",
-                "1.01.0.00.0.00.01.0000",
-                JenisRealisasi.NAIK
-        );
-
-        when(rekinService.getRealisasiRekinByKodeOpdAndNipAndTahunAndBulan(anyString(), anyString(), anyString(), anyString()))
-                .thenReturn(Flux.just(result));
-
-        webTestClient
-                .mutateWith(csrf())
-                .mutateWith(SecurityMockServerConfigurers.mockJwt()
-                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
-                .get()
-                .uri("/rekin/by-kode-opd/1.01.0.00.0.00.01.0000/by-nip/198012312005011001/by-tahun/2025/by-bulan/01")
-                .exchange()
-                .expectStatus().is2xxSuccessful()
-                .expectBodyList(Rekin.class)
-                .consumeWith(response -> {
-                    var body = response.getResponseBody();
-                    Assertions.assertNotNull(body);
-                    Assertions.assertEquals(1, body.size());
-                    Assertions.assertEquals(result, body.get(0));
-                });
-    }
-
     @Test
     void whenLevel1PostsRekinEndpoint_thenAllowed() {
         RekinRequest request = new RekinRequest(

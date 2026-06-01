@@ -13,8 +13,6 @@ public interface RekinRepository extends ReactiveCrudRepository<Rekin, Long> {
 
     Flux<Rekin> findAllByKodeOpdAndTahunAndBulan(String kodeOpd, String tahun, String bulan);
 
-    Flux<Rekin> findAllByKodeOpdAndNipAndTahunAndBulan(String kodeOpd, String nip, String tahun, String bulan);
-
     Flux<Rekin> findAllByTahunBetween(String tahunAwal, String tahunAkhir);
 
     Mono<Rekin> findFirstByNipAndIdSasaranAndTahunAndRekinId(String nip, String idSasaran, String tahun, String rekinId);

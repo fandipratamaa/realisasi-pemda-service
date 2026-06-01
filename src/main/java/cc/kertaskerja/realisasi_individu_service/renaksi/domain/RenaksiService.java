@@ -17,10 +17,6 @@ public class RenaksiService {
         this.renaksiRepository = renaksiRepository;
     }
 
-    public Flux<Renaksi> getAllRealisasiRenaksi() {
-        return renaksiRepository.findAll();
-    }
-
     public Mono<Renaksi> getRealisasiRenaksiByNipBulanRekin(String nip, String bulan, String rekinId, String renaksiId) {
         return renaksiRepository.findFirstByNipAndBulanAndRekinIdAndRenaksiId(nip, bulan, rekinId, renaksiId);
     }
@@ -39,10 +35,6 @@ public class RenaksiService {
 
     public Flux<Renaksi> getRealisasiRenaksiByKodeOpdAndTahunAndBulan(String kodeOpd, String tahun, String bulan) {
         return renaksiRepository.findAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
-    }
-
-    public Flux<Renaksi> getRealisasiRenaksiByKodeOpdAndNipAndTahunAndBulan(String kodeOpd, String nip, String tahun, String bulan) {
-        return renaksiRepository.findAllByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
     }
 
     public Mono<Renaksi> submitRealisasiRenaksi(
@@ -76,10 +68,6 @@ public class RenaksiService {
                         jenisRealisasi,
                         kodeOpd))
                 .flatMap(renaksiRepository::save);
-    }
-
-    public Mono<Void> deleteRealisasiRenaksi(Long id) {
-        return renaksiRepository.deleteById(id);
     }
 
     public static Renaksi buildUncheckedRealisasiRenaksi(

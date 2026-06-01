@@ -14,7 +14,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,16 +36,6 @@ public class RenaksiController {
         this.renaksiService = renaksiService;
     }
 
-    @GetMapping
-    @Operation(summary = "Ambil semua realisasi renaksi", description = "Mengambil seluruh data realisasi renaksi. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realisasi renaksi", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Renaksi.class)))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<Renaksi> getAllRealisasiRenaksi() {
-        return renaksiService.getAllRealisasiRenaksi();
-    }
-
     @GetMapping("/by-nip/{nip}/by-tahun/{tahun}/by-bulan/{bulan}")
     @Operation(summary = "Cari realisasi renaksi berdasarkan NIP, tahun dan bulan", description = "Mengambil daftar data realisasi renaksi berdasarkan `nip`, `tahun` dan `bulan`. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
     @ApiResponses(value = {
@@ -62,24 +51,6 @@ public class RenaksiController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip, tahun, dan bulan tidak boleh kosong");
         }
         return renaksiService.getRealisasiRenaksiByNipAndTahunAndBulan(nip, tahun, bulan);
-    }
-
-    @GetMapping("/by-kode-opd/{kodeOpd}/by-nip/{nip}/by-tahun/{tahun}/by-bulan/{bulan}")
-    @Operation(summary = "Cari realisasi renaksi berdasarkan kode OPD, NIP, tahun dan bulan", description = "Mengambil daftar data realisasi renaksi berdasarkan `kode_opd`, `nip`, `tahun` dan `bulan`. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realisasi renaksi", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Renaksi.class)))),
-            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<Renaksi> getRealisasiRenaksiByKodeOpdNipTahunBulan(
-            @Parameter(description = "Kode OPD", example = "4.01.01.") @PathVariable String kodeOpd,
-            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
-            @Parameter(description = "Tahun realisasi", example = "2026") @PathVariable String tahun,
-            @Parameter(description = "Bulan realisasi", example = "Januari") @PathVariable String bulan) {
-        if (kodeOpd == null || kodeOpd.isBlank() || nip == null || nip.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd, nip, tahun, dan bulan tidak boleh kosong");
-        }
-        return renaksiService.getRealisasiRenaksiByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
     }
 
     @GetMapping("/by-kode-opd/{kodeOpd}/by-tahun/{tahun}/by-bulan/{bulan}")
@@ -127,19 +98,6 @@ public class RenaksiController {
                 renaksiRequest.jenisRealisasi(),
                 renaksiRequest.kodeOpd()
         );
-    }
-
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Hapus realisasi renaksi (belum digunakan di endpoint realisasi)", description = "Menghapus satu data realisasi renaksi berdasarkan ID internal. Role `super_admin` dan `admin_opd` tidak diizinkan mengakses endpoint ini.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Data realisasi renaksi terhapus", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Forbidden untuk role super_admin dan admin_opd", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Data tidak ditemukan", content = @Content)
-    })
-    public Mono<Void> deleteRealisasiRenaksi(
-            @Parameter(description = "ID internal realisasi renaksi", example = "1") @PathVariable Long id) {
-        return renaksiService.deleteRealisasiRenaksi(id);
     }
 
     @PostMapping("/batch")

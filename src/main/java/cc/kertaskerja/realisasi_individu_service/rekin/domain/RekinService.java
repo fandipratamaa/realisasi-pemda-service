@@ -17,10 +17,6 @@ public class RekinService {
         this.rekinRepository = rekinRepository;
     }
 
-    public Flux<Rekin> getAllRealisasiRekin() {
-        return rekinRepository.findAll();
-    }
-
     public Flux<Rekin> getRealisasiRekinByNipAndTahun(String nip, String tahun) {
         return rekinRepository.findAllByNipAndTahun(nip, tahun);
     }
@@ -31,14 +27,6 @@ public class RekinService {
 
     public Flux<Rekin> getRealisasiRekinByKodeOpdAndTahunAndBulan(String kodeOpd, String tahun, String bulan) {
         return rekinRepository.findAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
-    }
-
-    public Flux<Rekin> getRealisasiRekinByKodeOpdAndNipAndTahunAndBulan(String kodeOpd, String nip, String tahun, String bulan) {
-        return rekinRepository.findAllByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
-    }
-
-    public Mono<Rekin> getRealisasiRekinByNipIdSasaranTahunRekinId(String nip, String idSasaran, String tahun, String rekinId) {
-        return rekinRepository.findFirstByNipAndIdSasaranAndTahunAndRekinId(nip, idSasaran, tahun, rekinId);
     }
 
     public Flux<Rekin> getRealisasiRekinByPeriodeRpjmd(String tahunAwal, String tahunAkhir) {
@@ -56,11 +44,7 @@ public class RekinService {
                 .flatMap(rekinRepository::save);
     }
 
-    public Mono<Void> deleteRealisasiRekin(Long id) {
-        return rekinRepository.deleteById(id);
-    }
-
-public static Rekin buildUncheckedRealisasiRekin(String rekinId, String rekin,
+    public static Rekin buildUncheckedRealisasiRekin(String rekinId, String rekin,
             String indikatorId, String indikator,
             String nip, String namaPegawai, String idSasaran, String sasaran,
             String targetId, String target, Integer realisasi,
