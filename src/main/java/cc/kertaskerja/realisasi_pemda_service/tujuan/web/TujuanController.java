@@ -124,20 +124,7 @@ return tujuanService.getRealisasiTujuanByPeriodeRpjmd(tahunAwal, tahunAkhir);
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload realisasi tujuan", required = true,
                     content = @Content(schema = @Schema(implementation = TujuanRequest.class)))
             @RequestBody @Valid TujuanRequest tujuanRequest) {
-return tujuanService.submitRealisasiTujuan(
-                tujuanRequest.tujuanId(),
-                tujuanRequest.indikatorId(),
-                tujuanRequest.targetId(),
-                tujuanRequest.target(),
-                tujuanRequest.realisasi(),
-                tujuanRequest.satuan(),
-                tujuanRequest.tahun(),
-                tujuanRequest.bulan(),
-                tujuanRequest.visiMisi(),
-                tujuanRequest.rumusPerhitungan(),
-                tujuanRequest.sumberData(),
-                tujuanRequest.jenisRealisasi()
-        );
+        return tujuanService.submitRealisasiTujuan(tujuanRequest);
     }
 
     @PostMapping("/batch")
