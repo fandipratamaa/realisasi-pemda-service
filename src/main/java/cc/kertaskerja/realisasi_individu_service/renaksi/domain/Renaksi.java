@@ -47,6 +47,11 @@ public record Renaksi(
         @Column("kode_opd")
         String kodeOpd,
 
+        @Column("faktor_penunjang")
+        String faktorPenunjang,
+        @Column("faktor_penghambat")
+        String faktorPenghambat,
+
         RenaksiStatus status,
 
         @CreatedBy
@@ -79,6 +84,8 @@ public record Renaksi(
             String tahun,
             JenisRealisasi jenisRealisasi,
             String kodeOpd,
+            String faktorPenunjang,
+            String faktorPenghambat,
             RenaksiStatus status
     ) {
         return new Renaksi(
@@ -97,6 +104,8 @@ public record Renaksi(
                 tahun,
                 jenisRealisasi,
                 kodeOpd,
+                faktorPenunjang,
+                faktorPenghambat,
                 status,
                 null,
                 null,
