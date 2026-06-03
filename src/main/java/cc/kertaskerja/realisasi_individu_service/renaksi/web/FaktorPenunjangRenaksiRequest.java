@@ -11,6 +11,11 @@ public record FaktorPenunjangRenaksiRequest(
         @Schema(description = "NIP pelaksana", example = "198012312005011001")
         String nip,
 
+        @NotNull(message = "Tahun tidak boleh kosong")
+        @NotEmpty(message = "Tahun tidak boleh kosong")
+        @Schema(description = "Tahun realisasi", example = "2025")
+        String tahun,
+
         @NotNull(message = "Bulan tidak boleh kosong")
         @NotEmpty(message = "Bulan tidak boleh kosong")
         @Schema(description = "Bulan realisasi", example = "Januari")
@@ -25,6 +30,11 @@ public record FaktorPenunjangRenaksiRequest(
         @NotEmpty(message = "ID renaksi tidak boleh kosong")
         @Schema(description = "ID renaksi", example = "RENAKSI-001")
         String renaksiId,
+
+        @NotNull(message = "ID target tidak boleh kosong")
+        @NotEmpty(message = "ID target tidak boleh kosong")
+        @Schema(description = "ID target", example = "TAR-1")
+        String targetId,
 
         @NotNull(message = "Faktor penunjang tidak boleh kosong")
         @NotEmpty(message = "Faktor penunjang tidak boleh kosong")

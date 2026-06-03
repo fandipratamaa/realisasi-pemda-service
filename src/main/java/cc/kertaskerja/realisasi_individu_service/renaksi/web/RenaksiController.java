@@ -86,7 +86,7 @@ public class RenaksiController {
     }
 
     @PostMapping("/faktor-penunjang")
-    @Operation(summary = "Perbarui faktor penunjang renaksi", description = "Memperbarui hanya field faktor_penunjang pada record Renaksi yang cocok dengan composite key (nip, bulan, rekinId, renaksiId).")
+    @Operation(summary = "Perbarui faktor penunjang renaksi", description = "Memperbarui hanya field faktor_penunjang pada record Renaksi yang cocok dengan composite key (nip, tahun, bulan, rekinId, renaksiId, targetId).")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = Renaksi.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
@@ -99,15 +99,17 @@ public class RenaksiController {
             @RequestBody @Valid FaktorPenunjangRenaksiRequest req) {
         return renaksiService.updateFaktorPenunjang(
                 req.nip(),
+                req.tahun(),
                 req.bulan(),
                 req.rekinId(),
                 req.renaksiId(),
+                req.targetId(),
                 req.faktorPenunjang()
         );
     }
 
     @PostMapping("/faktor-penghambat")
-    @Operation(summary = "Perbarui faktor penghambat renaksi", description = "Memperbarui hanya field faktor_penghambat pada record Renaksi yang cocok dengan composite key (nip, bulan, rekinId, renaksiId).")
+    @Operation(summary = "Perbarui faktor penghambat renaksi", description = "Memperbarui hanya field faktor_penghambat pada record Renaksi yang cocok dengan composite key (nip, tahun, bulan, rekinId, renaksiId, targetId).")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = Renaksi.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
@@ -120,9 +122,11 @@ public class RenaksiController {
             @RequestBody @Valid FaktorPenghambatRenaksiRequest req) {
         return renaksiService.updateFaktorPenghambat(
                 req.nip(),
+                req.tahun(),
                 req.bulan(),
                 req.rekinId(),
                 req.renaksiId(),
+                req.targetId(),
                 req.faktorPenghambat()
         );
     }

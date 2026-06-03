@@ -70,7 +70,8 @@ public class RekinServiceTests {
                 0
         );
 
-        when(rekinRepository.findFirstByNipAndTahunAndRekinId(req.nip(), req.tahun(), req.rekinId()))
+        when(rekinRepository.findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(
+                req.nip(), req.tahun(), req.bulan(), req.rekinId(), req.targetId()))
                 .thenReturn(Mono.just(existing));
         when(rekinRepository.save(ArgumentMatchers.any(Rekin.class)))
                 .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
@@ -86,7 +87,8 @@ public class RekinServiceTests {
                 .verifyComplete();
 
         verify(rekinRepository, times(1))
-                .findFirstByNipAndTahunAndRekinId(req.nip(), req.tahun(), req.rekinId());
+                .findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(
+                        req.nip(), req.tahun(), req.bulan(), req.rekinId(), req.targetId());
         verify(rekinRepository, times(1)).save(any(Rekin.class));
         verify(rekinRepository, never()).findById(anyLong());
     }
@@ -111,7 +113,8 @@ public class RekinServiceTests {
                 JenisRealisasi.NAIK
         );
 
-        when(rekinRepository.findFirstByNipAndTahunAndRekinId(req.nip(), req.tahun(), req.rekinId()))
+        when(rekinRepository.findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(
+                req.nip(), req.tahun(), req.bulan(), req.rekinId(), req.targetId()))
                 .thenReturn(Mono.empty());
         when(rekinRepository.save(ArgumentMatchers.any(Rekin.class)))
                 .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
@@ -127,7 +130,8 @@ public class RekinServiceTests {
                 .verifyComplete();
 
         verify(rekinRepository, times(1))
-                .findFirstByNipAndTahunAndRekinId(req.nip(), req.tahun(), req.rekinId());
+                .findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(
+                        req.nip(), req.tahun(), req.bulan(), req.rekinId(), req.targetId());
         verify(rekinRepository, times(1)).save(any(Rekin.class));
         verify(rekinRepository, never()).findById(anyLong());
     }
@@ -195,6 +199,6 @@ public class RekinServiceTests {
         verify(rekinRepository, times(1)).findById(req.targetRealisasiId());
         verify(rekinRepository, times(1)).save(any(Rekin.class));
         verify(rekinRepository, never())
-                .findFirstByNipAndTahunAndRekinId(anyString(), anyString(), anyString());
+                .findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(anyString(), anyString(), anyString(), anyString(), anyString());
     }
 }

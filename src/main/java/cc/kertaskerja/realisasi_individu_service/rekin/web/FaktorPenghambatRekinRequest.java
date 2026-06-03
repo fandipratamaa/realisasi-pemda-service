@@ -16,10 +16,20 @@ public record FaktorPenghambatRekinRequest(
         @Schema(description = "Tahun realisasi", example = "2025")
         String tahun,
 
+        @NotNull(message = "Bulan tidak boleh kosong")
+        @NotEmpty(message = "Bulan tidak boleh kosong")
+        @Schema(description = "Bulan realisasi", example = "01")
+        String bulan,
+
         @NotNull(message = "ID rekin tidak boleh kosong")
         @NotEmpty(message = "ID rekin tidak boleh kosong")
         @Schema(description = "ID rekin", example = "REKIN-001")
         String rekinId,
+
+        @NotNull(message = "ID target tidak boleh kosong")
+        @NotEmpty(message = "ID target tidak boleh kosong")
+        @Schema(description = "ID target", example = "TAR-1")
+        String targetId,
 
         @NotNull(message = "Faktor penghambat tidak boleh kosong")
         @NotEmpty(message = "Faktor penghambat tidak boleh kosong")

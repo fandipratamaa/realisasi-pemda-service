@@ -120,7 +120,7 @@ public class RekinController {
     }
 
     @PostMapping("/faktor-penunjang")
-    @Operation(summary = "Perbarui faktor penunjang rekin", description = "Memperbarui hanya field faktor_penunjang pada record Rekin yang cocok dengan composite key (nip, tahun, rekinId).")
+    @Operation(summary = "Perbarui faktor penunjang rekin", description = "Memperbarui hanya field faktor_penunjang pada record Rekin yang cocok dengan composite key (nip, tahun, bulan, rekinId, targetId).")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = Rekin.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
@@ -134,13 +134,15 @@ public class RekinController {
         return rekinService.updateFaktorPenunjang(
                 req.nip(),
                 req.tahun(),
+                req.bulan(),
                 req.rekinId(),
+                req.targetId(),
                 req.faktorPenunjang()
         );
     }
 
     @PostMapping("/faktor-penghambat")
-    @Operation(summary = "Perbarui faktor penghambat rekin", description = "Memperbarui hanya field faktor_penghambat pada record Rekin yang cocok dengan composite key (nip, tahun, rekinId).")
+    @Operation(summary = "Perbarui faktor penghambat rekin", description = "Memperbarui hanya field faktor_penghambat pada record Rekin yang cocok dengan composite key (nip, tahun, bulan, rekinId, targetId).")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = Rekin.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
@@ -154,7 +156,9 @@ public class RekinController {
         return rekinService.updateFaktorPenghambat(
                 req.nip(),
                 req.tahun(),
+                req.bulan(),
                 req.rekinId(),
+                req.targetId(),
                 req.faktorPenghambat()
         );
     }

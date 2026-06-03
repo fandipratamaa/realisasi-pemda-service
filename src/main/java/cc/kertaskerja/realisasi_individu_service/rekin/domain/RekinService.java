@@ -49,8 +49,8 @@ public class RekinService {
                     }));
         }
 
-        return rekinRepository.findFirstByNipAndTahunAndRekinId(
-                        req.nip(), req.tahun(), req.rekinId())
+        return rekinRepository.findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(
+                        req.nip(), req.tahun(), req.bulan(), req.rekinId(), req.targetId())
                 .flatMap(existing -> rekinRepository.save(buildUpdatedRealisasiRekin(existing, req)))
                 .switchIfEmpty(Mono.defer(() -> {
                     Rekin baru = buildUncheckedRealisasiRekin(
@@ -113,10 +113,12 @@ public class RekinService {
                                 }));
                     }
 
-                    return rekinRepository.findFirstByNipAndTahunAndRekinId(
+                    return rekinRepository.findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(
                                     req.nip(),
                                     req.tahun(),
-                                    req.rekinId())
+                                    req.bulan(),
+                                    req.rekinId(),
+                                    req.targetId())
                             .flatMap(existing -> rekinRepository.save(buildUpdatedRealisasiRekin(existing, req)))
                             .switchIfEmpty(Mono.defer(() -> {
                                 Rekin baru = buildUncheckedRealisasiRekin(
@@ -166,9 +168,9 @@ public class RekinService {
                 existing.version());
     }
 
-    public Mono<Rekin> updateFaktorPenunjang(String nip, String tahun, String rekinId, String faktorPenunjang) {
+    public Mono<Rekin> updateFaktorPenunjang(String nip, String tahun, String bulan, String rekinId, String targetId, String faktorPenunjang) {
         return rekinRepository
-                .findFirstByNipAndTahunAndRekinId(nip, tahun, rekinId)
+                .findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(nip, tahun, bulan, rekinId, targetId)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Rekin tidak ditemukan")))
                 .flatMap(existing -> {
                     Rekin updated = new Rekin(
@@ -200,9 +202,9 @@ public class RekinService {
                 });
     }
 
-    public Mono<Rekin> updateFaktorPenghambat(String nip, String tahun, String rekinId, String faktorPenghambat) {
+    public Mono<Rekin> updateFaktorPenghambat(String nip, String tahun, String bulan, String rekinId, String targetId, String faktorPenghambat) {
         return rekinRepository
-                .findFirstByNipAndTahunAndRekinId(nip, tahun, rekinId)
+                .findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(nip, tahun, bulan, rekinId, targetId)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Rekin tidak ditemukan")))
                 .flatMap(existing -> {
                     Rekin updated = new Rekin(

@@ -60,7 +60,7 @@ public class RekinControllerWebFluxTests {
         webTestClient
                 .mutateWith(csrf())
                 .mutateWith(SecurityMockServerConfigurers.mockJwt()
-                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN_OPD")))
                 .get()
                 .uri("/rekin/by-kode-opd/1.01.0.00.0.00.01.0000/by-tahun/2025/by-bulan/01")
                 .exchange()
@@ -183,7 +183,7 @@ public class RekinControllerWebFluxTests {
     @Test
     void whenUpdateFaktorPenunjang_thenReturnsUpdatedRekin() throws Exception {
         FaktorPenunjangRekinRequest req = new FaktorPenunjangRekinRequest(
-                "198012312005011001", "2025", "REKIN-001", "Kerjasama tim");
+                "198012312005011001", "2025", "01", "REKIN-001", "TAR-001", "Kerjasama tim");
 
         Rekin updated = Rekin.of("REKIN-001", "Rekin A",
                 "IND-001", "Indikator A",
@@ -194,7 +194,7 @@ public class RekinControllerWebFluxTests {
                 JenisRealisasi.NAIK, RekinStatus.UNCHECKED);
 
         when(rekinService.updateFaktorPenunjang(
-                "198012312005011001", "2025", "REKIN-001", "Kerjasama tim"))
+                "198012312005011001", "2025", "01", "REKIN-001", "TAR-001", "Kerjasama tim"))
                 .thenReturn(Mono.just(updated));
 
         webTestClient
@@ -218,7 +218,7 @@ public class RekinControllerWebFluxTests {
     @Test
     void whenUpdateFaktorPenghambat_thenReturnsUpdatedRekin() throws Exception {
         FaktorPenghambatRekinRequest req = new FaktorPenghambatRekinRequest(
-                "198012312005011001", "2025", "REKIN-001", "Perubahan prioritas");
+                "198012312005011001", "2025", "01", "REKIN-001", "TAR-001", "Perubahan prioritas");
 
         Rekin updated = Rekin.of("REKIN-001", "Rekin A",
                 "IND-001", "Indikator A",
@@ -229,7 +229,7 @@ public class RekinControllerWebFluxTests {
                 JenisRealisasi.NAIK, RekinStatus.UNCHECKED);
 
         when(rekinService.updateFaktorPenghambat(
-                "198012312005011001", "2025", "REKIN-001", "Perubahan prioritas"))
+                "198012312005011001", "2025", "01", "REKIN-001", "TAR-001", "Perubahan prioritas"))
                 .thenReturn(Mono.just(updated));
 
         webTestClient
@@ -253,10 +253,10 @@ public class RekinControllerWebFluxTests {
     @Test
     void whenUpdateFaktorPenunjangAndNotFound_then404() throws Exception {
         FaktorPenunjangRekinRequest req = new FaktorPenunjangRekinRequest(
-                "99", "2099", "REKIN-XX", "Faktor X");
+                "99", "2099", "01", "REKIN-XX", "TAR-001", "Faktor X");
 
         when(rekinService.updateFaktorPenunjang(
-                "99", "2099", "REKIN-XX", "Faktor X"))
+                "99", "2099", "01", "REKIN-XX", "TAR-001", "Faktor X"))
                 .thenReturn(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Rekin tidak ditemukan")));
 
         webTestClient

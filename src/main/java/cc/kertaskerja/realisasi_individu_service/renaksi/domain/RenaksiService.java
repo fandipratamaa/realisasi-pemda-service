@@ -56,8 +56,8 @@ public class RenaksiService {
                     }));
         }
 
-        return renaksiRepository.findFirstByNipAndBulanAndRekinIdAndRenaksiId(
-                        req.nip(), req.bulan(), req.rekinId(), req.renaksiId())
+        return renaksiRepository.findFirstByNipAndTahunAndBulanAndRekinIdAndRenaksiIdAndTargetId(
+                        req.nip(), req.tahun(), req.bulan(), req.rekinId(), req.renaksiId(), req.targetId())
                 .flatMap(existing -> renaksiRepository.save(buildUpdatedRealisasiRenaksi(existing, req)))
                 .switchIfEmpty(Mono.defer(() -> {
                     Renaksi baru = buildUncheckedRealisasiRenaksi(
@@ -131,11 +131,13 @@ public class RenaksiService {
                                 ))));
                     }
 
-                    return renaksiRepository.findFirstByNipAndBulanAndRekinIdAndRenaksiId(
+                    return renaksiRepository.findFirstByNipAndTahunAndBulanAndRekinIdAndRenaksiIdAndTargetId(
                                     req.nip(),
+                                    req.tahun(),
                                     req.bulan(),
                                     req.rekinId(),
-                                    req.renaksiId())
+                                    req.renaksiId(),
+                                    req.targetId())
                             .flatMap(existing -> renaksiRepository.save(buildUpdatedRealisasiRenaksi(existing, req)))
                             .switchIfEmpty(Mono.defer(() -> renaksiRepository.save(buildUncheckedRealisasiRenaksi(
                                     req.renaksiId(),
@@ -156,9 +158,9 @@ public class RenaksiService {
                 });
     }
 
-    public Mono<Renaksi> updateFaktorPenunjang(String nip, String bulan, String rekinId, String renaksiId, String faktorPenunjang) {
+    public Mono<Renaksi> updateFaktorPenunjang(String nip, String tahun, String bulan, String rekinId, String renaksiId, String targetId, String faktorPenunjang) {
         return renaksiRepository
-                .findFirstByNipAndBulanAndRekinIdAndRenaksiId(nip, bulan, rekinId, renaksiId)
+                .findFirstByNipAndTahunAndBulanAndRekinIdAndRenaksiIdAndTargetId(nip, tahun, bulan, rekinId, renaksiId, targetId)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Renaksi tidak ditemukan")))
                 .flatMap(existing -> {
                     Renaksi updated = new Renaksi(
@@ -190,9 +192,9 @@ public class RenaksiService {
                 });
     }
 
-    public Mono<Renaksi> updateFaktorPenghambat(String nip, String bulan, String rekinId, String renaksiId, String faktorPenghambat) {
+    public Mono<Renaksi> updateFaktorPenghambat(String nip, String tahun, String bulan, String rekinId, String renaksiId, String targetId, String faktorPenghambat) {
         return renaksiRepository
-                .findFirstByNipAndBulanAndRekinIdAndRenaksiId(nip, bulan, rekinId, renaksiId)
+                .findFirstByNipAndTahunAndBulanAndRekinIdAndRenaksiIdAndTargetId(nip, tahun, bulan, rekinId, renaksiId, targetId)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Renaksi tidak ditemukan")))
                 .flatMap(existing -> {
                     Renaksi updated = new Renaksi(
