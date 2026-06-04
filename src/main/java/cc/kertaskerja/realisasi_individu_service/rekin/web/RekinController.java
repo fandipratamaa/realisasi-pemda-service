@@ -105,8 +105,6 @@ public class RekinController {
                                     "    \"indikator\": \"Persentase capaian rekin\",\n" +
                                      "    \"nip\": \"198012312005011001\",\n" +
                                      "    \"namaPegawai\": \"Budi Santoso\",\n" +
-                                     "    \"idSasaran\": \"SAS-001\",\n" +
-                                    "    \"sasaran\": \"Meningkatkan kualitas layanan\",\n" +
                                     "    \"targetId\": \"TAR-1\",\n" +
                                     "    \"target\": \"100\",\n" +
                                     "    \"realisasi\": 85,\n" +
@@ -119,5 +117,49 @@ public class RekinController {
                                     "]")))
             @RequestBody @Valid List<RekinRequest> rekinRequests) {
         return rekinService.batchSubmitRealisasiRekin(rekinRequests);
+    }
+
+    @PostMapping("/faktor-penunjang")
+    @Operation(summary = "Perbarui faktor penunjang rekin", description = "Memperbarui hanya field faktor_penunjang pada record Rekin yang cocok dengan composite key (nip, tahun, bulan, rekinId, targetId).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = Rekin.class))),
+            @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Rekin tidak ditemukan", content = @Content)
+    })
+    public Mono<Rekin> updateFaktorPenunjang(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload parsial faktor penunjang", required = true,
+                    content = @Content(schema = @Schema(implementation = FaktorPenunjangRekinRequest.class)))
+            @RequestBody @Valid FaktorPenunjangRekinRequest req) {
+        return rekinService.updateFaktorPenunjang(
+                req.nip(),
+                req.tahun(),
+                req.bulan(),
+                req.rekinId(),
+                req.targetId(),
+                req.faktorPenunjang()
+        );
+    }
+
+    @PostMapping("/faktor-penghambat")
+    @Operation(summary = "Perbarui faktor penghambat rekin", description = "Memperbarui hanya field faktor_penghambat pada record Rekin yang cocok dengan composite key (nip, tahun, bulan, rekinId, targetId).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = Rekin.class))),
+            @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Rekin tidak ditemukan", content = @Content)
+    })
+    public Mono<Rekin> updateFaktorPenghambat(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload parsial faktor penghambat", required = true,
+                    content = @Content(schema = @Schema(implementation = FaktorPenghambatRekinRequest.class)))
+            @RequestBody @Valid FaktorPenghambatRekinRequest req) {
+        return rekinService.updateFaktorPenghambat(
+                req.nip(),
+                req.tahun(),
+                req.bulan(),
+                req.rekinId(),
+                req.targetId(),
+                req.faktorPenghambat()
+        );
     }
 }

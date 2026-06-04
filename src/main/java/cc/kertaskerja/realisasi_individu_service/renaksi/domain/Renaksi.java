@@ -12,6 +12,7 @@ import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Table("renaksi")
@@ -37,6 +38,8 @@ public record Renaksi(
         String targetId,
         String target,
         Integer realisasi,
+        @Column("anggaran")
+        BigDecimal anggaran,
         String satuan,
         String bulan,
         String tahun,
@@ -46,6 +49,11 @@ public record Renaksi(
 
         @Column("kode_opd")
         String kodeOpd,
+
+        @Column("faktor_penunjang")
+        String faktorPenunjang,
+        @Column("faktor_penghambat")
+        String faktorPenghambat,
 
         RenaksiStatus status,
 
@@ -74,11 +82,14 @@ public record Renaksi(
             String targetId,
             String target,
             Integer realisasi,
+            BigDecimal anggaran,
             String satuan,
             String bulan,
             String tahun,
             JenisRealisasi jenisRealisasi,
             String kodeOpd,
+            String faktorPenunjang,
+            String faktorPenghambat,
             RenaksiStatus status
     ) {
         return new Renaksi(
@@ -92,11 +103,14 @@ public record Renaksi(
                 targetId,
                 target,
                 realisasi,
+                anggaran,
                 satuan,
                 bulan,
                 tahun,
                 jenisRealisasi,
                 kodeOpd,
+                faktorPenunjang,
+                faktorPenghambat,
                 status,
                 null,
                 null,

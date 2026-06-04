@@ -17,7 +17,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -65,33 +64,67 @@ public class TujuanOpdService {
     public Mono<PenetapanTujuanOpdListResponse> getPenetapanWithRealisasi(String kodeOpd, int tahun, String bulan) {
         return penetapanClient.fetchTujuanOpd(kodeOpd, tahun)
                 .flatMap(penetapanList -> {
-                    String rootKodeOpd = penetapanList.isEmpty() ? kodeOpd : penetapanList.getFirst().kodeOpd();
-                    Integer effectiveTahun = penetapanList.isEmpty() ? tahun : penetapanList.getFirst().tahunAktif();
+                    var root = resolveRootInfo(penetapanList, kodeOpd, tahun);
+                    String tahunStr = String.valueOf(root.tahun());
 
                     if (bulan == null || bulan.isBlank()) {
-                        List<TujuanOpdPenetapanResponse> items = penetapanList.stream()
-                                .map(p -> mergePenetapanWithRealisasi(p, null, Set.of()))
-                                .filter(response -> !response.indikators().isEmpty())
-                                .toList();
-                        return Mono.just(new PenetapanTujuanOpdListResponse(rootKodeOpd, effectiveTahun, null, items));
+                        return Mono.just(buildResponseWithoutBulan(penetapanList, root));
                     }
 
-                    Mono<Set<String>> hiddenTargetKeys = getHiddenTargetKeysForPreviousMonths(kodeOpd, effectiveTahun, bulan);
-                    Mono<Map<String, TujuanOpdResponse>> realisasiMap =
-                            getRealisasiTujuanOpdByTahunAndKodeOpdAndBulan(String.valueOf(effectiveTahun), kodeOpd, bulan)
-                                    .collectMap(TujuanOpdResponse::kodeTujuanOpd);
+                    Mono<Set<String>> allKodes = tujuanOpdRepository
+                            .findAllByTahunAndKodeOpd(tahunStr, kodeOpd)
+                            .map(TujuanOpd::kodeTujuanOpd)
+                            .collect(Collectors.toSet())
+                            .defaultIfEmpty(Set.of());
 
-                    return Mono.zip(realisasiMap, hiddenTargetKeys).map(tuple -> {
-                                Map<String, TujuanOpdResponse> rMap = tuple.getT1();
-                                Set<String> hiddenKeys = tuple.getT2();
-                                List<TujuanOpdPenetapanResponse> items = penetapanList.stream()
-                                        .map(p -> mergePenetapanWithRealisasi(p, rMap.get(p.kodeTujuanOpd()), hiddenKeys))
-                                        .filter(response -> !response.indikators().isEmpty())
-                                        .toList();
-                                return new PenetapanTujuanOpdListResponse(rootKodeOpd, effectiveTahun, parseInteger(bulan), items);
-                            }
-                    );
+                    Mono<Map<String, TujuanOpdResponse>> bulanMap = getRealisasiTujuanOpdByTahunAndKodeOpdAndBulan(
+                                    tahunStr, kodeOpd, bulan)
+                            .collectMap(TujuanOpdResponse::kodeTujuanOpd);
+
+                    return Mono.zip(allKodes, bulanMap)
+                            .map(tuple -> buildResponseWithRealisasi(
+                                    penetapanList, root, tuple.getT2(), tuple.getT1(), bulan));
                 });
+    }
+
+    private record PenetapanInfo(String kodeOpd, Integer tahun) {}
+
+    private PenetapanInfo resolveRootInfo(List<PenetapanTujuanOpd.TujuanPenetapanData> list, String kodeOpd, int tahun) {
+        if (list.isEmpty()) {
+            return new PenetapanInfo(kodeOpd, tahun);
+        }
+        var first = list.getFirst();
+        return new PenetapanInfo(first.kodeOpd(), first.tahunAktif());
+    }
+
+    private PenetapanTujuanOpdListResponse buildResponseWithoutBulan(
+            List<PenetapanTujuanOpd.TujuanPenetapanData> penetapanList,
+            PenetapanInfo root
+    ) {
+        List<TujuanOpdPenetapanResponse> items = penetapanList.stream()
+                .map(p -> mergePenetapanWithRealisasi(p, null, Set.of()))
+                .filter(response -> !response.indikators().isEmpty())
+                .toList();
+        return new PenetapanTujuanOpdListResponse(root.kodeOpd(), root.tahun(), null, items);
+    }
+
+    private PenetapanTujuanOpdListResponse buildResponseWithRealisasi(
+            List<PenetapanTujuanOpd.TujuanPenetapanData> penetapanList,
+            PenetapanInfo root,
+            Map<String, TujuanOpdResponse> rMap,
+            Set<String> allRealisasiKodes,
+            String bulan
+    ) {
+        List<TujuanOpdPenetapanResponse> items = penetapanList.stream()
+                .filter(p -> {
+                    boolean hasRealisasiSomewhere = allRealisasiKodes.contains(p.kodeTujuanOpd());
+                    boolean hasRealisasiThisBulan = rMap.containsKey(p.kodeTujuanOpd());
+                    return !hasRealisasiSomewhere || hasRealisasiThisBulan;
+                })
+                .map(p -> mergePenetapanWithRealisasi(p, rMap.get(p.kodeTujuanOpd()), Set.of()))
+                .filter(response -> !response.indikators().isEmpty())
+                .toList();
+        return new PenetapanTujuanOpdListResponse(root.kodeOpd(), root.tahun(), parseInteger(bulan), items);
     }
 
     private TujuanOpdPenetapanResponse mergePenetapanWithRealisasi(
@@ -99,35 +132,15 @@ public class TujuanOpdService {
             TujuanOpdResponse realisasi,
             Set<String> hiddenTargetKeys
     ) {
-        Map<String, TujuanOpdResponse.IndikatorResponse> indikatorMap = realisasi != null
-                ? realisasi.indikators().stream()
-                        .collect(Collectors.toMap(TujuanOpdResponse.IndikatorResponse::kodeIndikator, i -> i))
-                : Map.of();
+        Map<String, TujuanOpdResponse.IndikatorResponse> indikatorMap = buildIndikatorMap(realisasi);
 
         List<TujuanOpdPenetapanResponse.IndikatorPenetapan> indikatorList = penetapan.indikators().stream()
                 .map(ind -> {
-                    TujuanOpdResponse.IndikatorResponse matchedInd = indikatorMap.get(ind.kodeIndikator());
-                    Map<String, TujuanOpdResponse.TargetResponse> targetMap = matchedInd != null
-                            ? matchedInd.targets().stream()
-                                    .collect(Collectors.toMap(TujuanOpdResponse.TargetResponse::kodeTarget, t -> t))
-                            : Map.of();
+                    Map<String, TujuanOpdResponse.TargetResponse> targetMap = buildTargetMap(indikatorMap.get(ind.kodeIndikator()));
 
                     List<TujuanOpdPenetapanResponse.TargetPenetapan> targetList = ind.targets().stream()
                             .filter(t -> !hiddenTargetKeys.contains(buildTargetKey(penetapan.kodeTujuanOpd(), ind.kodeIndikator(), t.kodeTarget())))
-                            .map(t -> {
-                                TujuanOpdResponse.TargetResponse matchedTarget = targetMap.get(t.kodeTarget());
-                                Double targetPenetapan = t.target();
-                                Double realisasiValue = matchedTarget != null ? matchedTarget.realisasi() : null;
-                                var capaianResult = TujuanOpd.hitungCapaian(realisasiValue, targetPenetapan);
-                                return new TujuanOpdPenetapanResponse.TargetPenetapan(
-                                        t.kodeTarget(),
-                                        t.satuan(),
-                                        targetPenetapan,
-                                        realisasiValue,
-                                        capaianResult.capaian(),
-                                        capaianResult.keteranganCapaian()
-                                );
-                            })
+                            .map(t -> mergeTarget(t, targetMap))
                             .toList();
 
                     if (targetList.isEmpty()) {
@@ -154,24 +167,38 @@ public class TujuanOpdService {
         );
     }
 
-    // Sembunyikan data penetapan yang sudah di isi realisasinya di bulan tertentu
-    private Mono<Set<String>> getHiddenTargetKeysForPreviousMonths(String kodeOpd, int tahun, String bulan) {
-        Integer activeMonth = parseInteger(bulan);
-        if (activeMonth == null) {
-            return Mono.just(Set.of());
+    private Map<String, TujuanOpdResponse.IndikatorResponse> buildIndikatorMap(TujuanOpdResponse realisasi) {
+        if (realisasi == null) {
+            return Map.of();
         }
+        return realisasi.indikators().stream()
+                .collect(Collectors.toMap(TujuanOpdResponse.IndikatorResponse::kodeIndikator, i -> i));
+    }
 
-        return tujuanOpdRepository.findAllByTahunAndKodeOpd(String.valueOf(tahun), kodeOpd)
-                .filter(tujuan -> {
-                    Integer tujuanMonth = parseInteger(tujuan.bulan());
-                    return tujuanMonth != null && !tujuanMonth.equals(activeMonth);
-                })
-                .flatMap(this::toResponseFromStoredData)
-                .flatMapIterable(response -> response.indikators().stream()
-                        .flatMap(indikator -> indikator.targets().stream()
-                                .map(target -> buildTargetKey(response.kodeTujuanOpd(), indikator.kodeIndikator(), target.kodeTarget())))
-                        .toList())
-                .collect(Collectors.toCollection(HashSet::new));
+    private Map<String, TujuanOpdResponse.TargetResponse> buildTargetMap(TujuanOpdResponse.IndikatorResponse indikator) {
+        if (indikator == null) {
+            return Map.of();
+        }
+        return indikator.targets().stream()
+                .collect(Collectors.toMap(TujuanOpdResponse.TargetResponse::kodeTarget, t -> t));
+    }
+
+    private TujuanOpdPenetapanResponse.TargetPenetapan mergeTarget(
+            PenetapanTujuanOpd.TargetPenetapanData t,
+            Map<String, TujuanOpdResponse.TargetResponse> targetMap
+    ) {
+        TujuanOpdResponse.TargetResponse matchedTarget = targetMap.get(t.kodeTarget());
+        Double targetPenetapan = t.target();
+        Double realisasiValue = matchedTarget != null ? matchedTarget.realisasi() : null;
+        var capaianResult = TujuanOpd.hitungCapaian(realisasiValue, targetPenetapan);
+        return new TujuanOpdPenetapanResponse.TargetPenetapan(
+                t.kodeTarget(),
+                t.satuan(),
+                targetPenetapan,
+                realisasiValue,
+                capaianResult.capaian(),
+                capaianResult.keteranganCapaian()
+        );
     }
 
     private String buildTargetKey(String kodeTujuanOpd, String kodeIndikator, String kodeTarget) {
@@ -206,42 +233,7 @@ public class TujuanOpdService {
                 .collect(Collectors.toMap(PenetapanTujuanOpd.IndikatorPenetapanData::kodeIndikator, i -> i));
 
         List<TujuanOpdResponse.IndikatorResponse> enrichedIndikator = response.indikators().stream()
-                .map(ind -> {
-                    PenetapanTujuanOpd.IndikatorPenetapanData matchedInd = indikatorPenetapanMap.get(ind.kodeIndikator());
-                    if (matchedInd == null) {
-                        return ind;
-                    }
-                    Map<String, PenetapanTujuanOpd.TargetPenetapanData> targetPenetapanMap = matchedInd.targets().stream()
-                            .collect(Collectors.toMap(PenetapanTujuanOpd.TargetPenetapanData::kodeTarget, t -> t));
-
-                    List<TujuanOpdResponse.TargetResponse> enrichedTargets = ind.targets().stream()
-                            .map(t -> {
-                                PenetapanTujuanOpd.TargetPenetapanData matchedTarget = targetPenetapanMap.get(t.kodeTarget());
-                                if (matchedTarget == null) {
-                                    return t;
-                                }
-                                var capaianResult = TujuanOpd.hitungCapaian(t.realisasi(), matchedTarget.target());
-                                return new TujuanOpdResponse.TargetResponse(
-                                        t.id(), t.kodeTarget(),
-                                        matchedTarget.target(),
-                                        matchedTarget.satuan(),
-                                        t.tahun(), t.bulan(), t.realisasi(),
-                                        capaianResult.capaian(),
-                                        capaianResult.keteranganCapaian()
-                                );
-                            })
-                            .toList();
-
-                    return new TujuanOpdResponse.IndikatorResponse(
-                            ind.id(), ind.kodeIndikator(),
-                            matchedInd.indikator(),
-                            matchedInd.rumusPerhitungan(),
-                            matchedInd.sumberData(),
-                            matchedInd.definisiOperasional(),
-                            ind.tahun(), ind.bulan(),
-                            enrichedTargets
-                    );
-                })
+                .map(ind -> enrichIndikator(ind, indikatorPenetapanMap))
                 .toList();
 
         return new TujuanOpdResponse(
@@ -252,96 +244,119 @@ public class TujuanOpdService {
         );
     }
 
+    private TujuanOpdResponse.IndikatorResponse enrichIndikator(
+            TujuanOpdResponse.IndikatorResponse ind,
+            Map<String, PenetapanTujuanOpd.IndikatorPenetapanData> indikatorPenetapanMap
+    ) {
+        PenetapanTujuanOpd.IndikatorPenetapanData matchedInd = indikatorPenetapanMap.get(ind.kodeIndikator());
+        if (matchedInd == null) {
+            return ind;
+        }
+
+        Map<String, PenetapanTujuanOpd.TargetPenetapanData> targetPenetapanMap = matchedInd.targets().stream()
+                .collect(Collectors.toMap(PenetapanTujuanOpd.TargetPenetapanData::kodeTarget, t -> t));
+
+        List<TujuanOpdResponse.TargetResponse> enrichedTargets = ind.targets().stream()
+                .map(t -> enrichTarget(t, targetPenetapanMap))
+                .toList();
+
+        return new TujuanOpdResponse.IndikatorResponse(
+                ind.id(), ind.kodeIndikator(),
+                matchedInd.indikator(),
+                matchedInd.rumusPerhitungan(),
+                matchedInd.sumberData(),
+                matchedInd.definisiOperasional(),
+                ind.tahun(), ind.bulan(),
+                enrichedTargets
+        );
+    }
+
+    private TujuanOpdResponse.TargetResponse enrichTarget(
+            TujuanOpdResponse.TargetResponse t,
+            Map<String, PenetapanTujuanOpd.TargetPenetapanData> targetPenetapanMap
+    ) {
+        PenetapanTujuanOpd.TargetPenetapanData matchedTarget = targetPenetapanMap.get(t.kodeTarget());
+        if (matchedTarget == null) {
+            return t;
+        }
+        var capaianResult = TujuanOpd.hitungCapaian(t.realisasi(), matchedTarget.target());
+        return new TujuanOpdResponse.TargetResponse(
+                t.id(), t.kodeTarget(),
+                matchedTarget.target(),
+                matchedTarget.satuan(),
+                t.tahun(), t.bulan(), t.realisasi(),
+                capaianResult.capaian(),
+                capaianResult.keteranganCapaian()
+        );
+    }
+
     private Mono<TujuanOpd> upsertHierarchy(TujuanOpdRequest req) {
-        return tujuanOpdRepository.findFirstByKodeOpdAndKodeTujuanOpdAndTahunAndBulan(
+        return upsertTujuan(req)
+                .flatMap(tujuan -> upsertIndikator(tujuan.id(), req)
+                        .flatMap(indikator -> upsertTarget(indikator.id(), req)
+                                .thenReturn(tujuan)));
+    }
+
+    private Mono<TujuanOpd> upsertTujuan(TujuanOpdRequest req) {
+        return tujuanOpdRepository
+                .findFirstByKodeOpdAndKodeTujuanOpdAndTahunAndBulan(
                         req.kodeOpd(), req.kodeTujuanOpd(), req.tahun(), req.bulan())
-                .switchIfEmpty(Mono.defer(() -> tujuanOpdRepository.save(TujuanOpd.of(
-                        req.kodeOpd(),
-                        req.kodeTujuanOpd(),
-                        req.tahun(),
-                        req.bulan()
-                ))))
-                .flatMap(tujuan -> indikatorTujuanOpdRepository.findFirstByTujuanOpdIdAndKodeIndikatorAndKodeOpdAndTahunAndBulan(
-                                        tujuan.id(), req.kodeIndikatorTujuanOpd(), req.kodeOpd(), req.tahun(), req.bulan())
-                                .switchIfEmpty(Mono.defer(() -> indikatorTujuanOpdRepository.save(new IndikatorTujuanOpd(
-                                        null,
-                                        tujuan.id(),
-                                        req.kodeIndikatorTujuanOpd(),
-                                        req.kodeOpd(),
-                                        req.tahun(),
-                                        req.bulan(),
-                                        null,
-                                        null,
-                                        null,
-                                        null
-                                ))))
-                                .flatMap(indikator -> targetIndikatorTujuanOpdRepository.findFirstByIndikatorTujuanIdAndKodeTargetAndTahunAndBulan(
-                                                indikator.id(), req.kodeTargetTujuanOpd(), req.tahun(), req.bulan())
-                                        .flatMap(existing -> targetIndikatorTujuanOpdRepository.save(new TargetIndikatorTujuanOpd(
-                                                existing.id(),
-                                                existing.indikatorTujuanId(),
-                                                existing.kodeTarget(),
-                                                BigDecimal.valueOf(req.realisasi()),
-                                                existing.tahun(),
-                                                existing.bulan(),
-                                                existing.createdDate(),
-                                                null,
-                                                existing.createdBy(),
-                                                null
-                                        )))
-                                        .switchIfEmpty(Mono.defer(() -> targetIndikatorTujuanOpdRepository.save(new TargetIndikatorTujuanOpd(
-                                                null,
-                                                indikator.id(),
-                                                req.kodeTargetTujuanOpd(),
-                                                BigDecimal.valueOf(req.realisasi()),
-                                                req.tahun(),
-                                                req.bulan(),
-                                                null,
-                                                null,
-                                                null,
-                                                null
-                                        ))))
-                                        .thenReturn(tujuan)));
+                .switchIfEmpty(Mono.defer(() -> tujuanOpdRepository.save(
+                        TujuanOpd.of(req.kodeOpd(), req.kodeTujuanOpd(), req.tahun(), req.bulan()))));
+    }
+
+    private Mono<IndikatorTujuanOpd> upsertIndikator(Long tujuanId, TujuanOpdRequest req) {
+        return indikatorTujuanOpdRepository
+                .findFirstByTujuanOpdIdAndKodeIndikatorAndKodeOpdAndTahunAndBulan(
+                        tujuanId, req.kodeIndikatorTujuanOpd(), req.kodeOpd(), req.tahun(), req.bulan())
+                .switchIfEmpty(Mono.defer(() -> indikatorTujuanOpdRepository.save(
+                        new IndikatorTujuanOpd(
+                                null, tujuanId, req.kodeIndikatorTujuanOpd(),
+                                req.kodeOpd(), req.tahun(), req.bulan(),
+                                null, null, null, null))));
+    }
+
+    private Mono<TargetIndikatorTujuanOpd> upsertTarget(Long indikatorId, TujuanOpdRequest req) {
+        return targetIndikatorTujuanOpdRepository
+                .findFirstByIndikatorTujuanIdAndKodeTargetAndTahunAndBulan(
+                        indikatorId, req.kodeTargetTujuanOpd(), req.tahun(), req.bulan())
+                .flatMap(existing -> targetIndikatorTujuanOpdRepository.save(
+                        new TargetIndikatorTujuanOpd(
+                                existing.id(), existing.indikatorTujuanId(),
+                                existing.kodeTarget(),
+                                BigDecimal.valueOf(req.realisasi()),
+                                existing.tahun(), existing.bulan(),
+                                existing.createdDate(), null,
+                                existing.createdBy(), null)))
+                .switchIfEmpty(Mono.defer(() -> targetIndikatorTujuanOpdRepository.save(
+                        new TargetIndikatorTujuanOpd(
+                                null, indikatorId, req.kodeTargetTujuanOpd(),
+                                BigDecimal.valueOf(req.realisasi()),
+                                req.tahun(), req.bulan(),
+                                null, null, null, null))));
     }
 
     private Flux<TujuanOpdResponse> toResponseFromStoredData(TujuanOpd tujuan) {
-        return indikatorTujuanOpdRepository.findAll()
-                .filter(i -> Objects.equals(i.tujuanOpdId(), tujuan.id()))
-                .flatMap(indikator -> targetIndikatorTujuanOpdRepository.findAll()
-                        .filter(t -> Objects.equals(t.indikatorTujuanId(), indikator.id()))
+        return indikatorTujuanOpdRepository.findAllByTujuanOpdId(tujuan.id())
+                .flatMap(indikator -> targetIndikatorTujuanOpdRepository.findAllByIndikatorTujuanId(indikator.id())
                         .map(t -> new TujuanOpdResponse.TargetResponse(
-                                t.id(),
-                                t.kodeTarget(),
-                                null,
-                                null,
-                                parseInteger(t.tahun()),
-                                parseInteger(t.bulan()),
+                                t.id(), t.kodeTarget(),
+                                null, null,
+                                parseInteger(t.tahun()), parseInteger(t.bulan()),
                                 t.realisasi() != null ? t.realisasi().doubleValue() : null,
-                                null,
-                                null
-                        ))
+                                null, null))
                         .collectList()
                         .map(targets -> new TujuanOpdResponse.IndikatorResponse(
-                                indikator.id(),
-                                indikator.kodeIndikator(),
-                                null,
-                                null,
-                                null,
-                                null,
-                                parseInteger(indikator.tahun()),
-                                parseInteger(indikator.bulan()),
-                                targets
-                        )))
+                                indikator.id(), indikator.kodeIndikator(),
+                                null, null, null, null,
+                                parseInteger(indikator.tahun()), parseInteger(indikator.bulan()),
+                                targets)))
                 .collectList()
                 .map(indikators -> new TujuanOpdResponse(
-                        tujuan.id(),
-                        tujuan.kodeOpd(),
-                        tujuan.kodeTujuanOpd(),
+                        tujuan.id(), tujuan.kodeOpd(), tujuan.kodeTujuanOpd(),
                         null,
-                        parseInteger(tujuan.tahun()),
-                        parseInteger(tujuan.bulan()),
-                        indikators
-                ))
+                        parseInteger(tujuan.tahun()), parseInteger(tujuan.bulan()),
+                        indikators))
                 .flux();
     }
 

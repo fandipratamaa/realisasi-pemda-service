@@ -1,0 +1,2 @@
+ALTER TABLE rekin ADD COLUMN faktor_penunjang TEXT NOT NULL DEFAULT '';
+ALTER TABLE rekin ADD COLUMN faktor_penghambat TEXT NOT NULL DEFAULT '';

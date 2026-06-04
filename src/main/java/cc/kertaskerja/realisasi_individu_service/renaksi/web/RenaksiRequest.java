@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
+import java.math.BigDecimal;
+
 @Schema(name = "RenaksiRequest", description = "Payload untuk membuat/memperbarui realisasi renaksi")
 public record RenaksiRequest(
         @Nullable
@@ -56,6 +58,10 @@ public record RenaksiRequest(
         @PositiveOrZero(message = "Realisasi tidak boleh negatif")
         @Schema(description = "Nilai realisasi aktual", example = "85", minimum = "0")
         Integer realisasi,
+
+        @Nullable
+        @Schema(description = "Nilai anggaran", example = "50000000")
+        BigDecimal anggaran,
 
         @NotEmpty(message = "Satuan tidak boleh kosong")
         @Schema(description = "Satuan target/realisasi", example = "%")

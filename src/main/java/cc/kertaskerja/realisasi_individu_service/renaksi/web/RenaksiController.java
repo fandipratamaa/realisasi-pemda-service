@@ -85,6 +85,52 @@ public class RenaksiController {
         return renaksiService.submitRealisasiRenaksi(renaksiRequest);
     }
 
+    @PostMapping("/faktor-penunjang")
+    @Operation(summary = "Perbarui faktor penunjang renaksi", description = "Memperbarui hanya field faktor_penunjang pada record Renaksi yang cocok dengan composite key (nip, tahun, bulan, rekinId, renaksiId, targetId).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = Renaksi.class))),
+            @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Renaksi tidak ditemukan", content = @Content)
+    })
+    public Mono<Renaksi> updateFaktorPenunjang(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload parsial faktor penunjang", required = true,
+                    content = @Content(schema = @Schema(implementation = FaktorPenunjangRenaksiRequest.class)))
+            @RequestBody @Valid FaktorPenunjangRenaksiRequest req) {
+        return renaksiService.updateFaktorPenunjang(
+                req.nip(),
+                req.tahun(),
+                req.bulan(),
+                req.rekinId(),
+                req.renaksiId(),
+                req.targetId(),
+                req.faktorPenunjang()
+        );
+    }
+
+    @PostMapping("/faktor-penghambat")
+    @Operation(summary = "Perbarui faktor penghambat renaksi", description = "Memperbarui hanya field faktor_penghambat pada record Renaksi yang cocok dengan composite key (nip, tahun, bulan, rekinId, renaksiId, targetId).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = Renaksi.class))),
+            @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Renaksi tidak ditemukan", content = @Content)
+    })
+    public Mono<Renaksi> updateFaktorPenghambat(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload parsial faktor penghambat", required = true,
+                    content = @Content(schema = @Schema(implementation = FaktorPenghambatRenaksiRequest.class)))
+            @RequestBody @Valid FaktorPenghambatRenaksiRequest req) {
+        return renaksiService.updateFaktorPenghambat(
+                req.nip(),
+                req.tahun(),
+                req.bulan(),
+                req.rekinId(),
+                req.renaksiId(),
+                req.targetId(),
+                req.faktorPenghambat()
+        );
+    }
+
     @PostMapping("/batch")
     @Operation(summary = "Simpan batch realisasi renaksi", description = "Menyimpan beberapa data realisasi renaksi dalam satu request. Payload wajib menyertakan field `kodeOpd`. Role `super_admin` dan `admin_opd` tidak diizinkan mengakses endpoint ini.")
     @ApiResponses(value = {

@@ -32,8 +32,6 @@ public class RekinServiceTests {
                 "Rekin A",
                 "198012312005011001",
                 "Anon",
-                "SAS-1",
-                "Sasaran A",
                 "IND-1",
                 "Indikator A",
                 "TAR-1",
@@ -54,8 +52,6 @@ public class RekinServiceTests {
                 "Indikator A",
                 "198012312005011001",
                 "Anon",
-                "SAS-1",
-                "Sasaran A",
                 "TAR-1",
                 "100",
                 10,
@@ -63,6 +59,8 @@ public class RekinServiceTests {
                 "2026",
                 "Desember",
                 "1.01.0.00.0.00.01.0000",
+                "",
+                "",
                 JenisRealisasi.NAIK,
                 RekinStatus.UNCHECKED,
                 null,
@@ -72,7 +70,8 @@ public class RekinServiceTests {
                 0
         );
 
-        when(rekinRepository.findFirstByNipAndIdSasaranAndTahunAndRekinId(req.nip(), req.idSasaran(), req.tahun(), req.rekinId()))
+        when(rekinRepository.findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(
+                req.nip(), req.tahun(), req.bulan(), req.rekinId(), req.targetId()))
                 .thenReturn(Mono.just(existing));
         when(rekinRepository.save(ArgumentMatchers.any(Rekin.class)))
                 .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
@@ -88,7 +87,8 @@ public class RekinServiceTests {
                 .verifyComplete();
 
         verify(rekinRepository, times(1))
-                .findFirstByNipAndIdSasaranAndTahunAndRekinId(req.nip(), req.idSasaran(), req.tahun(), req.rekinId());
+                .findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(
+                        req.nip(), req.tahun(), req.bulan(), req.rekinId(), req.targetId());
         verify(rekinRepository, times(1)).save(any(Rekin.class));
         verify(rekinRepository, never()).findById(anyLong());
     }
@@ -101,8 +101,6 @@ public class RekinServiceTests {
                 "Rekin B",
                 "198012312005011001",
                 "Anon",
-                "SAS-2",
-                "Sasaran B",
                 "IND-2",
                 "Indikator B",
                 "TAR-2",
@@ -115,7 +113,8 @@ public class RekinServiceTests {
                 JenisRealisasi.NAIK
         );
 
-        when(rekinRepository.findFirstByNipAndIdSasaranAndTahunAndRekinId(req.nip(), req.idSasaran(), req.tahun(), req.rekinId()))
+        when(rekinRepository.findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(
+                req.nip(), req.tahun(), req.bulan(), req.rekinId(), req.targetId()))
                 .thenReturn(Mono.empty());
         when(rekinRepository.save(ArgumentMatchers.any(Rekin.class)))
                 .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
@@ -127,12 +126,12 @@ public class RekinServiceTests {
                         saved.id() == null
                                 && saved.rekinId().equals(req.rekinId())
                                 && saved.nip().equals(req.nip())
-                                && saved.idSasaran().equals(req.idSasaran())
                                 && saved.tahun().equals(req.tahun()))
                 .verifyComplete();
 
         verify(rekinRepository, times(1))
-                .findFirstByNipAndIdSasaranAndTahunAndRekinId(req.nip(), req.idSasaran(), req.tahun(), req.rekinId());
+                .findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(
+                        req.nip(), req.tahun(), req.bulan(), req.rekinId(), req.targetId());
         verify(rekinRepository, times(1)).save(any(Rekin.class));
         verify(rekinRepository, never()).findById(anyLong());
     }
@@ -145,8 +144,6 @@ public class RekinServiceTests {
                 "Rekin C",
                 "198012312005011001",
                 "Anon",
-                "SAS-3",
-                "Sasaran C",
                 "IND-3",
                 "Indikator C",
                 "TAR-3",
@@ -167,8 +164,6 @@ public class RekinServiceTests {
                 "Indikator C",
                 "198012312005011001",
                 "Anon",
-                "SAS-3",
-                "Sasaran C",
                 "TAR-3",
                 "300",
                 10,
@@ -176,6 +171,8 @@ public class RekinServiceTests {
                 "2026",
                 "Januari",
                 "1.01.0.00.0.00.01.0000",
+                "",
+                "",
                 JenisRealisasi.NAIK,
                 RekinStatus.UNCHECKED,
                 null,
@@ -202,6 +199,6 @@ public class RekinServiceTests {
         verify(rekinRepository, times(1)).findById(req.targetRealisasiId());
         verify(rekinRepository, times(1)).save(any(Rekin.class));
         verify(rekinRepository, never())
-                .findFirstByNipAndIdSasaranAndTahunAndRekinId(anyString(), anyString(), anyString(), anyString());
+                .findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(anyString(), anyString(), anyString(), anyString(), anyString());
     }
 }

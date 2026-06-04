@@ -57,7 +57,6 @@ public class OpenApiConfig {
                 .group("individu")
                 .pathsToMatch(
                         "/rekin/**",
-                        "/sasaran_individu/**",
                         "/renja_individu/**",
                         "/renaksi/**")
                 .build();

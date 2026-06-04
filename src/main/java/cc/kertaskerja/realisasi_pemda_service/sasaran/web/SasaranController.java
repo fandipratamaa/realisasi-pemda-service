@@ -113,19 +113,7 @@ public Mono<Sasaran> submitRealisasiSasaran(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload realisasi sasaran", required = true,
                     content = @Content(schema = @Schema(implementation = SasaranRequest.class)))
             @RequestBody @Valid SasaranRequest sasaranRequest) {
-        return sasaranService.submitRealisasiSasaran(
-                sasaranRequest.sasaranId(),
-                sasaranRequest.indikatorId(),
-                sasaranRequest.targetId(),
-                sasaranRequest.target(),
-                sasaranRequest.realisasi(),
-                sasaranRequest.satuan(),
-                sasaranRequest.tahun(),
-                sasaranRequest.bulan(),
-                sasaranRequest.rumusPerhitungan(),
-                sasaranRequest.sumberData(),
-                sasaranRequest.jenisRealisasi()
-        );
+        return sasaranService.submitRealisasiSasaran(sasaranRequest);
     }
 
     @PostMapping("/batch")
@@ -140,5 +128,49 @@ public Mono<Sasaran> submitRealisasiSasaran(
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = SasaranRequest.class))))
             @RequestBody @Valid List<SasaranRequest> sasaranRequest) {
         return sasaranService.batchSubmitRealisasiSasaran(sasaranRequest);
+    }
+
+    @PostMapping("/faktor-penunjang")
+    @Operation(summary = "Perbarui faktor penunjang sasaran", description = "Memperbarui hanya field faktor_penunjang pada record Sasaran yang cocok dengan composite key (sasaranId, indikatorId, targetId, tahun, bulan).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = Sasaran.class))),
+            @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Sasaran tidak ditemukan", content = @Content)
+    })
+    public Mono<Sasaran> updateFaktorPenunjang(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload parsial faktor penunjang", required = true,
+                    content = @Content(schema = @Schema(implementation = FaktorPenunjangSasaranRequest.class)))
+            @RequestBody @Valid FaktorPenunjangSasaranRequest req) {
+        return sasaranService.updateFaktorPenunjang(
+                req.sasaranId(),
+                req.indikatorId(),
+                req.targetId(),
+                req.tahun(),
+                req.bulan(),
+                req.faktorPenunjang()
+        );
+    }
+
+    @PostMapping("/faktor-penghambat")
+    @Operation(summary = "Perbarui faktor penghambat sasaran", description = "Memperbarui hanya field faktor_penghambat pada record Sasaran yang cocok dengan composite key (sasaranId, indikatorId, targetId, tahun, bulan).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = Sasaran.class))),
+            @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Sasaran tidak ditemukan", content = @Content)
+    })
+    public Mono<Sasaran> updateFaktorPenghambat(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload parsial faktor penghambat", required = true,
+                    content = @Content(schema = @Schema(implementation = FaktorPenghambatSasaranRequest.class)))
+            @RequestBody @Valid FaktorPenghambatSasaranRequest req) {
+        return sasaranService.updateFaktorPenghambat(
+                req.sasaranId(),
+                req.indikatorId(),
+                req.targetId(),
+                req.tahun(),
+                req.bulan(),
+                req.faktorPenghambat()
+        );
     }
 }

@@ -32,10 +32,6 @@ public record Rekin(
         @JsonProperty("nama_pegawai")
         @Column("nama_pegawai")
         String namaPegawai,
-        @Column("id_sasaran")
-        String idSasaran,
-        @Column("sasaran")
-        String sasaran,
 
         @Column("target_id")
         String targetId,
@@ -47,6 +43,11 @@ public record Rekin(
 
         @Column("kode_opd")
         String kodeOpd,
+
+        @Column("faktor_penunjang")
+        String faktorPenunjang,
+        @Column("faktor_penghambat")
+        String faktorPenghambat,
 
         @Column("jenis_realisasi")
         JenisRealisasi jenisRealisasi,
@@ -74,8 +75,6 @@ public record Rekin(
             String indikator,
             String nip,
             String namaPegawai,
-            String idSasaran,
-            String sasaran,
             String targetId,
             String target,
             Integer realisasi,
@@ -83,6 +82,8 @@ public record Rekin(
             String tahun,
             String bulan,
             String kodeOpd,
+            String faktorPenunjang,
+            String faktorPenghambat,
             JenisRealisasi jenisRealisasi,
             RekinStatus status
     ) {
@@ -93,8 +94,6 @@ public record Rekin(
                 indikator,
                 nip,
                 namaPegawai,
-                idSasaran,
-                sasaran,
                 targetId,
                 target,
                 realisasi,
@@ -102,6 +101,8 @@ public record Rekin(
                 tahun,
                 bulan,
                 kodeOpd,
+                faktorPenunjang,
+                faktorPenghambat,
                 jenisRealisasi,
                 status,
                 null, null, null, null, 0);

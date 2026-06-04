@@ -3,10 +3,13 @@ package cc.kertaskerja.realisasi_individu_service.renaksi.domain;
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import cc.kertaskerja.realisasi_individu_service.renaksi.web.RenaksiRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -47,15 +50,15 @@ public class RenaksiService {
                                 req.nip(), req.namaPegawai(),
                                 req.rekinId(), req.rekin(),
                                 req.targetId(), req.target(),
-                                req.realisasi(), req.satuan(),
+                                req.realisasi(), req.anggaran(), req.satuan(),
                                 req.bulan(), req.tahun(),
                                 req.jenisRealisasi(), req.kodeOpd());
                         return renaksiRepository.save(baru);
                     }));
         }
 
-        return renaksiRepository.findFirstByNipAndBulanAndRekinIdAndRenaksiId(
-                        req.nip(), req.bulan(), req.rekinId(), req.renaksiId())
+        return renaksiRepository.findFirstByNipAndTahunAndBulanAndRekinIdAndRenaksiIdAndTargetId(
+                        req.nip(), req.tahun(), req.bulan(), req.rekinId(), req.renaksiId(), req.targetId())
                 .flatMap(existing -> renaksiRepository.save(buildUpdatedRealisasiRenaksi(existing, req)))
                 .switchIfEmpty(Mono.defer(() -> {
                     Renaksi baru = buildUncheckedRealisasiRenaksi(
@@ -63,7 +66,7 @@ public class RenaksiService {
                             req.nip(), req.namaPegawai(),
                             req.rekinId(), req.rekin(),
                             req.targetId(), req.target(),
-                            req.realisasi(), req.satuan(),
+                            req.realisasi(), req.anggaran(), req.satuan(),
                             req.bulan(), req.tahun(),
                             req.jenisRealisasi(), req.kodeOpd());
                     return renaksiRepository.save(baru);
@@ -80,6 +83,7 @@ public class RenaksiService {
             String targetId,
             String target,
             Integer realisasi,
+            BigDecimal anggaran,
             String satuan,
             String bulan,
             String tahun,
@@ -95,11 +99,14 @@ public class RenaksiService {
                 targetId,
                 target,
                 realisasi,
+                anggaran,
                 satuan,
                 bulan,
                 tahun,
                 jenisRealisasi,
                 kodeOpd,
+                "",
+                "",
                 RenaksiStatus.UNCHECKED);
     }
 
@@ -119,6 +126,7 @@ public class RenaksiService {
                                         req.targetId(),
                                         req.target(),
                                         req.realisasi(),
+                                        req.anggaran(),
                                         req.satuan(),
                                         req.bulan(),
                                         req.tahun(),
@@ -127,11 +135,13 @@ public class RenaksiService {
                                 ))));
                     }
 
-                    return renaksiRepository.findFirstByNipAndBulanAndRekinIdAndRenaksiId(
+                    return renaksiRepository.findFirstByNipAndTahunAndBulanAndRekinIdAndRenaksiIdAndTargetId(
                                     req.nip(),
+                                    req.tahun(),
                                     req.bulan(),
                                     req.rekinId(),
-                                    req.renaksiId())
+                                    req.renaksiId(),
+                                    req.targetId())
                             .flatMap(existing -> renaksiRepository.save(buildUpdatedRealisasiRenaksi(existing, req)))
                             .switchIfEmpty(Mono.defer(() -> renaksiRepository.save(buildUncheckedRealisasiRenaksi(
                                     req.renaksiId(),
@@ -143,12 +153,83 @@ public class RenaksiService {
                                     req.targetId(),
                                     req.target(),
                                     req.realisasi(),
+                                    req.anggaran(),
                                     req.satuan(),
                                     req.bulan(),
                                     req.tahun(),
                                     req.jenisRealisasi(),
                                     req.kodeOpd()
                             ))));
+                });
+    }
+
+    public Mono<Renaksi> updateFaktorPenunjang(String nip, String tahun, String bulan, String rekinId, String renaksiId, String targetId, String faktorPenunjang) {
+        return renaksiRepository
+                .findFirstByNipAndTahunAndBulanAndRekinIdAndRenaksiIdAndTargetId(nip, tahun, bulan, rekinId, renaksiId, targetId)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Renaksi tidak ditemukan")))
+                .flatMap(existing -> {
+                    Renaksi updated = new Renaksi(
+                            existing.id(),
+                            existing.renaksiId(),
+                            existing.renaksi(),
+                            existing.nip(),
+                            existing.namaPegawai(),
+                            existing.rekinId(),
+                            existing.rekin(),
+                            existing.targetId(),
+                            existing.target(),
+                            existing.realisasi(),
+                            existing.anggaran(),
+                            existing.satuan(),
+                            existing.bulan(),
+                            existing.tahun(),
+                            existing.jenisRealisasi(),
+                            existing.kodeOpd(),
+                            faktorPenunjang,
+                            existing.faktorPenghambat(),
+                            existing.status(),
+                            existing.createdBy(),
+                            existing.lastModifiedBy(),
+                            existing.createdDate(),
+                            existing.lastModifiedDate(),
+                            existing.version()
+                    );
+                    return renaksiRepository.save(updated);
+                });
+    }
+
+    public Mono<Renaksi> updateFaktorPenghambat(String nip, String tahun, String bulan, String rekinId, String renaksiId, String targetId, String faktorPenghambat) {
+        return renaksiRepository
+                .findFirstByNipAndTahunAndBulanAndRekinIdAndRenaksiIdAndTargetId(nip, tahun, bulan, rekinId, renaksiId, targetId)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Renaksi tidak ditemukan")))
+                .flatMap(existing -> {
+                    Renaksi updated = new Renaksi(
+                            existing.id(),
+                            existing.renaksiId(),
+                            existing.renaksi(),
+                            existing.nip(),
+                            existing.namaPegawai(),
+                            existing.rekinId(),
+                            existing.rekin(),
+                            existing.targetId(),
+                            existing.target(),
+                            existing.realisasi(),
+                            existing.anggaran(),
+                            existing.satuan(),
+                            existing.bulan(),
+                            existing.tahun(),
+                            existing.jenisRealisasi(),
+                            existing.kodeOpd(),
+                            existing.faktorPenunjang(),
+                            faktorPenghambat,
+                            existing.status(),
+                            existing.createdBy(),
+                            existing.lastModifiedBy(),
+                            existing.createdDate(),
+                            existing.lastModifiedDate(),
+                            existing.version()
+                    );
+                    return renaksiRepository.save(updated);
                 });
     }
 
@@ -164,11 +245,14 @@ public class RenaksiService {
                 existing.targetId(),
                 existing.target(),
                 req.realisasi(),
+                req.anggaran(),
                 req.satuan(),
                 req.bulan(),
                 req.tahun(),
                 req.jenisRealisasi(),
                 req.kodeOpd(),
+                existing.faktorPenunjang(),
+                existing.faktorPenghambat(),
                 RenaksiStatus.UNCHECKED,
                 existing.createdBy(),
                 existing.lastModifiedBy(),

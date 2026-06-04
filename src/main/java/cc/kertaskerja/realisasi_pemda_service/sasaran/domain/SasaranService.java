@@ -3,7 +3,9 @@ package cc.kertaskerja.realisasi_pemda_service.sasaran.domain;
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import cc.kertaskerja.realisasi_pemda_service.sasaran.web.SasaranRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -41,9 +43,58 @@ public class SasaranService {
         return sasaranRepository.findById(id);
     }
 
-    public Mono<Sasaran> submitRealisasiSasaran(String sasaranId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, String rumusPerhitungan, String sumberData, JenisRealisasi jenisRealisasi) {
-        return Mono.just(buildUnchekcedRealisasiSasaran(sasaranId, indikatorId, targetId, target, realisasi, satuan, tahun, bulan, rumusPerhitungan, sumberData, jenisRealisasi))
-                .flatMap(sasaranRepository::save);
+    public Mono<Sasaran> submitRealisasiSasaran(SasaranRequest req) {
+        if (req.targetRealisasiId() != null) {
+            return sasaranRepository.findById(req.targetRealisasiId())
+                    .flatMap(existing -> sasaranRepository.save(buildUpdatedRealisasiSasaran(existing, req)))
+                    .switchIfEmpty(Mono.defer(() -> {
+                        Sasaran baru = buildUnchekcedRealisasiSasaran(
+                                req.sasaranId(), req.indikatorId(), req.targetId(),
+                                req.target(), req.realisasi(), req.satuan(),
+                                req.tahun(), req.bulan(), req.rumusPerhitungan(),
+                                req.sumberData(), req.jenisRealisasi());
+                        return sasaranRepository.save(baru);
+                    }));
+        }
+        return sasaranRepository
+                .findFirstBySasaranIdAndIndikatorIdAndTargetIdAndTahunAndBulan(
+                        req.sasaranId(), req.indikatorId(), req.targetId(), req.tahun(), req.bulan())
+                .flatMap(existing -> sasaranRepository.save(buildUpdatedRealisasiSasaran(existing, req)))
+                .switchIfEmpty(Mono.defer(() -> {
+                    Sasaran baru = buildUnchekcedRealisasiSasaran(
+                            req.sasaranId(), req.indikatorId(), req.targetId(),
+                            req.target(), req.realisasi(), req.satuan(),
+                            req.tahun(), req.bulan(), req.rumusPerhitungan(),
+                            req.sumberData(), req.jenisRealisasi());
+                    return sasaranRepository.save(baru);
+                }));
+    }
+
+    private static Sasaran buildUpdatedRealisasiSasaran(Sasaran existing, SasaranRequest req) {
+        return new Sasaran(
+                existing.id(),
+                existing.sasaranId(),
+                existing.sasaran(),
+                existing.indikatorId(),
+                existing.indikator(),
+                existing.targetId(),
+                req.target(),
+                req.realisasi(),
+                req.satuan(),
+                req.tahun(),
+                req.bulan(),
+                req.rumusPerhitungan(),
+                req.sumberData(),
+                existing.faktorPenunjang(),
+                existing.faktorPenghambat(),
+                req.jenisRealisasi(),
+                SasaranStatus.UNCHECKED,
+                existing.createdBy(),
+                existing.createdDate(),
+                existing.lastModifiedDate(),
+                existing.lastModifiedBy(),
+                existing.version()
+        );
     }
 
     // sasaranId check to sasaranService
@@ -55,6 +106,8 @@ public class SasaranService {
                 "Realisasi Indikator " + indikatorId,
                 targetId, target, realisasi, satuan, tahun, bulan,
                 rumusPerhitungan, sumberData,
+                "",
+                "",
                 jenisRealisasi,
                 SasaranStatus.UNCHECKED);
     }
@@ -83,6 +136,8 @@ public class SasaranService {
                                             req.bulan(),
                                             req.rumusPerhitungan(),
                                             req.sumberData(),
+                                            existing.faktorPenunjang(),
+                                            existing.faktorPenghambat(),
                                             req.jenisRealisasi(),
                                             SasaranStatus.UNCHECKED,
                                             existing.createdBy(),
@@ -126,6 +181,72 @@ public class SasaranService {
                         );
                         return sasaranRepository.save(baru);
                     }
+                });
+    }
+
+    public Mono<Sasaran> updateFaktorPenunjang(String sasaranId, String indikatorId, String targetId, String tahun, String bulan, String faktorPenunjang) {
+        return sasaranRepository
+                .findFirstBySasaranIdAndIndikatorIdAndTargetIdAndTahunAndBulan(sasaranId, indikatorId, targetId, tahun, bulan)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Sasaran tidak ditemukan")))
+                .flatMap(existing -> {
+                    Sasaran updated = new Sasaran(
+                            existing.id(),
+                            existing.sasaranId(),
+                            existing.sasaran(),
+                            existing.indikatorId(),
+                            existing.indikator(),
+                            existing.targetId(),
+                            existing.target(),
+                            existing.realisasi(),
+                            existing.satuan(),
+                            existing.tahun(),
+                            existing.bulan(),
+                            existing.rumusPerhitungan(),
+                            existing.sumberData(),
+                            faktorPenunjang,
+                            existing.faktorPenghambat(),
+                            existing.jenisRealisasi(),
+                            SasaranStatus.UNCHECKED,
+                            existing.createdBy(),
+                            existing.createdDate(),
+                            existing.lastModifiedDate(),
+                            existing.lastModifiedBy(),
+                            existing.version()
+                    );
+                    return sasaranRepository.save(updated);
+                });
+    }
+
+    public Mono<Sasaran> updateFaktorPenghambat(String sasaranId, String indikatorId, String targetId, String tahun, String bulan, String faktorPenghambat) {
+        return sasaranRepository
+                .findFirstBySasaranIdAndIndikatorIdAndTargetIdAndTahunAndBulan(sasaranId, indikatorId, targetId, tahun, bulan)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Sasaran tidak ditemukan")))
+                .flatMap(existing -> {
+                    Sasaran updated = new Sasaran(
+                            existing.id(),
+                            existing.sasaranId(),
+                            existing.sasaran(),
+                            existing.indikatorId(),
+                            existing.indikator(),
+                            existing.targetId(),
+                            existing.target(),
+                            existing.realisasi(),
+                            existing.satuan(),
+                            existing.tahun(),
+                            existing.bulan(),
+                            existing.rumusPerhitungan(),
+                            existing.sumberData(),
+                            existing.faktorPenunjang(),
+                            faktorPenghambat,
+                            existing.jenisRealisasi(),
+                            SasaranStatus.UNCHECKED,
+                            existing.createdBy(),
+                            existing.createdDate(),
+                            existing.lastModifiedDate(),
+                            existing.lastModifiedBy(),
+                            existing.version()
+                    );
+                    return sasaranRepository.save(updated);
                 });
     }
 }

@@ -29,6 +29,10 @@ public record Tujuan(
         String rumusPerhitungan,
         @Column("sumber_data")
         String sumberData,
+        @Column("faktor_penunjang")
+        String faktorPenunjang,
+        @Column("faktor_penghambat")
+        String faktorPenghambat,
         JenisRealisasi jenisRealisasi,
         TujuanStatus status,
 
@@ -57,12 +61,14 @@ public record Tujuan(
             String visiMisi,
             String rumusPerhitungan,
             String sumberData,
+            String faktorPenunjang,
+            String faktorPenghambat,
             JenisRealisasi jenisRealisasi,
             TujuanStatus status
     ) {
         return new Tujuan(null,
                 tujuanId, tujuan, indikatorId, indikator,
-                targetId, target, realisasi, satuan, tahun, bulan, visiMisi, rumusPerhitungan, sumberData, jenisRealisasi, status,
+                targetId, target, realisasi, satuan, tahun, bulan, visiMisi, rumusPerhitungan, sumberData, faktorPenunjang, faktorPenghambat, jenisRealisasi, status,
                 null, null, null, null, 0);
     }
 

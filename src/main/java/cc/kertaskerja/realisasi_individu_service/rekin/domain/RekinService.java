@@ -3,7 +3,9 @@ package cc.kertaskerja.realisasi_individu_service.rekin.domain;
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.RekinRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -40,20 +42,20 @@ public class RekinService {
                     .switchIfEmpty(Mono.defer(() -> {
                         Rekin baru = buildUncheckedRealisasiRekin(
                                 req.rekinId(), req.rekin(), req.indikatorId(), req.indikator(),
-                                req.nip(), req.namaPegawai(), req.idSasaran(), req.sasaran(),
+                                req.nip(), req.namaPegawai(),
                                 req.targetId(), req.target(), req.realisasi(), req.satuan(),
                                 req.tahun(), req.bulan(), req.kodeOpd(), req.jenisRealisasi());
                         return rekinRepository.save(baru);
                     }));
         }
 
-        return rekinRepository.findFirstByNipAndIdSasaranAndTahunAndRekinId(
-                        req.nip(), req.idSasaran(), req.tahun(), req.rekinId())
+        return rekinRepository.findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(
+                        req.nip(), req.tahun(), req.bulan(), req.rekinId(), req.targetId())
                 .flatMap(existing -> rekinRepository.save(buildUpdatedRealisasiRekin(existing, req)))
                 .switchIfEmpty(Mono.defer(() -> {
                     Rekin baru = buildUncheckedRealisasiRekin(
                             req.rekinId(), req.rekin(), req.indikatorId(), req.indikator(),
-                            req.nip(), req.namaPegawai(), req.idSasaran(), req.sasaran(),
+                            req.nip(), req.namaPegawai(),
                             req.targetId(), req.target(), req.realisasi(), req.satuan(),
                             req.tahun(), req.bulan(), req.kodeOpd(), req.jenisRealisasi());
                     return rekinRepository.save(baru);
@@ -62,7 +64,7 @@ public class RekinService {
 
     public static Rekin buildUncheckedRealisasiRekin(String rekinId, String rekin,
             String indikatorId, String indikator,
-            String nip, String namaPegawai, String idSasaran, String sasaran,
+            String nip, String namaPegawai,
             String targetId, String target, Integer realisasi,
             String satuan, String tahun, String bulan, String kodeOpd, JenisRealisasi jenisRealisasi) {
         return Rekin.of(
@@ -72,8 +74,6 @@ public class RekinService {
                 indikator,
                 nip,
                 namaPegawai,
-                idSasaran,
-                sasaran,
                 targetId,
                 target,
                 realisasi,
@@ -81,6 +81,8 @@ public class RekinService {
                 tahun,
                 bulan,
                 kodeOpd,
+                "",
+                "",
                 jenisRealisasi,
                 RekinStatus.UNCHECKED);
     }
@@ -99,8 +101,6 @@ public class RekinService {
                                             req.indikator(),
                                             req.nip(),
                                             req.namaPegawai(),
-                                            req.idSasaran(),
-                                            req.sasaran(),
                                             req.targetId(),
                                             req.target(),
                                             req.realisasi(),
@@ -113,11 +113,12 @@ public class RekinService {
                                 }));
                     }
 
-                    return rekinRepository.findFirstByNipAndIdSasaranAndTahunAndRekinId(
+                    return rekinRepository.findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(
                                     req.nip(),
-                                    req.idSasaran(),
                                     req.tahun(),
-                                    req.rekinId())
+                                    req.bulan(),
+                                    req.rekinId(),
+                                    req.targetId())
                             .flatMap(existing -> rekinRepository.save(buildUpdatedRealisasiRekin(existing, req)))
                             .switchIfEmpty(Mono.defer(() -> {
                                 Rekin baru = buildUncheckedRealisasiRekin(
@@ -127,8 +128,6 @@ public class RekinService {
                                         req.indikator(),
                                         req.nip(),
                                         req.namaPegawai(),
-                                        req.idSasaran(),
-                                        req.sasaran(),
                                         req.targetId(),
                                         req.target(),
                                         req.realisasi(),
@@ -151,8 +150,6 @@ public class RekinService {
                 existing.indikator(),
                 existing.nip(),
                 req.namaPegawai(),
-                existing.idSasaran(),
-                existing.sasaran(),
                 existing.targetId(),
                 existing.target(),
                 req.realisasi(),
@@ -160,6 +157,8 @@ public class RekinService {
                 req.tahun(),
                 req.bulan(),
                 req.kodeOpd(),
+                existing.faktorPenunjang(),
+                existing.faktorPenghambat(),
                 req.jenisRealisasi(),
                 RekinStatus.UNCHECKED,
                 existing.createdBy(),
@@ -167,5 +166,73 @@ public class RekinService {
                 existing.createdDate(),
                 existing.lastModifiedDate(),
                 existing.version());
+    }
+
+    public Mono<Rekin> updateFaktorPenunjang(String nip, String tahun, String bulan, String rekinId, String targetId, String faktorPenunjang) {
+        return rekinRepository
+                .findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(nip, tahun, bulan, rekinId, targetId)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Rekin tidak ditemukan")))
+                .flatMap(existing -> {
+                    Rekin updated = new Rekin(
+                            existing.id(),
+                            existing.rekinId(),
+                            existing.rekin(),
+                            existing.indikatorId(),
+                            existing.indikator(),
+                            existing.nip(),
+                            existing.namaPegawai(),
+                            existing.targetId(),
+                            existing.target(),
+                            existing.realisasi(),
+                            existing.satuan(),
+                            existing.tahun(),
+                            existing.bulan(),
+                            existing.kodeOpd(),
+                            faktorPenunjang,
+                            existing.faktorPenghambat(),
+                            existing.jenisRealisasi(),
+                            RekinStatus.UNCHECKED,
+                            existing.createdBy(),
+                            existing.lastModifiedBy(),
+                            existing.createdDate(),
+                            existing.lastModifiedDate(),
+                            existing.version()
+                    );
+                    return rekinRepository.save(updated);
+                });
+    }
+
+    public Mono<Rekin> updateFaktorPenghambat(String nip, String tahun, String bulan, String rekinId, String targetId, String faktorPenghambat) {
+        return rekinRepository
+                .findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(nip, tahun, bulan, rekinId, targetId)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Rekin tidak ditemukan")))
+                .flatMap(existing -> {
+                    Rekin updated = new Rekin(
+                            existing.id(),
+                            existing.rekinId(),
+                            existing.rekin(),
+                            existing.indikatorId(),
+                            existing.indikator(),
+                            existing.nip(),
+                            existing.namaPegawai(),
+                            existing.targetId(),
+                            existing.target(),
+                            existing.realisasi(),
+                            existing.satuan(),
+                            existing.tahun(),
+                            existing.bulan(),
+                            existing.kodeOpd(),
+                            existing.faktorPenunjang(),
+                            faktorPenghambat,
+                            existing.jenisRealisasi(),
+                            RekinStatus.UNCHECKED,
+                            existing.createdBy(),
+                            existing.lastModifiedBy(),
+                            existing.createdDate(),
+                            existing.lastModifiedDate(),
+                            existing.version()
+                    );
+                    return rekinRepository.save(updated);
+                });
     }
 }

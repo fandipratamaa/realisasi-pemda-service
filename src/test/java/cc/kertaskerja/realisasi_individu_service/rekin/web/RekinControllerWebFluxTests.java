@@ -3,15 +3,19 @@ package cc.kertaskerja.realisasi_individu_service.rekin.web;
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import cc.kertaskerja.realisasi_individu_service.rekin.domain.Rekin;
 import cc.kertaskerja.realisasi_individu_service.rekin.domain.RekinService;
+import cc.kertaskerja.realisasi_individu_service.rekin.domain.RekinStatus;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -40,8 +44,6 @@ public class RekinControllerWebFluxTests {
                 "Persentase capaian rekin",
                 "198012312005011001",
                 "Anon",
-                "SAS-001",
-                "Meningkatkan kualitas layanan",
                 "TAR-001",
                 "100",
                 85,
@@ -58,7 +60,7 @@ public class RekinControllerWebFluxTests {
         webTestClient
                 .mutateWith(csrf())
                 .mutateWith(SecurityMockServerConfigurers.mockJwt()
-                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN_OPD")))
                 .get()
                 .uri("/rekin/by-kode-opd/1.01.0.00.0.00.01.0000/by-tahun/2025/by-bulan/01")
                 .exchange()
@@ -79,8 +81,6 @@ public class RekinControllerWebFluxTests {
                 "Rekin Peningkatan Infrastruktur",
                 "198012312005011001",
                 "Anon",
-                "SAS-001",
-                "Meningkatkan kualitas layanan",
                 "IND-001",
                 "Persentase capaian rekin",
                 "TAR-001",
@@ -100,8 +100,6 @@ public class RekinControllerWebFluxTests {
                 request.indikator(),
                 request.nip(),
                 request.namaPegawai(),
-                request.idSasaran(),
-                request.sasaran(),
                 request.targetId(),
                 request.target(),
                 request.realisasi(),
@@ -135,8 +133,6 @@ public class RekinControllerWebFluxTests {
                 "Rekin Peningkatan Infrastruktur",
                 "198012312005011001",
                 "Anon",
-                "SAS-001",
-                "Meningkatkan kualitas layanan",
                 "IND-001",
                 "Persentase capaian rekin",
                 "TAR-001",
@@ -156,8 +152,6 @@ public class RekinControllerWebFluxTests {
                 request.indikator(),
                 request.nip(),
                 request.namaPegawai(),
-                request.idSasaran(),
-                request.sasaran(),
                 request.targetId(),
                 request.target(),
                 request.realisasi(),
@@ -181,5 +175,99 @@ public class RekinControllerWebFluxTests {
                 .expectStatus().isOk()
                 .expectBody(Rekin.class)
                 .isEqualTo(result);
+    }
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Test
+    void whenUpdateFaktorPenunjang_thenReturnsUpdatedRekin() throws Exception {
+        FaktorPenunjangRekinRequest req = new FaktorPenunjangRekinRequest(
+                "198012312005011001", "2025", "01", "REKIN-001", "TAR-001", "Kerjasama tim");
+
+        Rekin updated = Rekin.of("REKIN-001", "Rekin A",
+                "IND-001", "Indikator A",
+                "198012312005011001", "Anon",
+                "TAR-001", "100", 85, "%", "2025", "01",
+                "1.01.0.00.0.00.01.0000",
+                "Kerjasama tim", "Perubahan prioritas",
+                JenisRealisasi.NAIK, RekinStatus.UNCHECKED);
+
+        when(rekinService.updateFaktorPenunjang(
+                "198012312005011001", "2025", "01", "REKIN-001", "TAR-001", "Kerjasama tim"))
+                .thenReturn(Mono.just(updated));
+
+        webTestClient
+                .mutateWith(csrf())
+                .mutateWith(SecurityMockServerConfigurers.mockJwt()
+                        .authorities(new SimpleGrantedAuthority("level_1")))
+                .post()
+                .uri("/rekin/faktor-penunjang")
+                .bodyValue(objectMapper.writeValueAsString(req))
+                .header("Content-Type", "application/json")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Rekin.class)
+                .consumeWith(response -> {
+                    var body = response.getResponseBody();
+                    Assertions.assertNotNull(body);
+                    Assertions.assertEquals("Kerjasama tim", body.faktorPenunjang());
+                });
+    }
+
+    @Test
+    void whenUpdateFaktorPenghambat_thenReturnsUpdatedRekin() throws Exception {
+        FaktorPenghambatRekinRequest req = new FaktorPenghambatRekinRequest(
+                "198012312005011001", "2025", "01", "REKIN-001", "TAR-001", "Perubahan prioritas");
+
+        Rekin updated = Rekin.of("REKIN-001", "Rekin A",
+                "IND-001", "Indikator A",
+                "198012312005011001", "Anon",
+                "TAR-001", "100", 85, "%", "2025", "01",
+                "1.01.0.00.0.00.01.0000",
+                "Kerjasama tim", "Perubahan prioritas",
+                JenisRealisasi.NAIK, RekinStatus.UNCHECKED);
+
+        when(rekinService.updateFaktorPenghambat(
+                "198012312005011001", "2025", "01", "REKIN-001", "TAR-001", "Perubahan prioritas"))
+                .thenReturn(Mono.just(updated));
+
+        webTestClient
+                .mutateWith(csrf())
+                .mutateWith(SecurityMockServerConfigurers.mockJwt()
+                        .authorities(new SimpleGrantedAuthority("level_1")))
+                .post()
+                .uri("/rekin/faktor-penghambat")
+                .bodyValue(objectMapper.writeValueAsString(req))
+                .header("Content-Type", "application/json")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Rekin.class)
+                .consumeWith(response -> {
+                    var body = response.getResponseBody();
+                    Assertions.assertNotNull(body);
+                    Assertions.assertEquals("Perubahan prioritas", body.faktorPenghambat());
+                });
+    }
+
+    @Test
+    void whenUpdateFaktorPenunjangAndNotFound_then404() throws Exception {
+        FaktorPenunjangRekinRequest req = new FaktorPenunjangRekinRequest(
+                "99", "2099", "01", "REKIN-XX", "TAR-001", "Faktor X");
+
+        when(rekinService.updateFaktorPenunjang(
+                "99", "2099", "01", "REKIN-XX", "TAR-001", "Faktor X"))
+                .thenReturn(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Rekin tidak ditemukan")));
+
+        webTestClient
+                .mutateWith(csrf())
+                .mutateWith(SecurityMockServerConfigurers.mockJwt()
+                        .authorities(new SimpleGrantedAuthority("level_1")))
+                .post()
+                .uri("/rekin/faktor-penunjang")
+                .bodyValue(objectMapper.writeValueAsString(req))
+                .header("Content-Type", "application/json")
+                .exchange()
+                .expectStatus().isNotFound();
     }
 }

@@ -10,11 +10,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import cc.kertaskerja.config.SecurityConfig;
 
@@ -42,7 +45,7 @@ public class TujuanControllerWebFluxTests {
                 Tujuan.of("TUJ-123", "Test-Tujuan",
                         "IND-TUJ-123", "Produk-A",
                         "TAR-1", "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
-                        "BPS", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED));
+                        "BPS", "", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED));
         when(tujuanService.getRealisasiTujuanByTahunAndTujuanId("2025", "TUJ-123"))
                 .thenReturn(Flux.fromIterable(mockTujuans));
 
@@ -66,11 +69,11 @@ public class TujuanControllerWebFluxTests {
                 Tujuan.of("TUJ-123", "Test-Tujuan",
                         "IND-TUJ-123", "Produk-A",
                        "TAR-1", "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
-                        "BPS", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED),
+                        "BPS", "", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED),
                 Tujuan.of("TUJ-123", "Test-Tujuan",
                         "IND-TUJ-123", "Produk-A",
                        "TAR-2", "100.0", 100.0, "%", "2026", "01", "Visi Misi 2", "(realisasi/target)*100",
-                        "Bappeda", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED)
+                        "Bappeda", "", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED)
         );
         when(tujuanService.getRealisasiTujuanByTahun("2025"))
                 .thenReturn(Flux.just(mockTujuans.get(0)));
@@ -93,7 +96,7 @@ public class TujuanControllerWebFluxTests {
                 Tujuan.of("TUJ-123", "Test-Tujuan",
                         "IND-TUJ-123", "Produk-A",
                         "TAR-1", "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
-                        "BPS", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED));
+                        "BPS", "", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED));
         when(tujuanService.getRealisasiTujuanByTahun("2025"))
                 .thenReturn(Flux.fromIterable(mockTujuans));
 
@@ -159,7 +162,7 @@ public class TujuanControllerWebFluxTests {
                 Tujuan.of("TUJ-123", "Test-Tujuan",
                         "IND-TUJ-123", "Produk-A",
                         "TAR-1", "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
-                        "BPS", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED));
+                        "BPS", "", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED));
         when(tujuanService.getRealisasiTujuanByIndikatorId("IND-TUJ-123"))
                 .thenReturn(Flux.fromIterable(mockTujuans));
 
@@ -180,19 +183,19 @@ public class TujuanControllerWebFluxTests {
                 Tujuan.of("TUJ-123", "Test-Tujuan",
                         "IND-TUJ-123", "Produk-A",
                       "TAR-1",  "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
-                        "BPS", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED),
+                        "BPS", "", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED),
                 Tujuan.of("TUJ-123", "Test-Tujuan",
                         "IND-TUJ-123", "Produk-A",
                       "TAR-2",  "100.0", 100.0, "%", "2026", "01", "Visi Misi 2", "(realisasi/target)*100",
-                        "Bappeda", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED),
+                        "Bappeda", "", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED),
                 Tujuan.of("TUJ-12", "Test-Tujuan",
                         "IND-TUJ-124", "Produk-B",
                         "TAR-3", "4,70 - 4,75", 4.75, "%", "2025", "01", "Visi Misi 3", "(realisasi/target)*100",
-                        "BPS", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED),
+                        "BPS", "", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED),
                 Tujuan.of("TUJ-12", "Test-Tujuan",
                         "IND-TUJ-124", "Produk-B",
                       "TAR-4",  "4,85 - 4,90", 4.50, "%", "2027", "01", "Visi Misi 4", "(realisasi/target)*100",
-                        "Bappeda", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED)
+                        "Bappeda", "", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED)
         );
         when(tujuanService.getRealisasiTujuanByPeriodeRpjmd("2025", "2030"))
                 .thenReturn(Flux.fromIterable(mockTujuans));
@@ -211,10 +214,10 @@ public class TujuanControllerWebFluxTests {
     @Test
     void whenBatchSubmit_thenReturnsSavedTujuans() throws Exception {
         // prepare requests
-TujuanRequest r1 = new TujuanRequest(null, "T1", "I1", "TAR-1", "100.0", 50.0, "unit1", "2025", "01", "Visi Misi 1", "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK);
+ TujuanRequest r1 = new TujuanRequest(null, "T1", "I1", "TAR-1", "100.0", 50.0, "unit1", "2025", "01", "Visi Misi 1", "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK);
         TujuanRequest r2 = new TujuanRequest(null, "T2", "I2", "TAR-2", "200.0", 75.0, "unit2", "2026", "01", "Visi Misi 2", "(realisasi/target)*100", "Bappeda", JenisRealisasi.TURUN);
 
-Tujuan t1 = TujuanService.buildUncheckedRealisasiTujuan(
+ Tujuan t1 = TujuanService.buildUncheckedRealisasiTujuan(
                 r1.tujuanId(), r1.indikatorId(), r1.targetId() ,r1.target(), r1.realisasi(),
                 r1.satuan(), r1.tahun(), r1.bulan(), r1.visiMisi(), r1.rumusPerhitungan(), r1.sumberData(), r1.jenisRealisasi()
         );
@@ -245,5 +248,94 @@ Tujuan t1 = TujuanService.buildUncheckedRealisasiTujuan(
                     Assertions.assertEquals(t1, body.get(0));
                     Assertions.assertEquals(t2Baru, body.get(1));
                 });
+    }
+
+    @Test
+    void whenUpdateFaktorPenunjang_thenReturnsUpdatedTujuan() throws Exception {
+        FaktorPenunjangRequest req = new FaktorPenunjangRequest(
+                "TUJ-123", "IND-TUJ-123", "TAR-1", "2025", "01", "Kerjasama antar daerah");
+
+        Tujuan updated = Tujuan.of("TUJ-123", "Realisasi Tujuan TUJ-123",
+                "IND-TUJ-123", "Realisasi Indikator IND-TUJ-123",
+                "TAR-1", "100.0", 100.0, "%", "2025", "01",
+                "Visi Misi 1", "(realisasi/target)*100", "BPS",
+                "Kerjasama antar daerah", "Keterbatasan anggaran",
+                JenisRealisasi.NAIK, TujuanStatus.UNCHECKED);
+
+        when(tujuanService.updateFaktorPenunjang(
+                "TUJ-123", "IND-TUJ-123", "TAR-1", "2025", "01", "Kerjasama antar daerah"))
+                .thenReturn(Mono.just(updated));
+
+        webTestClient
+                .mutateWith(csrf())
+                .mutateWith(SecurityMockServerConfigurers.mockJwt()
+                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                .post()
+                .uri("/tujuans/faktor-penunjang")
+                .bodyValue(objectMapper.writeValueAsString(req))
+                .header("Content-Type", "application/json")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Tujuan.class)
+                .consumeWith(response -> {
+                    var body = response.getResponseBody();
+                    Assertions.assertNotNull(body);
+                    Assertions.assertEquals("Kerjasama antar daerah", body.faktorPenunjang());
+                });
+    }
+
+    @Test
+    void whenUpdateFaktorPenghambat_thenReturnsUpdatedTujuan() throws Exception {
+        FaktorPenghambatRequest req = new FaktorPenghambatRequest(
+                "TUJ-123", "IND-TUJ-123", "TAR-1", "2025", "01", "Keterbatasan anggaran");
+
+        Tujuan updated = Tujuan.of("TUJ-123", "Realisasi Tujuan TUJ-123",
+                "IND-TUJ-123", "Realisasi Indikator IND-TUJ-123",
+                "TAR-1", "100.0", 100.0, "%", "2025", "01",
+                "Visi Misi 1", "(realisasi/target)*100", "BPS",
+                "Kerjasama antar daerah", "Keterbatasan anggaran",
+                JenisRealisasi.NAIK, TujuanStatus.UNCHECKED);
+
+        when(tujuanService.updateFaktorPenghambat(
+                "TUJ-123", "IND-TUJ-123", "TAR-1", "2025", "01", "Keterbatasan anggaran"))
+                .thenReturn(Mono.just(updated));
+
+        webTestClient
+                .mutateWith(csrf())
+                .mutateWith(SecurityMockServerConfigurers.mockJwt()
+                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                .post()
+                .uri("/tujuans/faktor-penghambat")
+                .bodyValue(objectMapper.writeValueAsString(req))
+                .header("Content-Type", "application/json")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Tujuan.class)
+                .consumeWith(response -> {
+                    var body = response.getResponseBody();
+                    Assertions.assertNotNull(body);
+                    Assertions.assertEquals("Keterbatasan anggaran", body.faktorPenghambat());
+                });
+    }
+
+    @Test
+    void whenUpdateFaktorPenunjangAndNotFound_then404() throws Exception {
+        FaktorPenunjangRequest req = new FaktorPenunjangRequest(
+                "TUJ-XX", "IND-XX", "TAR-X", "2099", "01", "Faktor X");
+
+        when(tujuanService.updateFaktorPenunjang(
+                "TUJ-XX", "IND-XX", "TAR-X", "2099", "01", "Faktor X"))
+                .thenReturn(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Tujuan tidak ditemukan")));
+
+        webTestClient
+                .mutateWith(csrf())
+                .mutateWith(SecurityMockServerConfigurers.mockJwt()
+                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                .post()
+                .uri("/tujuans/faktor-penunjang")
+                .bodyValue(objectMapper.writeValueAsString(req))
+                .header("Content-Type", "application/json")
+                .exchange()
+                .expectStatus().isNotFound();
     }
 }

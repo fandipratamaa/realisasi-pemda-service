@@ -1,6 +1,8 @@
 package cc.kertaskerja.realisasi_individu_service.renaksi.web;
 
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
+
+import java.math.BigDecimal;
 import cc.kertaskerja.realisasi_individu_service.renaksi.domain.Renaksi;
 import cc.kertaskerja.realisasi_individu_service.renaksi.domain.RenaksiService;
 import cc.kertaskerja.realisasi_opd_service.renaksi.domain.RenaksiOpdService;
@@ -43,6 +45,7 @@ public class RenaksiControllerWebFluxTests {
                 "TAR-1",
                 "100",
                 50,
+                BigDecimal.ZERO,
                 "%",
                 bulan,
                 tahun,
@@ -59,6 +62,7 @@ public class RenaksiControllerWebFluxTests {
                 "TAR-2",
                 "200",
                 120,
+                BigDecimal.ZERO,
                 "%",
                 bulan,
                 tahun,
