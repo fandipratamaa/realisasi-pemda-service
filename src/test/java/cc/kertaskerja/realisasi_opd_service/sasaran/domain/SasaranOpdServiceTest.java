@@ -37,7 +37,7 @@ class SasaranOpdServiceTest {
     @Test
     void getRealisasiSasaranOpdByTahunAndKodeOpdAndBulan_ShouldReturnMappedResponses() {
         SasaranOpd sasaran = new SasaranOpd(1L, "5.01.5.05.0.00.01.0000", "SAS-OPD-001",
-                "2026", "3", "tester", Instant.now(), Instant.now(), "tester");
+                "2026", "3", "", "", "tester", Instant.now(), Instant.now(), "tester");
         IndikatorSasaranOpd indikator = new IndikatorSasaranOpd(2L, 1L, "IND-01", "5.01.5.05.0.00.01.0000",
                 "2026", "3", Instant.now(), Instant.now(), "tester", null);
         TargetIndikatorSasaranOpd target = new TargetIndikatorSasaranOpd(3L, 2L, "TGT-001", BigDecimal.valueOf(75),
@@ -69,7 +69,7 @@ class SasaranOpdServiceTest {
     @Test
     void getRealisasiSasaranOpdByTahunAndKodeOpdAndBulan_ShouldHideOrphanData() {
         SasaranOpd sasaran = new SasaranOpd(1L, "5.01.5.05.0.00.01.0000", "SAS-ORPHAN",
-                "2026", "3", "tester", Instant.now(), Instant.now(), "tester");
+                "2026", "3", "", "", "tester", Instant.now(), Instant.now(), "tester");
         IndikatorSasaranOpd indikator = new IndikatorSasaranOpd(2L, 1L, "IND-ORPHAN", "5.01.5.05.0.00.01.0000",
                 "2026", "3", Instant.now(), Instant.now(), "tester", null);
         TargetIndikatorSasaranOpd target = new TargetIndikatorSasaranOpd(3L, 2L, "TGT-ORPHAN", BigDecimal.valueOf(75),

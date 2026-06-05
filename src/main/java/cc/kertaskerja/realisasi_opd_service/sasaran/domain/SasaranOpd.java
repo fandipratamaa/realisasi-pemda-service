@@ -20,6 +20,10 @@ public record SasaranOpd(
         String kodeSasaranOpd,
         String tahun,
         String bulan,
+        @Column("faktor_penunjang")
+        String faktorPenunjang,
+        @Column("faktor_penghambat")
+        String faktorPenghambat,
 
         @CreatedBy
         @Column("created_by")
@@ -38,6 +42,7 @@ public record SasaranOpd(
     ) {
         return new SasaranOpd(null,
                 kodeOpd, kodeSasaranOpd, tahun, bulan,
+                "", "",
                 null, null, null, null);
     }
 

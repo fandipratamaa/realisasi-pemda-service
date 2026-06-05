@@ -9,7 +9,9 @@ import cc.kertaskerja.realisasi_opd_service.sasaran.web.SasaranOpdPenetapanRespo
 import cc.kertaskerja.realisasi_opd_service.sasaran.web.SasaranOpdResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -231,6 +233,7 @@ public class SasaranOpdService {
                 response.id(), response.kodeOpd(), response.kodeSasaranOpd(),
                 penetapan.sasaranOpd(),
                 response.tahun(), response.bulan(),
+                response.faktorPenunjang(), response.faktorPenghambat(),
                 enrichedIndikator
         );
     }
@@ -271,9 +274,55 @@ public class SasaranOpdService {
                         null,
                         parseInteger(sasaran.tahun()),
                         parseInteger(sasaran.bulan()),
+                        sasaran.faktorPenunjang(),
+                        sasaran.faktorPenghambat(),
                         indikators
                 ))
                 .flux();
+    }
+
+    public Mono<SasaranOpd> updateFaktorPenunjang(String kodeOpd, String kodeSasaranOpd, String tahun, String bulan, String faktorPenunjang) {
+        return sasaranOpdRepository
+                .findFirstByKodeOpdAndKodeSasaranOpdAndTahunAndBulan(kodeOpd, kodeSasaranOpd, tahun, bulan)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Sasaran OPD tidak ditemukan")))
+                .flatMap(existing -> {
+                    SasaranOpd updated = new SasaranOpd(
+                            existing.id(),
+                            existing.kodeOpd(),
+                            existing.kodeSasaranOpd(),
+                            existing.tahun(),
+                            existing.bulan(),
+                            faktorPenunjang,
+                            existing.faktorPenghambat(),
+                            existing.createdBy(),
+                            existing.createdDate(),
+                            existing.lastModifiedDate(),
+                            existing.lastModifiedBy()
+                    );
+                    return sasaranOpdRepository.save(updated);
+                });
+    }
+
+    public Mono<SasaranOpd> updateFaktorPenghambat(String kodeOpd, String kodeSasaranOpd, String tahun, String bulan, String faktorPenghambat) {
+        return sasaranOpdRepository
+                .findFirstByKodeOpdAndKodeSasaranOpdAndTahunAndBulan(kodeOpd, kodeSasaranOpd, tahun, bulan)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Sasaran OPD tidak ditemukan")))
+                .flatMap(existing -> {
+                    SasaranOpd updated = new SasaranOpd(
+                            existing.id(),
+                            existing.kodeOpd(),
+                            existing.kodeSasaranOpd(),
+                            existing.tahun(),
+                            existing.bulan(),
+                            existing.faktorPenunjang(),
+                            faktorPenghambat,
+                            existing.createdBy(),
+                            existing.createdDate(),
+                            existing.lastModifiedDate(),
+                            existing.lastModifiedBy()
+                    );
+                    return sasaranOpdRepository.save(updated);
+                });
     }
 
     private Integer parseInteger(String value) {
