@@ -19,6 +19,8 @@ public record RenaksiOpdRequest(
         @NotNull @NotEmpty String bulan,
         @NotNull @NotEmpty String tahun,
         @NotNull JenisRealisasi jenisRealisasi,
-        @Nullable String kodeOpd
+        @Nullable String kodeOpd,
+        @Nullable String faktorPenunjang,
+        @Nullable String faktorPenghambat
 ) {
 }

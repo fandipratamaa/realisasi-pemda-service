@@ -17,4 +17,7 @@ public interface RenaksiOpdRepository extends ReactiveCrudRepository<RenaksiOpd,
     );
 
     Mono<RenaksiOpd> findFirstByKodeOpdAndBulanAndRekinIdAndRenaksiId(String kodeOpd, String bulan, String rekinId, String renaksiId);
+
+    Mono<RenaksiOpd> findFirstByKodeOpdAndTahunAndBulanAndRekinIdAndRenaksiIdAndTargetId(
+            String kodeOpd, String tahun, String bulan, String rekinId, String renaksiId, String targetId);
 }

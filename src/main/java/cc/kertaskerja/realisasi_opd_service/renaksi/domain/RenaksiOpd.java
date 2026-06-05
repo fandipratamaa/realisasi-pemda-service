@@ -29,6 +29,8 @@ public record RenaksiOpd(
         String tahun,
         @Column("jenis_realisasi") JenisRealisasi jenisRealisasi,
         @Column("kode_opd") String kodeOpd,
+        @Column("faktor_penunjang") String faktorPenunjang,
+        @Column("faktor_penghambat") String faktorPenghambat,
         RenaksiOpdStatus status,
         @CreatedBy @Column("created_by") String createdBy,
         @LastModifiedBy @Column("last_modified_by") String lastModifiedBy,
@@ -49,10 +51,12 @@ public record RenaksiOpd(
             String tahun,
             JenisRealisasi jenisRealisasi,
             String kodeOpd,
+            String faktorPenunjang,
+            String faktorPenghambat,
             RenaksiOpdStatus status
     ) {
         return new RenaksiOpd(null, renaksiId, renaksi, rekinId, rekin, targetId, target, realisasi, satuan,
-                bulan, tahun, jenisRealisasi, kodeOpd, status, null, null, null, null, 0);
+                bulan, tahun, jenisRealisasi, kodeOpd, faktorPenunjang, faktorPenghambat, status, null, null, null, null, 0);
     }
 
     @JsonProperty("capaian")

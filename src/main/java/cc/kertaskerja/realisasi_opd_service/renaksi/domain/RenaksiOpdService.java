@@ -8,7 +8,9 @@ import cc.kertaskerja.realisasi_opd_service.renaksi.web.detail_bulanan_response.
 import cc.kertaskerja.realisasi_opd_service.renaksi.web.renaksi_triwulan_response.RenaksiTriwulanRekapResponse;
 import cc.kertaskerja.realisasi_opd_service.renaksi.web.renaksi_triwulan_response.TriwulanDetailResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -105,15 +107,85 @@ public class RenaksiOpdService {
                 });
     }
 
+    public Mono<RenaksiOpd> updateFaktorPenunjang(String kodeOpd, String tahun, String bulan, String rekinId, String renaksiId, String targetId, String faktorPenunjang) {
+        return renaksiOpdRepository
+                .findFirstByKodeOpdAndTahunAndBulanAndRekinIdAndRenaksiIdAndTargetId(kodeOpd, tahun, bulan, rekinId, renaksiId, targetId)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Renaksi OPD tidak ditemukan")))
+                .flatMap(existing -> {
+                    RenaksiOpd updated = new RenaksiOpd(
+                            existing.id(),
+                            existing.renaksiId(),
+                            existing.renaksi(),
+                            existing.rekinId(),
+                            existing.rekin(),
+                            existing.targetId(),
+                            existing.target(),
+                            existing.realisasi(),
+                            existing.satuan(),
+                            existing.bulan(),
+                            existing.tahun(),
+                            existing.jenisRealisasi(),
+                            existing.kodeOpd(),
+                            faktorPenunjang,
+                            existing.faktorPenghambat(),
+                            existing.status(),
+                            existing.createdBy(),
+                            existing.lastModifiedBy(),
+                            existing.createdDate(),
+                            existing.lastModifiedDate(),
+                            existing.version()
+                    );
+                    return renaksiOpdRepository.save(updated);
+                });
+    }
+
+    public Mono<RenaksiOpd> updateFaktorPenghambat(String kodeOpd, String tahun, String bulan, String rekinId, String renaksiId, String targetId, String faktorPenghambat) {
+        return renaksiOpdRepository
+                .findFirstByKodeOpdAndTahunAndBulanAndRekinIdAndRenaksiIdAndTargetId(kodeOpd, tahun, bulan, rekinId, renaksiId, targetId)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Renaksi OPD tidak ditemukan")))
+                .flatMap(existing -> {
+                    RenaksiOpd updated = new RenaksiOpd(
+                            existing.id(),
+                            existing.renaksiId(),
+                            existing.renaksi(),
+                            existing.rekinId(),
+                            existing.rekin(),
+                            existing.targetId(),
+                            existing.target(),
+                            existing.realisasi(),
+                            existing.satuan(),
+                            existing.bulan(),
+                            existing.tahun(),
+                            existing.jenisRealisasi(),
+                            existing.kodeOpd(),
+                            existing.faktorPenunjang(),
+                            faktorPenghambat,
+                            existing.status(),
+                            existing.createdBy(),
+                            existing.lastModifiedBy(),
+                            existing.createdDate(),
+                            existing.lastModifiedDate(),
+                            existing.version()
+                    );
+                    return renaksiOpdRepository.save(updated);
+                });
+    }
+
     private RenaksiOpd buildUncheckedRealisasiRenaksi(RenaksiOpdRequest req) {
         return RenaksiOpd.of(req.renaksiId(), req.renaksi(), req.rekinId(), req.rekin(), req.targetId(), req.target(),
-                req.realisasi(), req.satuan(), req.bulan(), req.tahun(), req.jenisRealisasi(), req.kodeOpd(), RenaksiOpdStatus.UNCHECKED);
+                req.realisasi(), req.satuan(), req.bulan(), req.tahun(), req.jenisRealisasi(), req.kodeOpd(),
+                req.faktorPenunjang() != null ? req.faktorPenunjang() : "",
+                req.faktorPenghambat() != null ? req.faktorPenghambat() : "",
+                RenaksiOpdStatus.UNCHECKED);
     }
 
     private RenaksiOpd buildUpdated(RenaksiOpd existing, RenaksiOpdRequest req) {
         return new RenaksiOpd(existing.id(), existing.renaksiId(), existing.renaksi(), existing.rekinId(), existing.rekin(),
                 existing.targetId(), existing.target(), req.realisasi(), req.satuan(), req.bulan(), req.tahun(), req.jenisRealisasi(),
-                req.kodeOpd(), RenaksiOpdStatus.UNCHECKED, existing.createdBy(), existing.lastModifiedBy(), existing.createdDate(),
+                req.kodeOpd(),
+                req.faktorPenunjang() != null ? req.faktorPenunjang() : existing.faktorPenunjang(),
+                req.faktorPenghambat() != null ? req.faktorPenghambat() : existing.faktorPenghambat(),
+                RenaksiOpdStatus.UNCHECKED, existing.createdBy(), existing.lastModifiedBy(), existing.createdDate(),
                 existing.lastModifiedDate(), existing.version());
     }
 
