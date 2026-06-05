@@ -6,13 +6,17 @@ import cc.kertaskerja.realisasi_opd_service.tujuan.domain.target.TargetIndikator
 import cc.kertaskerja.realisasi_opd_service.tujuan.domain.target.TargetIndikatorTujuanOpdRepository;
 import cc.kertaskerja.realisasi_opd_service.tujuan.domain.indikator.IndikatorTujuanOpd;
 import cc.kertaskerja.realisasi_opd_service.tujuan.domain.indikator.IndikatorTujuanOpdRepository;
+import cc.kertaskerja.realisasi_opd_service.tujuan.web.FaktorPenghambatTujuanOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.tujuan.web.FaktorPenunjangTujuanOpdRequest;
 import cc.kertaskerja.realisasi_opd_service.tujuan.web.PenetapanTujuanOpdListResponse;
 import cc.kertaskerja.realisasi_opd_service.tujuan.web.TujuanOpdPenetapanResponse;
 import cc.kertaskerja.realisasi_opd_service.tujuan.web.TujuanOpdRequest;
 import cc.kertaskerja.realisasi_opd_service.tujuan.web.TujuanOpdResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -240,6 +244,7 @@ public class TujuanOpdService {
                 response.id(), response.kodeOpd(), response.kodeTujuanOpd(),
                 penetapan.tujuanOpd(),
                 response.tahun(), response.bulan(),
+                response.faktorPenunjang(), response.faktorPenghambat(),
                 enrichedIndikator
         );
     }
@@ -356,8 +361,53 @@ public class TujuanOpdService {
                         tujuan.id(), tujuan.kodeOpd(), tujuan.kodeTujuanOpd(),
                         null,
                         parseInteger(tujuan.tahun()), parseInteger(tujuan.bulan()),
+                        tujuan.faktorPenunjang(), tujuan.faktorPenghambat(),
                         indikators))
                 .flux();
+    }
+
+    public Mono<TujuanOpd> updateFaktorPenunjang(String kodeOpd, String kodeTujuanOpd, String tahun, String bulan, String faktorPenunjang) {
+        return tujuanOpdRepository
+                .findFirstByKodeOpdAndKodeTujuanOpdAndTahunAndBulan(kodeOpd, kodeTujuanOpd, tahun, bulan)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Tujuan OPD tidak ditemukan")))
+                .flatMap(existing -> {
+                    TujuanOpd updated = new TujuanOpd(
+                            existing.id(),
+                            existing.kodeOpd(),
+                            existing.kodeTujuanOpd(),
+                            existing.tahun(),
+                            existing.bulan(),
+                            faktorPenunjang,
+                            existing.faktorPenghambat(),
+                            existing.createdBy(),
+                            existing.createdDate(),
+                            existing.lastModifiedDate(),
+                            existing.lastModifiedBy()
+                    );
+                    return tujuanOpdRepository.save(updated);
+                });
+    }
+
+    public Mono<TujuanOpd> updateFaktorPenghambat(String kodeOpd, String kodeTujuanOpd, String tahun, String bulan, String faktorPenghambat) {
+        return tujuanOpdRepository
+                .findFirstByKodeOpdAndKodeTujuanOpdAndTahunAndBulan(kodeOpd, kodeTujuanOpd, tahun, bulan)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Tujuan OPD tidak ditemukan")))
+                .flatMap(existing -> {
+                    TujuanOpd updated = new TujuanOpd(
+                            existing.id(),
+                            existing.kodeOpd(),
+                            existing.kodeTujuanOpd(),
+                            existing.tahun(),
+                            existing.bulan(),
+                            existing.faktorPenunjang(),
+                            faktorPenghambat,
+                            existing.createdBy(),
+                            existing.createdDate(),
+                            existing.lastModifiedDate(),
+                            existing.lastModifiedBy()
+                    );
+                    return tujuanOpdRepository.save(updated);
+                });
     }
 
     private Integer parseInteger(String value) {

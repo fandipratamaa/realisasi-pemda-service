@@ -14,6 +14,10 @@ public record TujuanOpdResponse(
         String tujuanOpd,
         Integer tahun,
         Integer bulan,
+        @JsonProperty("faktor_penunjang")
+        String faktorPenunjang,
+        @JsonProperty("faktor_penghambat")
+        String faktorPenghambat,
         List<IndikatorResponse> indikators
 ) {
     public record IndikatorResponse(

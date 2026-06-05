@@ -1,5 +1,6 @@
 package cc.kertaskerja.realisasi_opd_service.tujuan.web;
 
+import cc.kertaskerja.realisasi_opd_service.tujuan.domain.TujuanOpd;
 import cc.kertaskerja.realisasi_opd_service.tujuan.domain.TujuanOpdService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -75,6 +76,48 @@ public class TujuanOpdController {
                         response.tahun(),
                         List.of(response)
                 ));
+    }
+
+    @PostMapping("/faktor-penunjang")
+    @Operation(summary = "Perbarui faktor penunjang tujuan OPD", description = "Memperbarui hanya field faktor_penunjang pada record TujuanOpd yang cocok dengan composite key (kodeOpd, kodeTujuanOpd, tahun, bulan).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = TujuanOpd.class))),
+            @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Tujuan OPD tidak ditemukan", content = @Content)
+    })
+    public Mono<TujuanOpd> updateFaktorPenunjang(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penunjang tujuan OPD", required = true,
+                    content = @Content(schema = @Schema(implementation = FaktorPenunjangTujuanOpdRequest.class)))
+            @RequestBody @Valid FaktorPenunjangTujuanOpdRequest req) {
+        return tujuanOpdService.updateFaktorPenunjang(
+                req.kodeOpd(),
+                req.kodeTujuanOpd(),
+                req.tahun(),
+                req.bulan(),
+                req.faktorPenunjang()
+        );
+    }
+
+    @PostMapping("/faktor-penghambat")
+    @Operation(summary = "Perbarui faktor penghambat tujuan OPD", description = "Memperbarui hanya field faktor_penghambat pada record TujuanOpd yang cocok dengan composite key (kodeOpd, kodeTujuanOpd, tahun, bulan).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = TujuanOpd.class))),
+            @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Tujuan OPD tidak ditemukan", content = @Content)
+    })
+    public Mono<TujuanOpd> updateFaktorPenghambat(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penghambat tujuan OPD", required = true,
+                    content = @Content(schema = @Schema(implementation = FaktorPenghambatTujuanOpdRequest.class)))
+            @RequestBody @Valid FaktorPenghambatTujuanOpdRequest req) {
+        return tujuanOpdService.updateFaktorPenghambat(
+                req.kodeOpd(),
+                req.kodeTujuanOpd(),
+                req.tahun(),
+                req.bulan(),
+                req.faktorPenghambat()
+        );
     }
 
     @PostMapping("/create/batch")

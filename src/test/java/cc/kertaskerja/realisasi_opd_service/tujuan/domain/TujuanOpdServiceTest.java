@@ -42,7 +42,7 @@ class TujuanOpdServiceTest {
     @Test
     void getRealisasiTujuanOpdByTahunAndKodeOpdAndBulan_ShouldReturnMappedResponses() {
         TujuanOpd tujuan = new TujuanOpd(1L, "5.01.5.05.0.00.01.0000", "TUJ-OPD-001",
-                "2026", "3", "tester", Instant.now(), Instant.now(), "tester");
+                "2026", "3", "", "", "tester", Instant.now(), Instant.now(), "tester");
         IndikatorTujuanOpd indikator = new IndikatorTujuanOpd(2L, 1L, "IND-01", "5.01.5.05.0.00.01.0000",
                 "2026", "3", Instant.now(), Instant.now(), "tester", null);
         TargetIndikatorTujuanOpd target = new TargetIndikatorTujuanOpd(3L, 2L, "TGT-001", BigDecimal.valueOf(75),
@@ -70,7 +70,7 @@ class TujuanOpdServiceTest {
                 "1.01.0.00.0.00.01.0000"
         );
         TujuanOpd saved = new TujuanOpd(1L, "1.01.0.00.0.00.01.0000", "KODE-TUJ-OPD-001",
-                "2026", "1", null, Instant.now(), Instant.now(), null);
+                "2026", "1", "", "", null, Instant.now(), Instant.now(), null);
         IndikatorTujuanOpd savedIndikator = new IndikatorTujuanOpd(2L, 1L, "KODE-IND-TUJ-OPD-001",
                 "1.01.0.00.0.00.01.0000", "2026", "1",
                 Instant.now(), Instant.now(), null, null);
@@ -111,7 +111,7 @@ class TujuanOpdServiceTest {
                 "1.01.0.00.0.00.01.0000"
         );
         TujuanOpd existingTujuan = new TujuanOpd(1L, "1.01.0.00.0.00.01.0000", "KODE-TUJ-OPD-001",
-                "2026", "1", "admin", Instant.now(), Instant.now(), "admin");
+                "2026", "1", "", "", "admin", Instant.now(), Instant.now(), "admin");
         IndikatorTujuanOpd existingIndikator = new IndikatorTujuanOpd(2L, 1L, "KODE-IND-TUJ-OPD-001",
                 "1.01.0.00.0.00.01.0000", "2026", "1", Instant.now(), Instant.now(), "admin", null);
         TargetIndikatorTujuanOpd existingTarget = new TargetIndikatorTujuanOpd(3L, 2L, "KODE-TAR-TUJ-OPD-001",
@@ -154,9 +154,9 @@ class TujuanOpdServiceTest {
         );
 
         TujuanOpd saved1 = new TujuanOpd(1L, "OPD-001", "KODE-1",
-                "2026", "1", null, Instant.now(), Instant.now(), null);
+                "2026", "1", "", "", null, Instant.now(), Instant.now(), null);
         TujuanOpd saved2 = new TujuanOpd(2L, "OPD-001", "KODE-2",
-                "2026", "1", null, Instant.now(), Instant.now(), null);
+                "2026", "1", "", "", null, Instant.now(), Instant.now(), null);
 
         when(tujuanOpdRepository.findFirstByKodeOpdAndKodeTujuanOpdAndTahunAndBulan(
                 "OPD-001", "KODE-1", "2026", "1")).thenReturn(Mono.empty());
@@ -212,7 +212,7 @@ class TujuanOpdServiceTest {
     @Test
     void getRealisasiTujuanOpdByTahunAndKodeOpdAndBulan_ShouldHideOrphanData() {
         TujuanOpd tujuan = new TujuanOpd(1L, "5.01.5.05.0.00.01.0000", "TUJ-ORPHAN",
-                "2026", "3", "tester", Instant.now(), Instant.now(), "tester");
+                "2026", "3", "", "", "tester", Instant.now(), Instant.now(), "tester");
         IndikatorTujuanOpd indikator = new IndikatorTujuanOpd(2L, 1L, "IND-ORPHAN", "5.01.5.05.0.00.01.0000",
                 "2026", "3", Instant.now(), Instant.now(), "tester", null);
         TargetIndikatorTujuanOpd target = new TargetIndikatorTujuanOpd(3L, 2L, "TGT-ORPHAN", BigDecimal.valueOf(75),
@@ -237,9 +237,9 @@ class TujuanOpdServiceTest {
     void getPenetapanWithRealisasi_ShouldHideTargetsFromPreviousMonthsButKeepCurrentMonthTargetsVisible() {
         String kodeOpd = "5.01.5.05.0.00.01.0000";
         TujuanOpd januaryTujuan = new TujuanOpd(1L, kodeOpd, "TUJ-1",
-                "2026", "1", "tester", Instant.now(), Instant.now(), "tester");
+                "2026", "1", "", "", "tester", Instant.now(), Instant.now(), "tester");
         TujuanOpd februaryTujuan = new TujuanOpd(2L, kodeOpd, "TUJ-2",
-                "2026", "2", "tester", Instant.now(), Instant.now(), "tester");
+                "2026", "2", "", "", "tester", Instant.now(), Instant.now(), "tester");
 
         IndikatorTujuanOpd januaryIndikator = new IndikatorTujuanOpd(10L, 1L, "IND-1", kodeOpd,
                 "2026", "1", Instant.now(), Instant.now(), "tester", null);
