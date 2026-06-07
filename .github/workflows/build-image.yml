@@ -12,6 +12,10 @@ jobs:
   build:
     name: Build and Test
     runs-on: ubuntu-22.04
+    env:
+      DB_URL: ${{ secrets.DB_URL }}
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
     permissions:
       contents: read
       security-events: write

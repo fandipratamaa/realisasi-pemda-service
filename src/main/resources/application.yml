@@ -7,13 +7,9 @@ spring:
   lifecycle:
     timeout-per-shutdown-phase: 15s
   r2dbc:
-    username: user
-    password: ChangeMyPassword
-    url: r2dbc:postgresql://localhost:5432/kertaskerja_realisasi_pemda
-    pool:
-      initial-size: 5
-      max-size: 10
-      max-create-connection-time: 2s
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    url: ${DB_URL}
   flyway:
     user: ${spring.r2dbc.username}
     password: ${spring.r2dbc.password}
@@ -35,6 +31,7 @@ logging:
     org.springframework.security: DEBUG
     org.springframework.web.server: DEBUG
     reactor.netty.http.server: DEBUG
+    cc.kertaskerja.integration.penetapan: DEBUG
 
 integration:
   penetapan:
