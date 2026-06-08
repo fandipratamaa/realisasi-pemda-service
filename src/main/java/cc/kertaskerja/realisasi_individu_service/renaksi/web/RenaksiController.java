@@ -46,7 +46,7 @@ public class RenaksiController {
     public Flux<Renaksi> getRealisasiRenaksiByNipTahunBulan(
             @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
             @Parameter(description = "Tahun realizations", example = "2026") @PathVariable String tahun,
-            @Parameter(description = "Bulan realizations", example = "Januari") @PathVariable String bulan) {
+            @Parameter(description = "Bulan realizations", example = "1") @PathVariable String bulan) {
         if (nip == null || nip.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip, tahun, dan bulan tidak boleh kosong");
         }
@@ -61,9 +61,9 @@ public class RenaksiController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     public Flux<Renaksi> getRealisasiRenaksiByKodeOpdTahunBulan(
-            @Parameter(description = "Kode OPD", example = "4.01.01.") @PathVariable String kodeOpd,
+            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun realisasi", example = "2026") @PathVariable String tahun,
-            @Parameter(description = "Bulan realisasi", example = "Januari") @PathVariable String bulan) {
+            @Parameter(description = "Bulan realisasi", example = "1") @PathVariable String bulan) {
         if (kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd, tahun, dan bulan tidak boleh kosong");
         }
@@ -97,15 +97,7 @@ public class RenaksiController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload parsial faktor penunjang", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenunjangRenaksiRequest.class)))
             @RequestBody @Valid FaktorPenunjangRenaksiRequest req) {
-        return renaksiService.updateFaktorPenunjang(
-                req.nip(),
-                req.tahun(),
-                req.bulan(),
-                req.rekinId(),
-                req.renaksiId(),
-                req.targetId(),
-                req.faktorPenunjang()
-        );
+        return renaksiService.updateFaktorPenunjang(req);
     }
 
     @PostMapping("/faktor-penghambat")
@@ -120,15 +112,7 @@ public class RenaksiController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload parsial faktor penghambat", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatRenaksiRequest.class)))
             @RequestBody @Valid FaktorPenghambatRenaksiRequest req) {
-        return renaksiService.updateFaktorPenghambat(
-                req.nip(),
-                req.tahun(),
-                req.bulan(),
-                req.rekinId(),
-                req.renaksiId(),
-                req.targetId(),
-                req.faktorPenghambat()
-        );
+        return renaksiService.updateFaktorPenghambat(req);
     }
 
     @PostMapping("/batch")
@@ -156,7 +140,7 @@ public class RenaksiController {
                                     "    \"target\": \"100\",\n" +
                                     "    \"realisasi\": 85,\n" +
                                     "    \"satuan\": \"%\",\n" +
-                                    "    \"bulan\": \"Januari\",\n" +
+                                    "    \"bulan\": \"1\",\n" +
                                     "    \"tahun\": \"2026\",\n" +
                                     "    \"kodeOpd\": \"1.01.0.00.0.00.01.0000\",\n" +
                                     "    \"jenisRealisasi\": \"NAIK\"\n" +

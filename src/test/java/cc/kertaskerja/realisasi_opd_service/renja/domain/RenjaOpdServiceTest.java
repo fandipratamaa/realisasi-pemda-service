@@ -2,11 +2,17 @@ package cc.kertaskerja.realisasi_opd_service.renja.domain;
 
 import cc.kertaskerja.integration.penetapan.PenetapanRenjaOpdClient;
 import cc.kertaskerja.integration.penetapan.renja.PenetapanRenjaOpd;
+import cc.kertaskerja.realisasi_opd_service.renja.domain.kegiatan.IndikatorRenjaKegiatanOpdRepository;
 import cc.kertaskerja.realisasi_opd_service.renja.domain.kegiatan.RenjaKegiatanOpd;
+import cc.kertaskerja.realisasi_opd_service.renja.domain.kegiatan.RenjaKegiatanOpdHeaderRepository;
 import cc.kertaskerja.realisasi_opd_service.renja.domain.kegiatan.RenjaKegiatanOpdRepository;
+import cc.kertaskerja.realisasi_opd_service.renja.domain.program.IndikatorRenjaProgramOpdRepository;
 import cc.kertaskerja.realisasi_opd_service.renja.domain.program.RenjaProgramOpd;
+import cc.kertaskerja.realisasi_opd_service.renja.domain.program.RenjaProgramOpdHeaderRepository;
 import cc.kertaskerja.realisasi_opd_service.renja.domain.program.RenjaProgramOpdRepository;
+import cc.kertaskerja.realisasi_opd_service.renja.domain.subkegiatan.IndikatorRenjaSubKegiatanOpdRepository;
 import cc.kertaskerja.realisasi_opd_service.renja.domain.subkegiatan.RenjaSubKegiatanOpd;
+import cc.kertaskerja.realisasi_opd_service.renja.domain.subkegiatan.RenjaSubKegiatanOpdHeaderRepository;
 import cc.kertaskerja.realisasi_opd_service.renja.domain.subkegiatan.RenjaSubKegiatanOpdRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +39,18 @@ class RenjaOpdServiceTest {
     private RenjaKegiatanOpdRepository targetKegiatanRepo;
     @Mock
     private RenjaSubKegiatanOpdRepository targetSubKegiatanRepo;
+    @Mock
+    private RenjaProgramOpdHeaderRepository programHeaderRepo;
+    @Mock
+    private IndikatorRenjaProgramOpdRepository indikatorProgramRepo;
+    @Mock
+    private RenjaKegiatanOpdHeaderRepository kegiatanHeaderRepo;
+    @Mock
+    private IndikatorRenjaKegiatanOpdRepository indikatorKegiatanRepo;
+    @Mock
+    private RenjaSubKegiatanOpdHeaderRepository subKegiatanHeaderRepo;
+    @Mock
+    private IndikatorRenjaSubKegiatanOpdRepository indikatorSubKegiatanRepo;
 
     @InjectMocks
     private RenjaOpdService renjaOpdService;

@@ -1,4 +1,4 @@
-package cc.kertaskerja.realisasi_individu_service.renja.web;
+package cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -6,8 +6,8 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
-@Schema(name = "RenjaIndividuProgramRequest", description = "Payload untuk membuat/memperbarui realisasi renja individu tingkat PROGRAM")
-public record RenjaIndividuProgramRequest(
+@Schema(name = "RenjaIndividuSubKegiatanRequest", description = "Payload untuk membuat/memperbarui realisasi renja individu tingkat SUBKEGIATAN")
+public record RenjaIndividuSubKegiatanRequest(
 
         @NotNull @NotEmpty
         @Schema(example = "5.01.5.05.0.00.01.0000")
@@ -32,17 +32,22 @@ public record RenjaIndividuProgramRequest(
         String namaPegawai,
 
         @NotNull @NotEmpty
-        @Schema(example = "5.01.02")
-        @JsonProperty("kode_program")
-        String kodeProgram,
+        @Schema(example = "5.01.02.001")
+        @JsonProperty("kode_kegiatan")
+        String kodeKegiatan,
 
         @NotNull @NotEmpty
-        @Schema(example = "IND-RENJA-PENETAPAN-5.01.02-5.01.5.05.0.00.01.0000-2026-001")
+        @Schema(example = "5.01.02.001.001")
+        @JsonProperty("kode_subkegiatan")
+        String kodeSubKegiatan,
+
+        @NotNull @NotEmpty
+        @Schema(example = "IND-RENJA-PENETAPAN-5.01.02.001.001-5.01.5.05.0.00.01.0000-2026-001")
         @JsonProperty("kode_indikator")
         String kodeIndikator,
 
         @NotNull @NotEmpty
-        @Schema(example = "TGT-TRG-PENETAPAN-89455")
+        @Schema(example = "TGT-TRG-PENETAPAN-89457")
         @JsonProperty("kode_target")
         String kodeTarget,
 

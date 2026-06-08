@@ -90,13 +90,7 @@ public class TujuanOpdController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penunjang tujuan OPD", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenunjangTujuanOpdRequest.class)))
             @RequestBody @Valid FaktorPenunjangTujuanOpdRequest req) {
-        return tujuanOpdService.updateFaktorPenunjang(
-                req.kodeOpd(),
-                req.kodeTujuanOpd(),
-                req.tahun(),
-                req.bulan(),
-                req.faktorPenunjang()
-        );
+        return tujuanOpdService.updateFaktorPenunjang(req);
     }
 
     @PostMapping("/faktor-penghambat")
@@ -111,13 +105,7 @@ public class TujuanOpdController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penghambat tujuan OPD", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatTujuanOpdRequest.class)))
             @RequestBody @Valid FaktorPenghambatTujuanOpdRequest req) {
-        return tujuanOpdService.updateFaktorPenghambat(
-                req.kodeOpd(),
-                req.kodeTujuanOpd(),
-                req.tahun(),
-                req.bulan(),
-                req.faktorPenghambat()
-        );
+        return tujuanOpdService.updateFaktorPenghambat(req);
     }
 
     @PostMapping("/create/batch")

@@ -153,14 +153,7 @@ return tujuanService.getRealisasiTujuanByPeriodeRpjmd(tahunAwal, tahunAkhir);
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload parsial faktor penunjang", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenunjangRequest.class)))
             @RequestBody @Valid FaktorPenunjangRequest req) {
-        return tujuanService.updateFaktorPenunjang(
-                req.tujuanId(),
-                req.indikatorId(),
-                req.targetId(),
-                req.tahun(),
-                req.bulan(),
-                req.faktorPenunjang()
-        );
+        return tujuanService.updateFaktorPenunjang(req);
     }
 
     @PostMapping("/faktor-penghambat")
@@ -175,13 +168,6 @@ return tujuanService.getRealisasiTujuanByPeriodeRpjmd(tahunAwal, tahunAkhir);
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload parsial faktor penghambat", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatRequest.class)))
             @RequestBody @Valid FaktorPenghambatRequest req) {
-        return tujuanService.updateFaktorPenghambat(
-                req.tujuanId(),
-                req.indikatorId(),
-                req.targetId(),
-                req.tahun(),
-                req.bulan(),
-                req.faktorPenghambat()
-        );
+        return tujuanService.updateFaktorPenghambat(req);
     }
 }

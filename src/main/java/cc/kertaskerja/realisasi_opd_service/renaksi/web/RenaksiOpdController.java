@@ -85,15 +85,7 @@ public class RenaksiOpdController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload parsial faktor penunjang", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenunjangRenaksiOpdRequest.class)))
             @RequestBody @Valid FaktorPenunjangRenaksiOpdRequest req) {
-        return renaksiOpdService.updateFaktorPenunjang(
-                req.kodeOpd(),
-                req.tahun(),
-                req.bulan(),
-                req.rekinId(),
-                req.renaksiId(),
-                req.targetId(),
-                req.faktorPenunjang()
-        );
+        return renaksiOpdService.updateFaktorPenunjang(req);
     }
 
     @PostMapping("/faktor-penghambat")
@@ -108,14 +100,6 @@ public class RenaksiOpdController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload parsial faktor penghambat", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatRenaksiOpdRequest.class)))
             @RequestBody @Valid FaktorPenghambatRenaksiOpdRequest req) {
-        return renaksiOpdService.updateFaktorPenghambat(
-                req.kodeOpd(),
-                req.tahun(),
-                req.bulan(),
-                req.rekinId(),
-                req.renaksiId(),
-                req.targetId(),
-                req.faktorPenghambat()
-        );
+        return renaksiOpdService.updateFaktorPenghambat(req);
     }
 }

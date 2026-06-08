@@ -2,14 +2,29 @@ package cc.kertaskerja.realisasi_opd_service.renja.domain;
 
 import cc.kertaskerja.integration.penetapan.PenetapanRenjaOpdClient;
 import cc.kertaskerja.integration.penetapan.renja.PenetapanRenjaOpd;
+import cc.kertaskerja.realisasi_opd_service.renja.domain.kegiatan.IndikatorRenjaKegiatanOpdRepository;
 import cc.kertaskerja.realisasi_opd_service.renja.domain.kegiatan.RenjaKegiatanOpd;
+import cc.kertaskerja.realisasi_opd_service.renja.domain.kegiatan.RenjaKegiatanOpdHeaderRepository;
 import cc.kertaskerja.realisasi_opd_service.renja.domain.kegiatan.RenjaKegiatanOpdRepository;
+import cc.kertaskerja.realisasi_opd_service.renja.domain.program.IndikatorRenjaProgramOpdRepository;
 import cc.kertaskerja.realisasi_opd_service.renja.domain.program.RenjaProgramOpd;
+import cc.kertaskerja.realisasi_opd_service.renja.domain.program.RenjaProgramOpdHeaderRepository;
 import cc.kertaskerja.realisasi_opd_service.renja.domain.program.RenjaProgramOpdRepository;
+import cc.kertaskerja.realisasi_opd_service.renja.domain.subkegiatan.IndikatorRenjaSubKegiatanOpdRepository;
 import cc.kertaskerja.realisasi_opd_service.renja.domain.subkegiatan.RenjaSubKegiatanOpd;
+import cc.kertaskerja.realisasi_opd_service.renja.domain.subkegiatan.RenjaSubKegiatanOpdHeaderRepository;
 import cc.kertaskerja.realisasi_opd_service.renja.domain.subkegiatan.RenjaSubKegiatanOpdRepository;
+import cc.kertaskerja.realisasi_opd_service.renja.web.kegiatan.FaktorPenghambatTargetRenjaKegiatanOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.renja.web.program.FaktorPenghambatTargetRenjaProgramOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.renja.web.subkegiatan.FaktorPenghambatTargetRenjaSubKegiatanOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.renja.web.kegiatan.FaktorPenunjangTargetRenjaKegiatanOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.renja.web.program.FaktorPenunjangTargetRenjaProgramOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.renja.web.subkegiatan.FaktorPenunjangTargetRenjaSubKegiatanOpdRequest;
 import cc.kertaskerja.realisasi_opd_service.renja.web.RenjaOpdPenetapanResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -22,19 +37,39 @@ public class RenjaOpdService {
     private final RenjaProgramOpdRepository targetProgramRepo;
     private final RenjaKegiatanOpdRepository targetKegiatanRepo;
     private final RenjaSubKegiatanOpdRepository targetSubKegiatanRepo;
+    private final RenjaProgramOpdHeaderRepository programHeaderRepo;
+    private final IndikatorRenjaProgramOpdRepository indikatorProgramRepo;
+    private final RenjaKegiatanOpdHeaderRepository kegiatanHeaderRepo;
+    private final IndikatorRenjaKegiatanOpdRepository indikatorKegiatanRepo;
+    private final RenjaSubKegiatanOpdHeaderRepository subKegiatanHeaderRepo;
+    private final IndikatorRenjaSubKegiatanOpdRepository indikatorSubKegiatanRepo;
 
     record RealisasiData(Double realisasi, String faktorPenunjang, String faktorPenghambat) {}
+
+    record CapaianResult(Double capaian, String keteranganCapaian) {}
 
     public RenjaOpdService(
             PenetapanRenjaOpdClient penetapanClient,
             RenjaProgramOpdRepository targetProgramRepo,
             RenjaKegiatanOpdRepository targetKegiatanRepo,
-            RenjaSubKegiatanOpdRepository targetSubKegiatanRepo
+            RenjaSubKegiatanOpdRepository targetSubKegiatanRepo,
+            RenjaProgramOpdHeaderRepository programHeaderRepo,
+            IndikatorRenjaProgramOpdRepository indikatorProgramRepo,
+            RenjaKegiatanOpdHeaderRepository kegiatanHeaderRepo,
+            IndikatorRenjaKegiatanOpdRepository indikatorKegiatanRepo,
+            RenjaSubKegiatanOpdHeaderRepository subKegiatanHeaderRepo,
+            IndikatorRenjaSubKegiatanOpdRepository indikatorSubKegiatanRepo
     ) {
         this.penetapanClient = penetapanClient;
         this.targetProgramRepo = targetProgramRepo;
         this.targetKegiatanRepo = targetKegiatanRepo;
         this.targetSubKegiatanRepo = targetSubKegiatanRepo;
+        this.programHeaderRepo = programHeaderRepo;
+        this.indikatorProgramRepo = indikatorProgramRepo;
+        this.kegiatanHeaderRepo = kegiatanHeaderRepo;
+        this.indikatorKegiatanRepo = indikatorKegiatanRepo;
+        this.subKegiatanHeaderRepo = subKegiatanHeaderRepo;
+        this.indikatorSubKegiatanRepo = indikatorSubKegiatanRepo;
     }
 
     public Mono<RenjaOpdPenetapanResponse> getPenetapanWithRealisasi(String kodeOpd, int tahun, String bulan) {
@@ -54,6 +89,106 @@ public class RenjaOpdService {
                         List.of(), List.of(), List.of()
                 ));
     }
+
+    public Flux<RenjaProgramOpd> updateFaktorPenunjangProgram(FaktorPenunjangTargetRenjaProgramOpdRequest req) {
+        return programHeaderRepo.findByKodeOpdAndKodeProgramAndTahunAndBulan(
+                        req.kodeOpd(), req.kodeProgram(), req.tahun(), req.bulan())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Program OPD tidak ditemukan")))
+                .flatMapMany(header -> indikatorProgramRepo.findAllByRenjaProgramOpdId(header.id()))
+                .flatMap(indikator -> targetProgramRepo.findAllByIndikatorRenjaProgramOpdId(indikator.id()))
+                .flatMap(existing -> targetProgramRepo.save(new RenjaProgramOpd(
+                        existing.id(), existing.indikatorRenjaProgramOpdId(),
+                        existing.kodeTarget(), existing.tahun(), existing.bulan(),
+                        existing.realisasi(),
+                        req.faktorPenunjang(), existing.faktorPenghambat(),
+                        existing.createdDate(), null,
+                        existing.createdBy(), null
+                )));
+    }
+
+    public Flux<RenjaProgramOpd> updateFaktorPenghambatProgram(FaktorPenghambatTargetRenjaProgramOpdRequest req) {
+        return programHeaderRepo.findByKodeOpdAndKodeProgramAndTahunAndBulan(
+                        req.kodeOpd(), req.kodeProgram(), req.tahun(), req.bulan())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Program OPD tidak ditemukan")))
+                .flatMapMany(header -> indikatorProgramRepo.findAllByRenjaProgramOpdId(header.id()))
+                .flatMap(indikator -> targetProgramRepo.findAllByIndikatorRenjaProgramOpdId(indikator.id()))
+                .flatMap(existing -> targetProgramRepo.save(new RenjaProgramOpd(
+                        existing.id(), existing.indikatorRenjaProgramOpdId(),
+                        existing.kodeTarget(), existing.tahun(), existing.bulan(),
+                        existing.realisasi(),
+                        existing.faktorPenunjang(), req.faktorPenghambat(),
+                        existing.createdDate(), null,
+                        existing.createdBy(), null
+                )));
+    }
+
+    public Flux<RenjaKegiatanOpd> updateFaktorPenunjangKegiatan(FaktorPenunjangTargetRenjaKegiatanOpdRequest req) {
+        return kegiatanHeaderRepo.findByKodeOpdAndKodeKegiatanAndTahunAndBulan(
+                        req.kodeOpd(), req.kodeKegiatan(), req.tahun(), req.bulan())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Kegiatan OPD tidak ditemukan")))
+                .flatMapMany(header -> indikatorKegiatanRepo.findAllByRenjaKegiatanOpdId(header.id()))
+                .flatMap(indikator -> targetKegiatanRepo.findAllByIndikatorRenjaKegiatanOpdId(indikator.id()))
+                .flatMap(existing -> targetKegiatanRepo.save(new RenjaKegiatanOpd(
+                        existing.id(), existing.indikatorRenjaKegiatanOpdId(),
+                        existing.kodeTarget(), existing.tahun(), existing.bulan(),
+                        existing.realisasi(),
+                        req.faktorPenunjang(), existing.faktorPenghambat(),
+                        existing.createdDate(), null,
+                        existing.createdBy(), null
+                )));
+    }
+
+    public Flux<RenjaKegiatanOpd> updateFaktorPenghambatKegiatan(FaktorPenghambatTargetRenjaKegiatanOpdRequest req) {
+        return kegiatanHeaderRepo.findByKodeOpdAndKodeKegiatanAndTahunAndBulan(
+                        req.kodeOpd(), req.kodeKegiatan(), req.tahun(), req.bulan())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Kegiatan OPD tidak ditemukan")))
+                .flatMapMany(header -> indikatorKegiatanRepo.findAllByRenjaKegiatanOpdId(header.id()))
+                .flatMap(indikator -> targetKegiatanRepo.findAllByIndikatorRenjaKegiatanOpdId(indikator.id()))
+                .flatMap(existing -> targetKegiatanRepo.save(new RenjaKegiatanOpd(
+                        existing.id(), existing.indikatorRenjaKegiatanOpdId(),
+                        existing.kodeTarget(), existing.tahun(), existing.bulan(),
+                        existing.realisasi(),
+                        existing.faktorPenunjang(), req.faktorPenghambat(),
+                        existing.createdDate(), null,
+                        existing.createdBy(), null
+                )));
+    }
+
+    public Flux<RenjaSubKegiatanOpd> updateFaktorPenunjangSubKegiatan(FaktorPenunjangTargetRenjaSubKegiatanOpdRequest req) {
+        return subKegiatanHeaderRepo.findByKodeOpdAndKodeSubKegiatanAndTahunAndBulan(
+                        req.kodeOpd(), req.kodeSubkegiatan(), req.tahun(), req.bulan())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Subkegiatan OPD tidak ditemukan")))
+                .flatMapMany(header -> indikatorSubKegiatanRepo.findAllByRenjaSubKegiatanOpdId(header.id()))
+                .flatMap(indikator -> targetSubKegiatanRepo.findAllByIndikatorRenjaSubKegiatanOpdId(indikator.id()))
+                .flatMap(existing -> targetSubKegiatanRepo.save(new RenjaSubKegiatanOpd(
+                        existing.id(), existing.indikatorRenjaSubKegiatanOpdId(),
+                        existing.kodeTarget(), existing.tahun(), existing.bulan(),
+                        existing.realisasi(),
+                        req.faktorPenunjang(), existing.faktorPenghambat(),
+                        existing.createdDate(), null,
+                        existing.createdBy(), null
+                )));
+    }
+
+    public Flux<RenjaSubKegiatanOpd> updateFaktorPenghambatSubKegiatan(FaktorPenghambatTargetRenjaSubKegiatanOpdRequest req) {
+        return subKegiatanHeaderRepo.findByKodeOpdAndKodeSubKegiatanAndTahunAndBulan(
+                        req.kodeOpd(), req.kodeSubkegiatan(), req.tahun(), req.bulan())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Subkegiatan OPD tidak ditemukan")))
+                .flatMapMany(header -> indikatorSubKegiatanRepo.findAllByRenjaSubKegiatanOpdId(header.id()))
+                .flatMap(indikator -> targetSubKegiatanRepo.findAllByIndikatorRenjaSubKegiatanOpdId(indikator.id()))
+                .flatMap(existing -> targetSubKegiatanRepo.save(new RenjaSubKegiatanOpd(
+                        existing.id(), existing.indikatorRenjaSubKegiatanOpdId(),
+                        existing.kodeTarget(), existing.tahun(), existing.bulan(),
+                        existing.realisasi(),
+                        existing.faktorPenunjang(), req.faktorPenghambat(),
+                        existing.createdDate(), null,
+                        existing.createdBy(), null
+                )));
+    }
+
+    // ========================================================================
+    // Private - Fetch realisasi data and merge with penetapan
+    // ========================================================================
 
     private Mono<RenjaOpdPenetapanResponse> fetchRealisasiAndMerge(
             PenetapanRenjaOpd.PenetapanRenjaOpdRoot root,
@@ -111,6 +246,10 @@ public class RenjaOpdService {
                 });
     }
 
+    // ========================================================================
+    // Private - Map penetapan response tanpa realisasi
+    // ========================================================================
+
     private RenjaOpdPenetapanResponse mapWithoutRealisasi(
             PenetapanRenjaOpd.PenetapanRenjaOpdRoot root,
             String kodeOpd, int tahun
@@ -129,6 +268,10 @@ public class RenjaOpdService {
 
         return new RenjaOpdPenetapanResponse(kodeOpd, tahun, null, programs, kegiatans, subkegiatans);
     }
+
+    // ========================================================================
+    // Private - Entity to Response mapping
+    // ========================================================================
 
     private RenjaOpdPenetapanResponse.ProgramPenetapan toProgramPenetapan(
             PenetapanRenjaOpd.ProgramPenetapanData p
@@ -195,6 +338,10 @@ public class RenjaOpdService {
                 indikators, s.paguAnggaran()
         );
     }
+
+    // ========================================================================
+    // Private - Merge realisasi data ke penetapan response
+    // ========================================================================
 
     private RenjaOpdPenetapanResponse.ProgramPenetapan mergeProgramWithRealisasi(
             PenetapanRenjaOpd.ProgramPenetapanData p,
@@ -304,77 +451,9 @@ public class RenjaOpdService {
         );
     }
 
-    public Mono<RenjaProgramOpd> updateFaktorPenunjangProgram(String kodeTarget, String faktorPenunjang) {
-        return targetProgramRepo.findByKodeTarget(kodeTarget)
-                .flatMap(existing -> targetProgramRepo.save(new RenjaProgramOpd(
-                        existing.id(), existing.indikatorRenjaProgramOpdId(),
-                        existing.kodeTarget(), existing.tahun(), existing.bulan(),
-                        existing.realisasi(),
-                        faktorPenunjang, existing.faktorPenghambat(),
-                        existing.createdDate(), null,
-                        existing.createdBy(), null
-                )));
-    }
-
-    public Mono<RenjaProgramOpd> updateFaktorPenghambatProgram(String kodeTarget, String faktorPenghambat) {
-        return targetProgramRepo.findByKodeTarget(kodeTarget)
-                .flatMap(existing -> targetProgramRepo.save(new RenjaProgramOpd(
-                        existing.id(), existing.indikatorRenjaProgramOpdId(),
-                        existing.kodeTarget(), existing.tahun(), existing.bulan(),
-                        existing.realisasi(),
-                        existing.faktorPenunjang(), faktorPenghambat,
-                        existing.createdDate(), null,
-                        existing.createdBy(), null
-                )));
-    }
-
-    public Mono<RenjaKegiatanOpd> updateFaktorPenunjangKegiatan(String kodeTarget, String faktorPenunjang) {
-        return targetKegiatanRepo.findByKodeTarget(kodeTarget)
-                .flatMap(existing -> targetKegiatanRepo.save(new RenjaKegiatanOpd(
-                        existing.id(), existing.indikatorRenjaKegiatanOpdId(),
-                        existing.kodeTarget(), existing.tahun(), existing.bulan(),
-                        existing.realisasi(),
-                        faktorPenunjang, existing.faktorPenghambat(),
-                        existing.createdDate(), null,
-                        existing.createdBy(), null
-                )));
-    }
-
-    public Mono<RenjaKegiatanOpd> updateFaktorPenghambatKegiatan(String kodeTarget, String faktorPenghambat) {
-        return targetKegiatanRepo.findByKodeTarget(kodeTarget)
-                .flatMap(existing -> targetKegiatanRepo.save(new RenjaKegiatanOpd(
-                        existing.id(), existing.indikatorRenjaKegiatanOpdId(),
-                        existing.kodeTarget(), existing.tahun(), existing.bulan(),
-                        existing.realisasi(),
-                        existing.faktorPenunjang(), faktorPenghambat,
-                        existing.createdDate(), null,
-                        existing.createdBy(), null
-                )));
-    }
-
-    public Mono<RenjaSubKegiatanOpd> updateFaktorPenunjangSubKegiatan(String kodeTarget, String faktorPenunjang) {
-        return targetSubKegiatanRepo.findByKodeTarget(kodeTarget)
-                .flatMap(existing -> targetSubKegiatanRepo.save(new RenjaSubKegiatanOpd(
-                        existing.id(), existing.indikatorRenjaSubKegiatanOpdId(),
-                        existing.kodeTarget(), existing.tahun(), existing.bulan(),
-                        existing.realisasi(),
-                        faktorPenunjang, existing.faktorPenghambat(),
-                        existing.createdDate(), null,
-                        existing.createdBy(), null
-                )));
-    }
-
-    public Mono<RenjaSubKegiatanOpd> updateFaktorPenghambatSubKegiatan(String kodeTarget, String faktorPenghambat) {
-        return targetSubKegiatanRepo.findByKodeTarget(kodeTarget)
-                .flatMap(existing -> targetSubKegiatanRepo.save(new RenjaSubKegiatanOpd(
-                        existing.id(), existing.indikatorRenjaSubKegiatanOpdId(),
-                        existing.kodeTarget(), existing.tahun(), existing.bulan(),
-                        existing.realisasi(),
-                        existing.faktorPenunjang(), faktorPenghambat,
-                        existing.createdDate(), null,
-                        existing.createdBy(), null
-                )));
-    }
+    // ========================================================================
+    // Private - Helpers sementara karena belum ada endpoint di renja individu
+    // ========================================================================
 
     static CapaianResult hitungCapaian(Double realisasi, Double target) {
         if (realisasi == null || target == null || target == 0) {
@@ -387,8 +466,6 @@ public class RenjaOpdService {
         }
         return new CapaianResult(Math.min(calculated, 100), keterangan);
     }
-
-    record CapaianResult(Double capaian, String keteranganCapaian) {}
 
     private <T> List<T> safeList(List<T> list) {
         return list == null ? List.of() : list;

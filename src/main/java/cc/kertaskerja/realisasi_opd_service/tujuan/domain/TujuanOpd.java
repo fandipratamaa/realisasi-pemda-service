@@ -46,6 +46,18 @@ public record TujuanOpd(
                 null, null, null, null);
     }
 
+    public TujuanOpd withFaktorPenunjang(String faktorPenunjang) {
+        return new TujuanOpd(id, kodeOpd, kodeTujuanOpd, tahun, bulan,
+                faktorPenunjang, faktorPenghambat,
+                createdBy, createdDate, lastModifiedDate, lastModifiedBy);
+    }
+
+    public TujuanOpd withFaktorPenghambat(String faktorPenghambat) {
+        return new TujuanOpd(id, kodeOpd, kodeTujuanOpd, tahun, bulan,
+                faktorPenunjang, faktorPenghambat,
+                createdBy, createdDate, lastModifiedDate, lastModifiedBy);
+    }
+
     public record CapaianResult(Double capaian, String keteranganCapaian) {}
 
     public static CapaianResult hitungCapaian(Double realisasi, Double target) {

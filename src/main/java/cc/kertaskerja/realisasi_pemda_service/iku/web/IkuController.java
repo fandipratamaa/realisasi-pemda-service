@@ -64,9 +64,7 @@ public class IkuController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penunjang IKU", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenunjangIkuRequest.class)))
             @RequestBody @Valid FaktorPenunjangIkuRequest req) {
-        return ikuService.updateFaktorPenunjang(
-                req.jenisIku(), req.jenisId(), req.indikatorId(),
-                req.targetId(), req.tahun(), req.bulan(), req.faktorPenunjang());
+        return ikuService.updateFaktorPenunjang(req);
     }
 
     @PostMapping("/faktor-penghambat")
@@ -81,8 +79,6 @@ public class IkuController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penghambat IKU", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatIkuRequest.class)))
             @RequestBody @Valid FaktorPenghambatIkuRequest req) {
-        return ikuService.updateFaktorPenghambat(
-                req.jenisIku(), req.jenisId(), req.indikatorId(),
-                req.targetId(), req.tahun(), req.bulan(), req.faktorPenghambat());
+        return ikuService.updateFaktorPenghambat(req);
     }
 }

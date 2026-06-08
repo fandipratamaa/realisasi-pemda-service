@@ -23,12 +23,12 @@ public record FaktorPenghambatRequest(
 
         @NotNull(message = "Tahun tidak boleh kosong")
         @NotEmpty(message = "Tahun tidak boleh kosong")
-        @Schema(description = "Tahun realisasi", example = "2025")
+        @Schema(description = "Tahun realisasi", example = "2026")
         String tahun,
 
         @NotNull(message = "Bulan tidak boleh kosong")
         @NotEmpty(message = "Bulan tidak boleh kosong")
-        @Schema(description = "Bulan realisasi", example = "01")
+        @Schema(description = "Bulan realisasi", example = "1")
         String bulan,
 
         @NotNull(message = "Faktor penghambat tidak boleh kosong")

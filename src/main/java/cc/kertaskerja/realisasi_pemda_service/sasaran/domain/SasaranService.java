@@ -1,6 +1,8 @@
 package cc.kertaskerja.realisasi_pemda_service.sasaran.domain;
 
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
+import cc.kertaskerja.realisasi_pemda_service.sasaran.web.FaktorPenghambatSasaranRequest;
+import cc.kertaskerja.realisasi_pemda_service.sasaran.web.FaktorPenunjangSasaranRequest;
 import cc.kertaskerja.realisasi_pemda_service.sasaran.web.SasaranRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -184,9 +186,9 @@ public class SasaranService {
                 });
     }
 
-    public Mono<Sasaran> updateFaktorPenunjang(String sasaranId, String indikatorId, String targetId, String tahun, String bulan, String faktorPenunjang) {
+    public Mono<Sasaran> updateFaktorPenunjang(FaktorPenunjangSasaranRequest req) {
         return sasaranRepository
-                .findFirstBySasaranIdAndIndikatorIdAndTargetIdAndTahunAndBulan(sasaranId, indikatorId, targetId, tahun, bulan)
+                .findFirstBySasaranIdAndIndikatorIdAndTargetIdAndTahunAndBulan(req.sasaranId(), req.indikatorId(), req.targetId(), req.tahun(), req.bulan())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Sasaran tidak ditemukan")))
                 .flatMap(existing -> {
                     Sasaran updated = new Sasaran(
@@ -203,7 +205,7 @@ public class SasaranService {
                             existing.bulan(),
                             existing.rumusPerhitungan(),
                             existing.sumberData(),
-                            faktorPenunjang,
+                            req.faktorPenunjang(),
                             existing.faktorPenghambat(),
                             existing.jenisRealisasi(),
                             SasaranStatus.UNCHECKED,
@@ -217,9 +219,9 @@ public class SasaranService {
                 });
     }
 
-    public Mono<Sasaran> updateFaktorPenghambat(String sasaranId, String indikatorId, String targetId, String tahun, String bulan, String faktorPenghambat) {
+    public Mono<Sasaran> updateFaktorPenghambat(FaktorPenghambatSasaranRequest req) {
         return sasaranRepository
-                .findFirstBySasaranIdAndIndikatorIdAndTargetIdAndTahunAndBulan(sasaranId, indikatorId, targetId, tahun, bulan)
+                .findFirstBySasaranIdAndIndikatorIdAndTargetIdAndTahunAndBulan(req.sasaranId(), req.indikatorId(), req.targetId(), req.tahun(), req.bulan())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Sasaran tidak ditemukan")))
                 .flatMap(existing -> {
                     Sasaran updated = new Sasaran(
@@ -237,7 +239,7 @@ public class SasaranService {
                             existing.rumusPerhitungan(),
                             existing.sumberData(),
                             existing.faktorPenunjang(),
-                            faktorPenghambat,
+                            req.faktorPenghambat(),
                             existing.jenisRealisasi(),
                             SasaranStatus.UNCHECKED,
                             existing.createdBy(),

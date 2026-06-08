@@ -44,8 +44,8 @@ public class RekinController {
     })
     public Flux<Rekin> getRealisasiRekinByNipAndTahunAndBulan(
             @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
-            @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
-            @Parameter(description = "Bulan realisasi", example = "01") @PathVariable String bulan) {
+            @Parameter(description = "Tahun realisasi", example = "2026") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi", example = "1") @PathVariable String bulan) {
         if (nip == null || nip.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip, tahun, dan bulan tidak boleh kosong");
         }
@@ -61,7 +61,7 @@ public class RekinController {
     })
     public Flux<Rekin> getRealisasiRekinByKodeOpdAndTahunAndBulan(
             @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
-            @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
+            @Parameter(description = "Tahun realisasi", example = "2026") @PathVariable String tahun,
             @Parameter(description = "Bulan realisasi", example = "01") @PathVariable String bulan) {
         if (kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd, tahun, dan bulan tidak boleh kosong");
@@ -110,7 +110,7 @@ public class RekinController {
                                     "    \"realisasi\": 85,\n" +
                                     "    \"satuan\": \"%\",\n" +
                                     "    \"tahun\": \"2026\",\n" +
-                                    "    \"bulan\": \"01\",\n" +
+                                    "    \"bulan\": \"1\",\n" +
                                     "    \"kodeOpd\": \"1.01.0.00.0.00.01.0000\",\n" +
                                     "    \"jenisRealisasi\": \"NAIK\"\n" +
                                     "  }\n" +
@@ -131,14 +131,7 @@ public class RekinController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload parsial faktor penunjang", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenunjangRekinRequest.class)))
             @RequestBody @Valid FaktorPenunjangRekinRequest req) {
-        return rekinService.updateFaktorPenunjang(
-                req.nip(),
-                req.tahun(),
-                req.bulan(),
-                req.rekinId(),
-                req.targetId(),
-                req.faktorPenunjang()
-        );
+        return rekinService.updateFaktorPenunjang(req);
     }
 
     @PostMapping("/faktor-penghambat")
@@ -153,13 +146,6 @@ public class RekinController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload parsial faktor penghambat", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatRekinRequest.class)))
             @RequestBody @Valid FaktorPenghambatRekinRequest req) {
-        return rekinService.updateFaktorPenghambat(
-                req.nip(),
-                req.tahun(),
-                req.bulan(),
-                req.rekinId(),
-                req.targetId(),
-                req.faktorPenghambat()
-        );
+        return rekinService.updateFaktorPenghambat(req);
     }
 }

@@ -20,11 +20,6 @@ public record RenaksiRequest(
         @Schema(description = "ID renaksi", example = "RENAKSI-001")
         String renaksiId,
 
-        @NotNull(message = "Renaksi tidak boleh kosong")
-        @NotEmpty(message = "Renaksi tidak boleh kosong")
-        @Schema(description = "Nama renaksi", example = "Renaksi Peningkatan Infrastruktur")
-        String renaksi,
-
         @NotNull(message = "NIP tidak boleh kosong")
         @NotEmpty(message = "NIP tidak boleh kosong")
         @Schema(description = "NIP pelaksana", example = "198012312005011001")
@@ -39,11 +34,6 @@ public record RenaksiRequest(
         @NotEmpty(message = "ID Rekin tidak boleh kosong")
         @Schema(description = "ID rekin", example = "REKIN-001")
         String rekinId,
-
-        @NotNull(message = "Rekin tidak boleh kosong")
-        @NotEmpty(message = "Rekin tidak boleh kosong")
-        @Schema(description = "Nama Rekin", example = "Rekin Peningkatan Infrastruktur")
-        String rekin,
 
         @NotNull(message = "ID target tidak boleh kosong")
         @NotEmpty(message = "ID target tidak boleh kosong")
