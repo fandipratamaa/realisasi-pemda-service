@@ -8,4 +8,6 @@ public interface TargetRenjaSubKegiatanIndividuRepository extends ReactiveCrudRe
     Flux<TargetRenjaSubKegiatanIndividu> findAllByTahunAndBulan(String tahun, String bulan);
     Mono<TargetRenjaSubKegiatanIndividu> findByIndikatorRenjaSubKegiatanIndividuIdAndTahunAndBulan(Long indikatorRenjaSubKegiatanIndividuId, String tahun, String bulan);
     Mono<TargetRenjaSubKegiatanIndividu> findByKodeTarget(String kodeTarget);
+
+    Mono<TargetRenjaSubKegiatanIndividu> findByIndikatorRenjaSubKegiatanIndividuIdAndKodeTargetAndTahunAndBulan(Long indikatorRenjaSubKegiatanIndividuId, String kodeTarget, String tahun, String bulan);
 }

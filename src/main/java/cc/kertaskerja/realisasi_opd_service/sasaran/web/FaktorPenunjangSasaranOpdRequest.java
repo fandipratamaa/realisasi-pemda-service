@@ -17,6 +17,16 @@ public record FaktorPenunjangSasaranOpdRequest(
         @Schema(description = "Kode sasaran OPD", example = "KODE-SAS-OPD-001")
         String kodeSasaranOpd,
 
+        @NotNull(message = "Kode indikator sasaran OPD tidak boleh kosong")
+        @NotEmpty(message = "Kode indikator sasaran OPD tidak boleh kosong")
+        @Schema(description = "Kode indikator sasaran OPD", example = "KODE-IND-SAS-OPD-001")
+        String kodeIndikator,
+
+        @NotNull(message = "Kode target tidak boleh kosong")
+        @NotEmpty(message = "Kode target tidak boleh kosong")
+        @Schema(description = "Kode target", example = "KODE-TAR-SAS-OPD-001")
+        String kodeTarget,
+
         @NotNull(message = "Tahun tidak boleh kosong")
         @NotEmpty(message = "Tahun tidak boleh kosong")
         @Schema(description = "Tahun realisasi", example = "2026")

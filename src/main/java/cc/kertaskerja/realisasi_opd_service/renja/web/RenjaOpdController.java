@@ -19,7 +19,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -54,7 +53,7 @@ public class RenjaOpdController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "404", description = "Program OPD tidak ditemukan", content = @Content)
     })
-    public Flux<RenjaProgramOpd> updateFaktorPenunjangProgram(
+    public Mono<RenjaProgramOpd> updateFaktorPenunjangProgram(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penunjang target program", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenunjangTargetRenjaProgramOpdRequest.class)))
             @RequestBody @Valid FaktorPenunjangTargetRenjaProgramOpdRequest req) {
@@ -69,7 +68,7 @@ public class RenjaOpdController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "404", description = "Program OPD tidak ditemukan", content = @Content)
     })
-    public Flux<RenjaProgramOpd> updateFaktorPenghambatProgram(
+    public Mono<RenjaProgramOpd> updateFaktorPenghambatProgram(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penghambat target program", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatTargetRenjaProgramOpdRequest.class)))
             @RequestBody @Valid FaktorPenghambatTargetRenjaProgramOpdRequest req) {
@@ -84,7 +83,7 @@ public class RenjaOpdController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "404", description = "Kegiatan OPD tidak ditemukan", content = @Content)
     })
-    public Flux<RenjaKegiatanOpd> updateFaktorPenunjangKegiatan(
+    public Mono<RenjaKegiatanOpd> updateFaktorPenunjangKegiatan(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penunjang target kegiatan", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenunjangTargetRenjaKegiatanOpdRequest.class)))
             @RequestBody @Valid FaktorPenunjangTargetRenjaKegiatanOpdRequest req) {
@@ -99,7 +98,7 @@ public class RenjaOpdController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "404", description = "Kegiatan OPD tidak ditemukan", content = @Content)
     })
-    public Flux<RenjaKegiatanOpd> updateFaktorPenghambatKegiatan(
+    public Mono<RenjaKegiatanOpd> updateFaktorPenghambatKegiatan(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penghambat target kegiatan", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatTargetRenjaKegiatanOpdRequest.class)))
             @RequestBody @Valid FaktorPenghambatTargetRenjaKegiatanOpdRequest req) {
@@ -114,7 +113,7 @@ public class RenjaOpdController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "404", description = "Subkegiatan OPD tidak ditemukan", content = @Content)
     })
-    public Flux<RenjaSubKegiatanOpd> updateFaktorPenunjangSubKegiatan(
+    public Mono<RenjaSubKegiatanOpd> updateFaktorPenunjangSubKegiatan(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penunjang target subkegiatan", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenunjangTargetRenjaSubKegiatanOpdRequest.class)))
             @RequestBody @Valid FaktorPenunjangTargetRenjaSubKegiatanOpdRequest req) {
@@ -129,7 +128,7 @@ public class RenjaOpdController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "404", description = "Subkegiatan OPD tidak ditemukan", content = @Content)
     })
-    public Flux<RenjaSubKegiatanOpd> updateFaktorPenghambatSubKegiatan(
+    public Mono<RenjaSubKegiatanOpd> updateFaktorPenghambatSubKegiatan(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penghambat target subkegiatan", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatTargetRenjaSubKegiatanOpdRequest.class)))
             @RequestBody @Valid FaktorPenghambatTargetRenjaSubKegiatanOpdRequest req) {

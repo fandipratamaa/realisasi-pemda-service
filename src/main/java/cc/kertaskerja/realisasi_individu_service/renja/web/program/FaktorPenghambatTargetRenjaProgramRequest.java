@@ -1,6 +1,5 @@
 package cc.kertaskerja.realisasi_individu_service.renja.web.program;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -15,6 +14,14 @@ public record FaktorPenghambatTargetRenjaProgramRequest(
         @NotNull @NotEmpty
         @Schema(example = "5.01.02")
         String kodeProgram,
+
+        @NotNull @NotEmpty
+        @Schema(example = "IND-RENJA-PENETAPAN-5.01.02-5.01.5.05.0.00.01.0000-2026-001")
+        String kodeIndikator,
+
+        @NotNull @NotEmpty
+        @Schema(example = "TGT-TRG-PENETAPAN-89455")
+        String kodeTarget,
 
         @NotNull @NotEmpty
         @Schema(example = "2026")

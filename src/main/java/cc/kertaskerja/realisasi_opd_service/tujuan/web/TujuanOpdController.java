@@ -1,7 +1,7 @@
 package cc.kertaskerja.realisasi_opd_service.tujuan.web;
 
-import cc.kertaskerja.realisasi_opd_service.tujuan.domain.TujuanOpd;
 import cc.kertaskerja.realisasi_opd_service.tujuan.domain.TujuanOpdService;
+import cc.kertaskerja.realisasi_opd_service.tujuan.domain.target.TargetIndikatorTujuanOpd;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -79,14 +79,14 @@ public class TujuanOpdController {
     }
 
     @PostMapping("/faktor-penunjang")
-    @Operation(summary = "Perbarui faktor penunjang tujuan OPD", description = "Memperbarui hanya field faktor_penunjang pada record TujuanOpd yang cocok dengan composite key (kodeOpd, kodeTujuanOpd, tahun, bulan).")
+    @Operation(summary = "Perbarui faktor penunjang tujuan OPD", description = "Memperbarui hanya field faktor_penunjang pada record TargetIndikatorTujuanOpd yang cocok dengan composite key (kodeOpd, kodeTujuanOpd, kodeIndikator, kodeTarget, tahun, bulan).")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = TujuanOpd.class))),
+            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = TargetIndikatorTujuanOpd.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Tujuan OPD tidak ditemukan", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Data tidak ditemukan", content = @Content)
     })
-    public Mono<TujuanOpd> updateFaktorPenunjang(
+    public Mono<TargetIndikatorTujuanOpd> updateFaktorPenunjang(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penunjang tujuan OPD", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenunjangTujuanOpdRequest.class)))
             @RequestBody @Valid FaktorPenunjangTujuanOpdRequest req) {
@@ -94,14 +94,14 @@ public class TujuanOpdController {
     }
 
     @PostMapping("/faktor-penghambat")
-    @Operation(summary = "Perbarui faktor penghambat tujuan OPD", description = "Memperbarui hanya field faktor_penghambat pada record TujuanOpd yang cocok dengan composite key (kodeOpd, kodeTujuanOpd, tahun, bulan).")
+    @Operation(summary = "Perbarui faktor penghambat tujuan OPD", description = "Memperbarui hanya field faktor_penghambat pada record TargetIndikatorTujuanOpd yang cocok dengan composite key (kodeOpd, kodeTujuanOpd, kodeIndikator, kodeTarget, tahun, bulan).")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = TujuanOpd.class))),
+            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = TargetIndikatorTujuanOpd.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Tujuan OPD tidak ditemukan", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Data tidak ditemukan", content = @Content)
     })
-    public Mono<TujuanOpd> updateFaktorPenghambat(
+    public Mono<TargetIndikatorTujuanOpd> updateFaktorPenghambat(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penghambat tujuan OPD", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatTujuanOpdRequest.class)))
             @RequestBody @Valid FaktorPenghambatTujuanOpdRequest req) {

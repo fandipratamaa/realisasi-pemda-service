@@ -31,4 +31,20 @@ public record RenjaProgramOpd(
         @LastModifiedDate Instant lastModifiedDate,
         @CreatedBy String createdBy,
         @LastModifiedBy String lastModifiedBy
-) {}
+) {
+    public RenjaProgramOpd withFaktorPenunjang(String faktorPenunjang) {
+        return new RenjaProgramOpd(
+                id, indikatorRenjaProgramOpdId, kodeTarget, tahun, bulan, realisasi,
+                faktorPenunjang, faktorPenghambat,
+                createdDate, lastModifiedDate, createdBy, lastModifiedBy
+        );
+    }
+
+    public RenjaProgramOpd withFaktorPenghambat(String faktorPenghambat) {
+        return new RenjaProgramOpd(
+                id, indikatorRenjaProgramOpdId, kodeTarget, tahun, bulan, realisasi,
+                faktorPenunjang, faktorPenghambat,
+                createdDate, lastModifiedDate, createdBy, lastModifiedBy
+        );
+    }
+}

@@ -17,6 +17,16 @@ public record FaktorPenghambatTujuanOpdRequest(
         @Schema(description = "Kode tujuan OPD", example = "KODE-TUJ-OPD-001")
         String kodeTujuanOpd,
 
+        @NotNull(message = "Kode indikator tujuan OPD tidak boleh kosong")
+        @NotEmpty(message = "Kode indikator tujuan OPD tidak boleh kosong")
+        @Schema(description = "Kode indikator tujuan OPD", example = "KODE-IND-TUJ-OPD-001")
+        String kodeIndikator,
+
+        @NotNull(message = "Kode target tidak boleh kosong")
+        @NotEmpty(message = "Kode target tidak boleh kosong")
+        @Schema(description = "Kode target", example = "KODE-TAR-TUJ-OPD-001")
+        String kodeTarget,
+
         @NotNull(message = "Tahun tidak boleh kosong")
         @NotEmpty(message = "Tahun tidak boleh kosong")
         @Schema(description = "Tahun realisasi", example = "2026")

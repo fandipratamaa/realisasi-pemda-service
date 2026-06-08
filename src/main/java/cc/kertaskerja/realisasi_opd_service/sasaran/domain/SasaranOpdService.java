@@ -2,6 +2,7 @@ package cc.kertaskerja.realisasi_opd_service.sasaran.domain;
 
 import cc.kertaskerja.integration.penetapan.PenetapanSasaranOpdClient;
 import cc.kertaskerja.integration.penetapan.sasaran_opd.PenetapanSasaranOpd;
+import cc.kertaskerja.realisasi_opd_service.sasaran.domain.target.TargetIndikatorSasaranOpd;
 import cc.kertaskerja.realisasi_opd_service.sasaran.domain.target.TargetIndikatorSasaranOpdRepository;
 import cc.kertaskerja.realisasi_opd_service.sasaran.domain.indikator.IndikatorSasaranOpdRepository;
 import cc.kertaskerja.realisasi_opd_service.sasaran.web.FaktorPenghambatSasaranOpdRequest;
@@ -62,13 +63,17 @@ public class SasaranOpdService {
                 });
     }
 
-    public Mono<SasaranOpd> updateFaktorPenunjang(FaktorPenunjangSasaranOpdRequest req) {
-        return findAndUpdateFaktor(req.kodeOpd(), req.kodeSasaranOpd(), req.tahun(), req.bulan(),
+    public Mono<TargetIndikatorSasaranOpd> updateFaktorPenunjang(FaktorPenunjangSasaranOpdRequest req) {
+        return findAndUpdateFaktor(
+                req.kodeOpd(), req.kodeSasaranOpd(), req.kodeIndikator(), req.kodeTarget(),
+                req.tahun(), req.bulan(),
                 existing -> existing.withFaktorPenunjang(req.faktorPenunjang()));
     }
 
-    public Mono<SasaranOpd> updateFaktorPenghambat(FaktorPenghambatSasaranOpdRequest req) {
-        return findAndUpdateFaktor(req.kodeOpd(), req.kodeSasaranOpd(), req.tahun(), req.bulan(),
+    public Mono<TargetIndikatorSasaranOpd> updateFaktorPenghambat(FaktorPenghambatSasaranOpdRequest req) {
+        return findAndUpdateFaktor(
+                req.kodeOpd(), req.kodeSasaranOpd(), req.kodeIndikator(), req.kodeTarget(),
+                req.tahun(), req.bulan(),
                 existing -> existing.withFaktorPenghambat(req.faktorPenghambat()));
     }
 
@@ -96,7 +101,8 @@ public class SasaranOpdService {
                 null, null,
                 parseInteger(t.tahun()), parseInteger(t.bulan()),
                 t.realisasi() != null ? t.realisasi().doubleValue() : null,
-                null, null);
+                null, null,
+                t.faktorPenunjang(), t.faktorPenghambat());
     }
 
     private SasaranOpdResponse.IndikatorResponse toIndikatorResponseFromEntity(
@@ -114,7 +120,6 @@ public class SasaranOpdService {
                 sasaran.id(), sasaran.kodeOpd(), sasaran.kodeSasaranOpd(),
                 null,
                 parseInteger(sasaran.tahun()), parseInteger(sasaran.bulan()),
-                sasaran.faktorPenunjang(), sasaran.faktorPenghambat(),
                 indikators);
     }
 
@@ -157,7 +162,6 @@ public class SasaranOpdService {
                 response.id(), response.kodeOpd(), response.kodeSasaranOpd(),
                 penetapan.sasaranOpd(),
                 response.tahun(), response.bulan(),
-                response.faktorPenunjang(), response.faktorPenghambat(),
                 appliedIndikator
         );
     }
@@ -204,7 +208,8 @@ public class SasaranOpdService {
                 matchedTarget.satuan(),
                 t.tahun(), t.bulan(), t.realisasi(),
                 capaianResult.capaian(),
-                capaianResult.keteranganCapaian()
+                capaianResult.keteranganCapaian(),
+                t.faktorPenunjang(), t.faktorPenghambat()
         );
     }
 
@@ -267,13 +272,10 @@ public class SasaranOpdService {
             Set<String> hiddenTargetKeys
     ) {
         Map<String, SasaranOpdResponse.IndikatorResponse> indikatorMap = buildIndikatorMap(realisasi);
-        String faktorPenunjang = realisasi != null ? realisasi.faktorPenunjang() : null;
-        String faktorPenghambat = realisasi != null ? realisasi.faktorPenghambat() : null;
 
         List<SasaranOpdPenetapanResponse.IndikatorPenetapan> indikatorList = penetapan.indikators().stream()
                 .map(ind -> mapIndikatorToPenetapan(ind, indikatorMap,
-                        penetapan.kodeSasaranOpd(), hiddenTargetKeys,
-                        faktorPenunjang, faktorPenghambat))
+                        penetapan.kodeSasaranOpd(), hiddenTargetKeys))
                 .filter(Objects::nonNull)
                 .toList();
 
@@ -286,15 +288,13 @@ public class SasaranOpdService {
             PenetapanSasaranOpd.IndikatorPenetapanData ind,
             Map<String, SasaranOpdResponse.IndikatorResponse> indikatorMap,
             String kodeSasaranOpd,
-            Set<String> hiddenTargetKeys,
-            String faktorPenunjang,
-            String faktorPenghambat
+            Set<String> hiddenTargetKeys
     ) {
         Map<String, SasaranOpdResponse.TargetResponse> targetMap = buildTargetMap(indikatorMap.get(ind.kodeIndikator()));
 
         List<SasaranOpdPenetapanResponse.TargetPenetapan> targetList = ind.targets().stream()
                 .filter(t -> !hiddenTargetKeys.contains(buildTargetKey(kodeSasaranOpd, ind.kodeIndikator(), t.kodeTarget())))
-                .map(t -> mergeTarget(t, targetMap, faktorPenunjang, faktorPenghambat))
+                .map(t -> mergeTarget(t, targetMap))
                 .toList();
 
         if (targetList.isEmpty()) {
@@ -325,13 +325,13 @@ public class SasaranOpdService {
 
     private SasaranOpdPenetapanResponse.TargetPenetapan mergeTarget(
             PenetapanSasaranOpd.TargetPenetapanData t,
-            Map<String, SasaranOpdResponse.TargetResponse> targetMap,
-            String faktorPenunjang,
-            String faktorPenghambat
+            Map<String, SasaranOpdResponse.TargetResponse> targetMap
     ) {
         SasaranOpdResponse.TargetResponse matchedTarget = targetMap.get(t.kodeTarget());
         Double targetPenetapan = t.target();
         Double realisasiValue = matchedTarget != null ? matchedTarget.realisasi() : null;
+        String faktorPenunjang = matchedTarget != null ? matchedTarget.faktorPenunjang() : null;
+        String faktorPenghambat = matchedTarget != null ? matchedTarget.faktorPenghambat() : null;
         var capaianResult = SasaranOpd.hitungCapaian(realisasiValue, targetPenetapan);
         return new SasaranOpdPenetapanResponse.TargetPenetapan(
                 t.kodeTarget(),
@@ -353,14 +353,23 @@ public class SasaranOpdService {
     // Private - Other helpers
     // ========================================================================
 
-    private Mono<SasaranOpd> findAndUpdateFaktor(
-            String kodeOpd, String kodeSasaranOpd, String tahun, String bulan,
-            UnaryOperator<SasaranOpd> updater
+    private Mono<TargetIndikatorSasaranOpd> findAndUpdateFaktor(
+            String kodeOpd, String kodeSasaranOpd, String kodeIndikator, String kodeTarget,
+            String tahun, String bulan,
+            UnaryOperator<TargetIndikatorSasaranOpd> updater
     ) {
         return sasaranOpdRepository
                 .findFirstByKodeOpdAndKodeSasaranOpdAndTahunAndBulan(kodeOpd, kodeSasaranOpd, tahun, bulan)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Sasaran OPD tidak ditemukan")))
-                .flatMap(existing -> sasaranOpdRepository.save(updater.apply(existing)));
+                .flatMap(sasaran -> indikatorSasaranOpdRepository
+                        .findFirstBySasaranOpdIdAndKodeIndikatorAndKodeOpdAndTahunAndBulan(
+                                sasaran.id(), kodeIndikator, kodeOpd, tahun, bulan)
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Indikator sasaran OPD tidak ditemukan"))))
+                .flatMap(indikator -> targetIndikatorSasaranOpdRepository
+                        .findFirstByIndikatorSasaranIdAndKodeTargetAndTahunAndBulan(
+                                indikator.id(), kodeTarget, tahun, bulan)
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target indikator sasaran OPD tidak ditemukan"))))
+                .flatMap(existing -> targetIndikatorSasaranOpdRepository.save(updater.apply(existing)));
     }
 
     private Integer parseInteger(String value) {

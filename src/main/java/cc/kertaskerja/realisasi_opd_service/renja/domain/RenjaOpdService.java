@@ -90,100 +90,82 @@ public class RenjaOpdService {
                 ));
     }
 
-    public Flux<RenjaProgramOpd> updateFaktorPenunjangProgram(FaktorPenunjangTargetRenjaProgramOpdRequest req) {
+    public Mono<RenjaProgramOpd> updateFaktorPenunjangProgram(FaktorPenunjangTargetRenjaProgramOpdRequest req) {
         return programHeaderRepo.findByKodeOpdAndKodeProgramAndTahunAndBulan(
                         req.kodeOpd(), req.kodeProgram(), req.tahun(), req.bulan())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Program OPD tidak ditemukan")))
-                .flatMapMany(header -> indikatorProgramRepo.findAllByRenjaProgramOpdId(header.id()))
-                .flatMap(indikator -> targetProgramRepo.findAllByIndikatorRenjaProgramOpdId(indikator.id()))
-                .flatMap(existing -> targetProgramRepo.save(new RenjaProgramOpd(
-                        existing.id(), existing.indikatorRenjaProgramOpdId(),
-                        existing.kodeTarget(), existing.tahun(), existing.bulan(),
-                        existing.realisasi(),
-                        req.faktorPenunjang(), existing.faktorPenghambat(),
-                        existing.createdDate(), null,
-                        existing.createdBy(), null
-                )));
+                .flatMap(header -> indikatorProgramRepo.findByRenjaProgramOpdIdAndKodeIndikatorAndTahunAndBulan(
+                        header.id(), req.kodeIndikator(), req.tahun(), req.bulan())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Indikator program OPD tidak ditemukan"))))
+                .flatMap(indikator -> targetProgramRepo.findByIndikatorRenjaProgramOpdIdAndKodeTargetAndTahunAndBulan(
+                        indikator.id(), req.kodeTarget(), req.tahun(), req.bulan())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target program OPD tidak ditemukan"))))
+                .flatMap(existing -> targetProgramRepo.save(existing.withFaktorPenunjang(req.faktorPenunjang())));
     }
 
-    public Flux<RenjaProgramOpd> updateFaktorPenghambatProgram(FaktorPenghambatTargetRenjaProgramOpdRequest req) {
+    public Mono<RenjaProgramOpd> updateFaktorPenghambatProgram(FaktorPenghambatTargetRenjaProgramOpdRequest req) {
         return programHeaderRepo.findByKodeOpdAndKodeProgramAndTahunAndBulan(
                         req.kodeOpd(), req.kodeProgram(), req.tahun(), req.bulan())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Program OPD tidak ditemukan")))
-                .flatMapMany(header -> indikatorProgramRepo.findAllByRenjaProgramOpdId(header.id()))
-                .flatMap(indikator -> targetProgramRepo.findAllByIndikatorRenjaProgramOpdId(indikator.id()))
-                .flatMap(existing -> targetProgramRepo.save(new RenjaProgramOpd(
-                        existing.id(), existing.indikatorRenjaProgramOpdId(),
-                        existing.kodeTarget(), existing.tahun(), existing.bulan(),
-                        existing.realisasi(),
-                        existing.faktorPenunjang(), req.faktorPenghambat(),
-                        existing.createdDate(), null,
-                        existing.createdBy(), null
-                )));
+                .flatMap(header -> indikatorProgramRepo.findByRenjaProgramOpdIdAndKodeIndikatorAndTahunAndBulan(
+                        header.id(), req.kodeIndikator(), req.tahun(), req.bulan())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Indikator program OPD tidak ditemukan"))))
+                .flatMap(indikator -> targetProgramRepo.findByIndikatorRenjaProgramOpdIdAndKodeTargetAndTahunAndBulan(
+                        indikator.id(), req.kodeTarget(), req.tahun(), req.bulan())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target program OPD tidak ditemukan"))))
+                .flatMap(existing -> targetProgramRepo.save(existing.withFaktorPenghambat(req.faktorPenghambat())));
     }
 
-    public Flux<RenjaKegiatanOpd> updateFaktorPenunjangKegiatan(FaktorPenunjangTargetRenjaKegiatanOpdRequest req) {
+    public Mono<RenjaKegiatanOpd> updateFaktorPenunjangKegiatan(FaktorPenunjangTargetRenjaKegiatanOpdRequest req) {
         return kegiatanHeaderRepo.findByKodeOpdAndKodeKegiatanAndTahunAndBulan(
                         req.kodeOpd(), req.kodeKegiatan(), req.tahun(), req.bulan())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Kegiatan OPD tidak ditemukan")))
-                .flatMapMany(header -> indikatorKegiatanRepo.findAllByRenjaKegiatanOpdId(header.id()))
-                .flatMap(indikator -> targetKegiatanRepo.findAllByIndikatorRenjaKegiatanOpdId(indikator.id()))
-                .flatMap(existing -> targetKegiatanRepo.save(new RenjaKegiatanOpd(
-                        existing.id(), existing.indikatorRenjaKegiatanOpdId(),
-                        existing.kodeTarget(), existing.tahun(), existing.bulan(),
-                        existing.realisasi(),
-                        req.faktorPenunjang(), existing.faktorPenghambat(),
-                        existing.createdDate(), null,
-                        existing.createdBy(), null
-                )));
+                .flatMap(header -> indikatorKegiatanRepo.findByRenjaKegiatanOpdIdAndKodeIndikatorAndTahunAndBulan(
+                        header.id(), req.kodeIndikator(), req.tahun(), req.bulan())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Indikator kegiatan OPD tidak ditemukan"))))
+                .flatMap(indikator -> targetKegiatanRepo.findByIndikatorRenjaKegiatanOpdIdAndKodeTargetAndTahunAndBulan(
+                        indikator.id(), req.kodeTarget(), req.tahun(), req.bulan())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target kegiatan OPD tidak ditemukan"))))
+                .flatMap(existing -> targetKegiatanRepo.save(existing.withFaktorPenunjang(req.faktorPenunjang())));
     }
 
-    public Flux<RenjaKegiatanOpd> updateFaktorPenghambatKegiatan(FaktorPenghambatTargetRenjaKegiatanOpdRequest req) {
+    public Mono<RenjaKegiatanOpd> updateFaktorPenghambatKegiatan(FaktorPenghambatTargetRenjaKegiatanOpdRequest req) {
         return kegiatanHeaderRepo.findByKodeOpdAndKodeKegiatanAndTahunAndBulan(
                         req.kodeOpd(), req.kodeKegiatan(), req.tahun(), req.bulan())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Kegiatan OPD tidak ditemukan")))
-                .flatMapMany(header -> indikatorKegiatanRepo.findAllByRenjaKegiatanOpdId(header.id()))
-                .flatMap(indikator -> targetKegiatanRepo.findAllByIndikatorRenjaKegiatanOpdId(indikator.id()))
-                .flatMap(existing -> targetKegiatanRepo.save(new RenjaKegiatanOpd(
-                        existing.id(), existing.indikatorRenjaKegiatanOpdId(),
-                        existing.kodeTarget(), existing.tahun(), existing.bulan(),
-                        existing.realisasi(),
-                        existing.faktorPenunjang(), req.faktorPenghambat(),
-                        existing.createdDate(), null,
-                        existing.createdBy(), null
-                )));
+                .flatMap(header -> indikatorKegiatanRepo.findByRenjaKegiatanOpdIdAndKodeIndikatorAndTahunAndBulan(
+                        header.id(), req.kodeIndikator(), req.tahun(), req.bulan())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Indikator kegiatan OPD tidak ditemukan"))))
+                .flatMap(indikator -> targetKegiatanRepo.findByIndikatorRenjaKegiatanOpdIdAndKodeTargetAndTahunAndBulan(
+                        indikator.id(), req.kodeTarget(), req.tahun(), req.bulan())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target kegiatan OPD tidak ditemukan"))))
+                .flatMap(existing -> targetKegiatanRepo.save(existing.withFaktorPenghambat(req.faktorPenghambat())));
     }
 
-    public Flux<RenjaSubKegiatanOpd> updateFaktorPenunjangSubKegiatan(FaktorPenunjangTargetRenjaSubKegiatanOpdRequest req) {
+    public Mono<RenjaSubKegiatanOpd> updateFaktorPenunjangSubKegiatan(FaktorPenunjangTargetRenjaSubKegiatanOpdRequest req) {
         return subKegiatanHeaderRepo.findByKodeOpdAndKodeSubKegiatanAndTahunAndBulan(
                         req.kodeOpd(), req.kodeSubkegiatan(), req.tahun(), req.bulan())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Subkegiatan OPD tidak ditemukan")))
-                .flatMapMany(header -> indikatorSubKegiatanRepo.findAllByRenjaSubKegiatanOpdId(header.id()))
-                .flatMap(indikator -> targetSubKegiatanRepo.findAllByIndikatorRenjaSubKegiatanOpdId(indikator.id()))
-                .flatMap(existing -> targetSubKegiatanRepo.save(new RenjaSubKegiatanOpd(
-                        existing.id(), existing.indikatorRenjaSubKegiatanOpdId(),
-                        existing.kodeTarget(), existing.tahun(), existing.bulan(),
-                        existing.realisasi(),
-                        req.faktorPenunjang(), existing.faktorPenghambat(),
-                        existing.createdDate(), null,
-                        existing.createdBy(), null
-                )));
+                .flatMap(header -> indikatorSubKegiatanRepo.findByRenjaSubKegiatanOpdIdAndKodeIndikatorAndTahunAndBulan(
+                        header.id(), req.kodeIndikator(), req.tahun(), req.bulan())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Indikator subkegiatan OPD tidak ditemukan"))))
+                .flatMap(indikator -> targetSubKegiatanRepo.findByIndikatorRenjaSubKegiatanOpdIdAndKodeTargetAndTahunAndBulan(
+                        indikator.id(), req.kodeTarget(), req.tahun(), req.bulan())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target subkegiatan OPD tidak ditemukan"))))
+                .flatMap(existing -> targetSubKegiatanRepo.save(existing.withFaktorPenunjang(req.faktorPenunjang())));
     }
 
-    public Flux<RenjaSubKegiatanOpd> updateFaktorPenghambatSubKegiatan(FaktorPenghambatTargetRenjaSubKegiatanOpdRequest req) {
+    public Mono<RenjaSubKegiatanOpd> updateFaktorPenghambatSubKegiatan(FaktorPenghambatTargetRenjaSubKegiatanOpdRequest req) {
         return subKegiatanHeaderRepo.findByKodeOpdAndKodeSubKegiatanAndTahunAndBulan(
                         req.kodeOpd(), req.kodeSubkegiatan(), req.tahun(), req.bulan())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Subkegiatan OPD tidak ditemukan")))
-                .flatMapMany(header -> indikatorSubKegiatanRepo.findAllByRenjaSubKegiatanOpdId(header.id()))
-                .flatMap(indikator -> targetSubKegiatanRepo.findAllByIndikatorRenjaSubKegiatanOpdId(indikator.id()))
-                .flatMap(existing -> targetSubKegiatanRepo.save(new RenjaSubKegiatanOpd(
-                        existing.id(), existing.indikatorRenjaSubKegiatanOpdId(),
-                        existing.kodeTarget(), existing.tahun(), existing.bulan(),
-                        existing.realisasi(),
-                        existing.faktorPenunjang(), req.faktorPenghambat(),
-                        existing.createdDate(), null,
-                        existing.createdBy(), null
-                )));
+                .flatMap(header -> indikatorSubKegiatanRepo.findByRenjaSubKegiatanOpdIdAndKodeIndikatorAndTahunAndBulan(
+                        header.id(), req.kodeIndikator(), req.tahun(), req.bulan())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Indikator subkegiatan OPD tidak ditemukan"))))
+                .flatMap(indikator -> targetSubKegiatanRepo.findByIndikatorRenjaSubKegiatanOpdIdAndKodeTargetAndTahunAndBulan(
+                        indikator.id(), req.kodeTarget(), req.tahun(), req.bulan())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target subkegiatan OPD tidak ditemukan"))))
+                .flatMap(existing -> targetSubKegiatanRepo.save(existing.withFaktorPenghambat(req.faktorPenghambat())));
     }
 
     // ========================================================================

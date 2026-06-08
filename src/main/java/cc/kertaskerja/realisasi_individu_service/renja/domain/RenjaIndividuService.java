@@ -52,7 +52,9 @@ import cc.kertaskerja.realisasi_individu_service.renja.web.program.RenjaIndividu
 import cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan.RenjaIndividuSubKegiatanRequest;
 import cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan.RenjaIndividuSubKegiatanResponse;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
@@ -581,10 +583,13 @@ public class RenjaIndividuService {
 
     public Mono<TargetRenjaProgramIndividu> updateFaktorPenunjangProgram(FaktorPenunjangTargetRenjaProgramRequest req) {
         return programRepo.findByKodeProgram(req.kodeProgram())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Program individu tidak ditemukan")))
                 .flatMap(program -> indikatorProgramRepo
-                        .findByRenjaProgramIndividuIdAndTahunAndBulan(program.id(), req.tahun(), req.bulan())
+                        .findByRenjaProgramIndividuIdAndKodeIndikatorAndTahunAndBulan(program.id(), req.kodeIndikator(), req.tahun(), req.bulan())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Indikator program individu tidak ditemukan")))
                         .flatMap(indikator -> targetProgramRepo
-                                .findByIndikatorRenjaProgramIndividuIdAndTahunAndBulan(indikator.id(), req.tahun(), req.bulan())
+                                .findByIndikatorRenjaProgramIndividuIdAndKodeTargetAndTahunAndBulan(indikator.id(), req.kodeTarget(), req.tahun(), req.bulan())
+                                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target program individu tidak ditemukan")))
                                 .flatMap(existing -> targetProgramRepo.save(new TargetRenjaProgramIndividu(
                                         existing.id(), existing.indikatorRenjaProgramIndividuId(),
                                         existing.kodeTarget(), existing.tahun(), existing.bulan(),
@@ -599,10 +604,13 @@ public class RenjaIndividuService {
 
     public Mono<TargetRenjaProgramIndividu> updateFaktorPenghambatProgram(FaktorPenghambatTargetRenjaProgramRequest req) {
         return programRepo.findByKodeProgram(req.kodeProgram())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Program individu tidak ditemukan")))
                 .flatMap(program -> indikatorProgramRepo
-                        .findByRenjaProgramIndividuIdAndTahunAndBulan(program.id(), req.tahun(), req.bulan())
+                        .findByRenjaProgramIndividuIdAndKodeIndikatorAndTahunAndBulan(program.id(), req.kodeIndikator(), req.tahun(), req.bulan())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Indikator program individu tidak ditemukan")))
                         .flatMap(indikator -> targetProgramRepo
-                                .findByIndikatorRenjaProgramIndividuIdAndTahunAndBulan(indikator.id(), req.tahun(), req.bulan())
+                                .findByIndikatorRenjaProgramIndividuIdAndKodeTargetAndTahunAndBulan(indikator.id(), req.kodeTarget(), req.tahun(), req.bulan())
+                                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target program individu tidak ditemukan")))
                                 .flatMap(existing -> targetProgramRepo.save(new TargetRenjaProgramIndividu(
                                         existing.id(), existing.indikatorRenjaProgramIndividuId(),
                                         existing.kodeTarget(), existing.tahun(), existing.bulan(),
@@ -617,10 +625,13 @@ public class RenjaIndividuService {
 
     public Mono<TargetRenjaKegiatanIndividu> updateFaktorPenunjangKegiatan(FaktorPenunjangTargetRenjaKegiatanRequest req) {
         return kegiatanRepo.findByKodeKegiatan(req.kodeKegiatan())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Kegiatan individu tidak ditemukan")))
                 .flatMap(kegiatan -> indikatorKegiatanRepo
-                        .findByRenjaKegiatanIndividuIdAndTahunAndBulan(kegiatan.id(), req.tahun(), req.bulan())
+                        .findByRenjaKegiatanIndividuIdAndKodeIndikatorAndTahunAndBulan(kegiatan.id(), req.kodeIndikator(), req.tahun(), req.bulan())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Indikator kegiatan individu tidak ditemukan")))
                         .flatMap(indikator -> targetKegiatanRepo
-                                .findByIndikatorRenjaKegiatanIndividuIdAndTahunAndBulan(indikator.id(), req.tahun(), req.bulan())
+                                .findByIndikatorRenjaKegiatanIndividuIdAndKodeTargetAndTahunAndBulan(indikator.id(), req.kodeTarget(), req.tahun(), req.bulan())
+                                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target kegiatan individu tidak ditemukan")))
                                 .flatMap(existing -> targetKegiatanRepo.save(new TargetRenjaKegiatanIndividu(
                                         existing.id(), existing.indikatorRenjaKegiatanIndividuId(),
                                         existing.kodeTarget(), existing.tahun(), existing.bulan(),
@@ -635,10 +646,13 @@ public class RenjaIndividuService {
 
     public Mono<TargetRenjaKegiatanIndividu> updateFaktorPenghambatKegiatan(FaktorPenghambatTargetRenjaKegiatanRequest req) {
         return kegiatanRepo.findByKodeKegiatan(req.kodeKegiatan())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Kegiatan individu tidak ditemukan")))
                 .flatMap(kegiatan -> indikatorKegiatanRepo
-                        .findByRenjaKegiatanIndividuIdAndTahunAndBulan(kegiatan.id(), req.tahun(), req.bulan())
+                        .findByRenjaKegiatanIndividuIdAndKodeIndikatorAndTahunAndBulan(kegiatan.id(), req.kodeIndikator(), req.tahun(), req.bulan())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Indikator kegiatan individu tidak ditemukan")))
                         .flatMap(indikator -> targetKegiatanRepo
-                                .findByIndikatorRenjaKegiatanIndividuIdAndTahunAndBulan(indikator.id(), req.tahun(), req.bulan())
+                                .findByIndikatorRenjaKegiatanIndividuIdAndKodeTargetAndTahunAndBulan(indikator.id(), req.kodeTarget(), req.tahun(), req.bulan())
+                                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target kegiatan individu tidak ditemukan")))
                                 .flatMap(existing -> targetKegiatanRepo.save(new TargetRenjaKegiatanIndividu(
                                         existing.id(), existing.indikatorRenjaKegiatanIndividuId(),
                                         existing.kodeTarget(), existing.tahun(), existing.bulan(),
@@ -653,10 +667,13 @@ public class RenjaIndividuService {
 
     public Mono<TargetRenjaSubKegiatanIndividu> updateFaktorPenunjangSubKegiatan(FaktorPenunjangTargetRenjaSubKegiatanRequest req) {
         return subKegiatanRepo.findByKodeSubKegiatan(req.kodeSubKegiatan())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Subkegiatan individu tidak ditemukan")))
                 .flatMap(subKegiatan -> indikatorSubKegiatanRepo
-                        .findByRenjaSubKegiatanIndividuIdAndTahunAndBulan(subKegiatan.id(), req.tahun(), req.bulan())
+                        .findByRenjaSubKegiatanIndividuIdAndKodeIndikatorAndTahunAndBulan(subKegiatan.id(), req.kodeIndikator(), req.tahun(), req.bulan())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Indikator subkegiatan individu tidak ditemukan")))
                         .flatMap(indikator -> targetSubKegiatanRepo
-                                .findByIndikatorRenjaSubKegiatanIndividuIdAndTahunAndBulan(indikator.id(), req.tahun(), req.bulan())
+                                .findByIndikatorRenjaSubKegiatanIndividuIdAndKodeTargetAndTahunAndBulan(indikator.id(), req.kodeTarget(), req.tahun(), req.bulan())
+                                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target subkegiatan individu tidak ditemukan")))
                                 .flatMap(existing -> targetSubKegiatanRepo.save(new TargetRenjaSubKegiatanIndividu(
                                         existing.id(), existing.indikatorRenjaSubKegiatanIndividuId(),
                                         existing.kodeTarget(), existing.tahun(), existing.bulan(),
@@ -671,10 +688,13 @@ public class RenjaIndividuService {
 
     public Mono<TargetRenjaSubKegiatanIndividu> updateFaktorPenghambatSubKegiatan(FaktorPenghambatTargetRenjaSubKegiatanRequest req) {
         return subKegiatanRepo.findByKodeSubKegiatan(req.kodeSubKegiatan())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Subkegiatan individu tidak ditemukan")))
                 .flatMap(subKegiatan -> indikatorSubKegiatanRepo
-                        .findByRenjaSubKegiatanIndividuIdAndTahunAndBulan(subKegiatan.id(), req.tahun(), req.bulan())
+                        .findByRenjaSubKegiatanIndividuIdAndKodeIndikatorAndTahunAndBulan(subKegiatan.id(), req.kodeIndikator(), req.tahun(), req.bulan())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Indikator subkegiatan individu tidak ditemukan")))
                         .flatMap(indikator -> targetSubKegiatanRepo
-                                .findByIndikatorRenjaSubKegiatanIndividuIdAndTahunAndBulan(indikator.id(), req.tahun(), req.bulan())
+                                .findByIndikatorRenjaSubKegiatanIndividuIdAndKodeTargetAndTahunAndBulan(indikator.id(), req.kodeTarget(), req.tahun(), req.bulan())
+                                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target subkegiatan individu tidak ditemukan")))
                                 .flatMap(existing -> targetSubKegiatanRepo.save(new TargetRenjaSubKegiatanIndividu(
                                         existing.id(), existing.indikatorRenjaSubKegiatanIndividuId(),
                                         existing.kodeTarget(), existing.tahun(), existing.bulan(),

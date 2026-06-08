@@ -89,13 +89,17 @@ public class TujuanOpdService {
     // Public API - Update
     // ========================================================================
 
-    public Mono<TujuanOpd> updateFaktorPenunjang(FaktorPenunjangTujuanOpdRequest req) {
-        return findAndUpdateFaktor(req.kodeOpd(), req.kodeTujuanOpd(), req.tahun(), req.bulan(),
+    public Mono<TargetIndikatorTujuanOpd> updateFaktorPenunjang(FaktorPenunjangTujuanOpdRequest req) {
+        return findAndUpdateFaktor(
+                req.kodeOpd(), req.kodeTujuanOpd(), req.kodeIndikator(), req.kodeTarget(),
+                req.tahun(), req.bulan(),
                 existing -> existing.withFaktorPenunjang(req.faktorPenunjang()));
     }
 
-    public Mono<TujuanOpd> updateFaktorPenghambat(FaktorPenghambatTujuanOpdRequest req) {
-        return findAndUpdateFaktor(req.kodeOpd(), req.kodeTujuanOpd(), req.tahun(), req.bulan(),
+    public Mono<TargetIndikatorTujuanOpd> updateFaktorPenghambat(FaktorPenghambatTujuanOpdRequest req) {
+        return findAndUpdateFaktor(
+                req.kodeOpd(), req.kodeTujuanOpd(), req.kodeIndikator(), req.kodeTarget(),
+                req.tahun(), req.bulan(),
                 existing -> existing.withFaktorPenghambat(req.faktorPenghambat()));
     }
 
@@ -139,6 +143,7 @@ public class TujuanOpdService {
                                 existing.kodeTarget(),
                                 BigDecimal.valueOf(req.realisasi()),
                                 existing.tahun(), existing.bulan(),
+                                existing.faktorPenunjang(), existing.faktorPenghambat(),
                                 existing.createdDate(), null,
                                 existing.createdBy(), null)))
                 .switchIfEmpty(Mono.defer(() -> targetIndikatorTujuanOpdRepository.save(
@@ -146,6 +151,7 @@ public class TujuanOpdService {
                                 null, indikatorId, req.kodeTargetTujuanOpd(),
                                 BigDecimal.valueOf(req.realisasi()),
                                 req.tahun(), req.bulan(),
+                                "", "",
                                 null, null, null, null))));
     }
 
@@ -170,7 +176,8 @@ public class TujuanOpdService {
                 null, null,
                 parseInteger(t.tahun()), parseInteger(t.bulan()),
                 t.realisasi() != null ? t.realisasi().doubleValue() : null,
-                null, null);
+                null, null,
+                t.faktorPenunjang(), t.faktorPenghambat());
     }
 
     private TujuanOpdResponse.IndikatorResponse toIndikatorResponseFromEntity(
@@ -187,7 +194,6 @@ public class TujuanOpdService {
                 tujuan.id(), tujuan.kodeOpd(), tujuan.kodeTujuanOpd(),
                 null,
                 parseInteger(tujuan.tahun()), parseInteger(tujuan.bulan()),
-                tujuan.faktorPenunjang(), tujuan.faktorPenghambat(),
                 indikators);
     }
 
@@ -230,7 +236,6 @@ public class TujuanOpdService {
                 response.id(), response.kodeOpd(), response.kodeTujuanOpd(),
                 penetapan.tujuanOpd(),
                 response.tahun(), response.bulan(),
-                response.faktorPenunjang(), response.faktorPenghambat(),
                 appliedIndikator
         );
     }
@@ -277,7 +282,8 @@ public class TujuanOpdService {
                 matchedTarget.satuan(),
                 t.tahun(), t.bulan(), t.realisasi(),
                 capaianResult.capaian(),
-                capaianResult.keteranganCapaian()
+                capaianResult.keteranganCapaian(),
+                t.faktorPenunjang(), t.faktorPenghambat()
         );
     }
 
@@ -340,13 +346,10 @@ public class TujuanOpdService {
             Set<String> hiddenTargetKeys
     ) {
         Map<String, TujuanOpdResponse.IndikatorResponse> indikatorMap = buildIndikatorMap(realisasi);
-        String faktorPenunjang = realisasi != null ? realisasi.faktorPenunjang() : null;
-        String faktorPenghambat = realisasi != null ? realisasi.faktorPenghambat() : null;
 
         List<TujuanOpdPenetapanResponse.IndikatorPenetapan> indikatorList = penetapan.indikators().stream()
                 .map(ind -> mapIndikatorToPenetapan(ind, indikatorMap,
-                        penetapan.kodeTujuanOpd(), hiddenTargetKeys,
-                        faktorPenunjang, faktorPenghambat))
+                        penetapan.kodeTujuanOpd(), hiddenTargetKeys))
                 .filter(Objects::nonNull)
                 .toList();
 
@@ -359,15 +362,13 @@ public class TujuanOpdService {
             PenetapanTujuanOpd.IndikatorPenetapanData ind,
             Map<String, TujuanOpdResponse.IndikatorResponse> indikatorMap,
             String kodeTujuanOpd,
-            Set<String> hiddenTargetKeys,
-            String faktorPenunjang,
-            String faktorPenghambat
+            Set<String> hiddenTargetKeys
     ) {
         Map<String, TujuanOpdResponse.TargetResponse> targetMap = buildTargetMap(indikatorMap.get(ind.kodeIndikator()));
 
         List<TujuanOpdPenetapanResponse.TargetPenetapan> targetList = ind.targets().stream()
                 .filter(t -> !hiddenTargetKeys.contains(buildTargetKey(kodeTujuanOpd, ind.kodeIndikator(), t.kodeTarget())))
-                .map(t -> mergeTarget(t, targetMap, faktorPenunjang, faktorPenghambat))
+                .map(t -> mergeTarget(t, targetMap))
                 .toList();
 
         if (targetList.isEmpty()) {
@@ -398,13 +399,13 @@ public class TujuanOpdService {
 
     private TujuanOpdPenetapanResponse.TargetPenetapan mergeTarget(
             PenetapanTujuanOpd.TargetPenetapanData t,
-            Map<String, TujuanOpdResponse.TargetResponse> targetMap,
-            String faktorPenunjang,
-            String faktorPenghambat
+            Map<String, TujuanOpdResponse.TargetResponse> targetMap
     ) {
         TujuanOpdResponse.TargetResponse matchedTarget = targetMap.get(t.kodeTarget());
         Double targetPenetapan = t.target();
         Double realisasiValue = matchedTarget != null ? matchedTarget.realisasi() : null;
+        String faktorPenunjang = matchedTarget != null ? matchedTarget.faktorPenunjang() : null;
+        String faktorPenghambat = matchedTarget != null ? matchedTarget.faktorPenghambat() : null;
         var capaianResult = TujuanOpd.hitungCapaian(realisasiValue, targetPenetapan);
         return new TujuanOpdPenetapanResponse.TargetPenetapan(
                 t.kodeTarget(),
@@ -426,14 +427,23 @@ public class TujuanOpdService {
     // Private - Method untuk cek ada tidak tujuan opd saat insert realisasi
     // ========================================================================
 
-    private Mono<TujuanOpd> findAndUpdateFaktor(
-            String kodeOpd, String kodeTujuanOpd, String tahun, String bulan,
-            UnaryOperator<TujuanOpd> updater
+    private Mono<TargetIndikatorTujuanOpd> findAndUpdateFaktor(
+            String kodeOpd, String kodeTujuanOpd, String kodeIndikator, String kodeTarget,
+            String tahun, String bulan,
+            UnaryOperator<TargetIndikatorTujuanOpd> updater
     ) {
         return tujuanOpdRepository
                 .findFirstByKodeOpdAndKodeTujuanOpdAndTahunAndBulan(kodeOpd, kodeTujuanOpd, tahun, bulan)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Tujuan OPD tidak ditemukan")))
-                .flatMap(existing -> tujuanOpdRepository.save(updater.apply(existing)));
+                .flatMap(tujuan -> indikatorTujuanOpdRepository
+                        .findFirstByTujuanOpdIdAndKodeIndikatorAndKodeOpdAndTahunAndBulan(
+                                tujuan.id(), kodeIndikator, kodeOpd, tahun, bulan)
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Indikator tujuan OPD tidak ditemukan"))))
+                .flatMap(indikator -> targetIndikatorTujuanOpdRepository
+                        .findFirstByIndikatorTujuanIdAndKodeTargetAndTahunAndBulan(
+                                indikator.id(), kodeTarget, tahun, bulan)
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target indikator tujuan OPD tidak ditemukan"))))
+                .flatMap(existing -> targetIndikatorTujuanOpdRepository.save(updater.apply(existing)));
     }
 
     private Integer parseInteger(String value) {

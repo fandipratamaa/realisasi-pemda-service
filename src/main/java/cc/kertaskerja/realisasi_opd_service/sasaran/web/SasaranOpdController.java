@@ -1,7 +1,7 @@
 package cc.kertaskerja.realisasi_opd_service.sasaran.web;
 
-import cc.kertaskerja.realisasi_opd_service.sasaran.domain.SasaranOpd;
 import cc.kertaskerja.realisasi_opd_service.sasaran.domain.SasaranOpdService;
+import cc.kertaskerja.realisasi_opd_service.sasaran.domain.target.TargetIndikatorSasaranOpd;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -56,30 +56,30 @@ public class SasaranOpdController {
     }
 
     @PostMapping("/faktor-penunjang")
-    @Operation(summary = "Perbarui faktor penunjang sasaran OPD", description = "Memperbarui hanya field faktor_penunjang pada record SasaranOpd yang cocok dengan composite key (kodeOpd, kodeSasaranOpd, tahun, bulan).")
+    @Operation(summary = "Perbarui faktor penunjang target indikator sasaran OPD", description = "Memperbarui field faktor_penunjang pada record TargetIndikatorSasaranOpd yang cocok dengan composite key (kodeOpd, kodeSasaranOpd, kodeIndikator, kodeTarget, tahun, bulan).")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = SasaranOpd.class))),
+            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = TargetIndikatorSasaranOpd.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Sasaran OPD tidak ditemukan", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Sasaran OPD/Indikator/Target tidak ditemukan", content = @Content)
     })
-    public Mono<SasaranOpd> updateFaktorPenunjang(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penunjang sasaran OPD", required = true,
+    public Mono<TargetIndikatorSasaranOpd> updateFaktorPenunjang(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penunjang target indikator sasaran OPD", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenunjangSasaranOpdRequest.class)))
             @RequestBody @Valid FaktorPenunjangSasaranOpdRequest req) {
         return sasaranOpdService.updateFaktorPenunjang(req);
     }
 
     @PostMapping("/faktor-penghambat")
-    @Operation(summary = "Perbarui faktor penghambat sasaran OPD", description = "Memperbarui hanya field faktor_penghambat pada record SasaranOpd yang cocok dengan composite key (kodeOpd, kodeSasaranOpd, tahun, bulan).")
+    @Operation(summary = "Perbarui faktor penghambat target indikator sasaran OPD", description = "Memperbarui field faktor_penghambat pada record TargetIndikatorSasaranOpd yang cocok dengan composite key (kodeOpd, kodeSasaranOpd, kodeIndikator, kodeTarget, tahun, bulan).")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = SasaranOpd.class))),
+            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = TargetIndikatorSasaranOpd.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Sasaran OPD tidak ditemukan", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Sasaran OPD/Indikator/Target tidak ditemukan", content = @Content)
     })
-    public Mono<SasaranOpd> updateFaktorPenghambat(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penghambat sasaran OPD", required = true,
+    public Mono<TargetIndikatorSasaranOpd> updateFaktorPenghambat(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penghambat target indikator sasaran OPD", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatSasaranOpdRequest.class)))
             @RequestBody @Valid FaktorPenghambatSasaranOpdRequest req) {
         return sasaranOpdService.updateFaktorPenghambat(req);

@@ -5,4 +5,6 @@ import reactor.core.publisher.Mono;
 
 public interface IndikatorRenjaKegiatanIndividuRepository extends ReactiveCrudRepository<IndikatorRenjaKegiatanIndividu, Long> {
     Mono<IndikatorRenjaKegiatanIndividu> findByRenjaKegiatanIndividuIdAndTahunAndBulan(Long renjaKegiatanIndividuId, String tahun, String bulan);
+
+    Mono<IndikatorRenjaKegiatanIndividu> findByRenjaKegiatanIndividuIdAndKodeIndikatorAndTahunAndBulan(Long renjaKegiatanIndividuId, String kodeIndikator, String tahun, String bulan);
 }
