@@ -4,6 +4,12 @@ import cc.kertaskerja.realisasi_opd_service.renja.domain.RenjaOpdService;
 import cc.kertaskerja.realisasi_opd_service.renja.domain.kegiatan.RenjaKegiatanOpd;
 import cc.kertaskerja.realisasi_opd_service.renja.domain.program.RenjaProgramOpd;
 import cc.kertaskerja.realisasi_opd_service.renja.domain.subkegiatan.RenjaSubKegiatanOpd;
+import cc.kertaskerja.realisasi_opd_service.renja.web.kegiatan.FaktorPenghambatTargetRenjaKegiatanOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.renja.web.kegiatan.FaktorPenunjangTargetRenjaKegiatanOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.renja.web.program.FaktorPenghambatTargetRenjaProgramOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.renja.web.program.FaktorPenunjangTargetRenjaProgramOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.renja.web.subkegiatan.FaktorPenghambatTargetRenjaSubKegiatanOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.renja.web.subkegiatan.FaktorPenunjangTargetRenjaSubKegiatanOpdRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -13,6 +19,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -40,92 +47,92 @@ public class RenjaOpdController {
     }
 
     @PostMapping("/program/faktor-penunjang")
-    @Operation(summary = "Perbarui faktor penunjang target renja program OPD", description = "Memperbarui hanya field faktor_penunjang pada record target_renja_program_opd yang cocok dengan kode_target.")
+    @Operation(summary = "Perbarui faktor penunjang target renja program OPD", description = "Memperbarui field faktor_penunjang pada semua record target_renja_program_opd yang cocok dengan kode_opd, kode_program, tahun, dan bulan.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = RenjaProgramOpd.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Target tidak ditemukan", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Program OPD tidak ditemukan", content = @Content)
     })
-    public Mono<RenjaProgramOpd> updateFaktorPenunjangProgram(
+    public Flux<RenjaProgramOpd> updateFaktorPenunjangProgram(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penunjang target program", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenunjangTargetRenjaProgramOpdRequest.class)))
             @RequestBody @Valid FaktorPenunjangTargetRenjaProgramOpdRequest req) {
-        return renjaOpdService.updateFaktorPenunjangProgram(req.kodeOpd(), req.kodeProgram(), req.tahun(), req.bulan(), req.faktorPenunjang());
+        return renjaOpdService.updateFaktorPenunjangProgram(req);
     }
 
     @PostMapping("/program/faktor-penghambat")
-    @Operation(summary = "Perbarui faktor penghambat target renja program OPD", description = "Memperbarui hanya field faktor_penghambat pada record target_renja_program_opd yang cocok dengan kode_opd, kode_program, tahun, dan bulan.")
+    @Operation(summary = "Perbarui faktor penghambat target renja program OPD", description = "Memperbarui field faktor_penghambat pada semua record target_renja_program_opd yang cocok dengan kode_opd, kode_program, tahun, dan bulan.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = RenjaProgramOpd.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Target tidak ditemukan", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Program OPD tidak ditemukan", content = @Content)
     })
-    public Mono<RenjaProgramOpd> updateFaktorPenghambatProgram(
+    public Flux<RenjaProgramOpd> updateFaktorPenghambatProgram(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penghambat target program", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatTargetRenjaProgramOpdRequest.class)))
             @RequestBody @Valid FaktorPenghambatTargetRenjaProgramOpdRequest req) {
-        return renjaOpdService.updateFaktorPenghambatProgram(req.kodeOpd(), req.kodeProgram(), req.tahun(), req.bulan(), req.faktorPenghambat());
+        return renjaOpdService.updateFaktorPenghambatProgram(req);
     }
 
     @PostMapping("/kegiatan/faktor-penunjang")
-    @Operation(summary = "Perbarui faktor penunjang target renja kegiatan OPD", description = "Memperbarui hanya field faktor_penunjang pada record target_renja_kegiatan_opd yang cocok dengan kode_opd, kode_kegiatan, tahun, dan bulan.")
+    @Operation(summary = "Perbarui faktor penunjang target renja kegiatan OPD", description = "Memperbarui field faktor_penunjang pada semua record target_renja_kegiatan_opd yang cocok dengan kode_opd, kode_kegiatan, tahun, dan bulan.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = RenjaKegiatanOpd.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Target tidak ditemukan", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Kegiatan OPD tidak ditemukan", content = @Content)
     })
-    public Mono<RenjaKegiatanOpd> updateFaktorPenunjangKegiatan(
+    public Flux<RenjaKegiatanOpd> updateFaktorPenunjangKegiatan(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penunjang target kegiatan", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenunjangTargetRenjaKegiatanOpdRequest.class)))
             @RequestBody @Valid FaktorPenunjangTargetRenjaKegiatanOpdRequest req) {
-        return renjaOpdService.updateFaktorPenunjangKegiatan(req.kodeOpd(), req.kodeKegiatan(), req.tahun(), req.bulan(), req.faktorPenunjang());
+        return renjaOpdService.updateFaktorPenunjangKegiatan(req);
     }
 
     @PostMapping("/kegiatan/faktor-penghambat")
-    @Operation(summary = "Perbarui faktor penghambat target renja kegiatan OPD", description = "Memperbarui hanya field faktor_penghambat pada record target_renja_kegiatan_opd yang cocok dengan kode_opd, kode_kegiatan, tahun, dan bulan.")
+    @Operation(summary = "Perbarui faktor penghambat target renja kegiatan OPD", description = "Memperbarui field faktor_penghambat pada semua record target_renja_kegiatan_opd yang cocok dengan kode_opd, kode_kegiatan, tahun, dan bulan.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = RenjaKegiatanOpd.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Target tidak ditemukan", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Kegiatan OPD tidak ditemukan", content = @Content)
     })
-    public Mono<RenjaKegiatanOpd> updateFaktorPenghambatKegiatan(
+    public Flux<RenjaKegiatanOpd> updateFaktorPenghambatKegiatan(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penghambat target kegiatan", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatTargetRenjaKegiatanOpdRequest.class)))
             @RequestBody @Valid FaktorPenghambatTargetRenjaKegiatanOpdRequest req) {
-        return renjaOpdService.updateFaktorPenghambatKegiatan(req.kodeOpd(), req.kodeKegiatan(), req.tahun(), req.bulan(), req.faktorPenghambat());
+        return renjaOpdService.updateFaktorPenghambatKegiatan(req);
     }
 
     @PostMapping("/subkegiatan/faktor-penunjang")
-    @Operation(summary = "Perbarui faktor penunjang target renja subkegiatan OPD", description = "Memperbarui hanya field faktor_penunjang pada record target_renja_subkegiatan_opd yang cocok dengan kode_opd, kode_subkegiatan, tahun, dan bulan.")
+    @Operation(summary = "Perbarui faktor penunjang target renja subkegiatan OPD", description = "Memperbarui field faktor_penunjang pada semua record target_renja_subkegiatan_opd yang cocok dengan kode_opd, kode_subkegiatan, tahun, dan bulan.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = RenjaSubKegiatanOpd.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Target tidak ditemukan", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Subkegiatan OPD tidak ditemukan", content = @Content)
     })
-    public Mono<RenjaSubKegiatanOpd> updateFaktorPenunjangSubKegiatan(
+    public Flux<RenjaSubKegiatanOpd> updateFaktorPenunjangSubKegiatan(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penunjang target subkegiatan", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenunjangTargetRenjaSubKegiatanOpdRequest.class)))
             @RequestBody @Valid FaktorPenunjangTargetRenjaSubKegiatanOpdRequest req) {
-        return renjaOpdService.updateFaktorPenunjangSubKegiatan(req.kodeOpd(), req.kodeSubkegiatan(), req.tahun(), req.bulan(), req.faktorPenunjang());
+        return renjaOpdService.updateFaktorPenunjangSubKegiatan(req);
     }
 
     @PostMapping("/subkegiatan/faktor-penghambat")
-    @Operation(summary = "Perbarui faktor penghambat target renja subkegiatan OPD", description = "Memperbarui hanya field faktor_penghambat pada record target_renja_subkegiatan_opd yang cocok dengan kode_opd, kode_subkegiatan, tahun, dan bulan.")
+    @Operation(summary = "Perbarui faktor penghambat target renja subkegiatan OPD", description = "Memperbarui field faktor_penghambat pada semua record target_renja_subkegiatan_opd yang cocok dengan kode_opd, kode_subkegiatan, tahun, dan bulan.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = RenjaSubKegiatanOpd.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Target tidak ditemukan", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Subkegiatan OPD tidak ditemukan", content = @Content)
     })
-    public Mono<RenjaSubKegiatanOpd> updateFaktorPenghambatSubKegiatan(
+    public Flux<RenjaSubKegiatanOpd> updateFaktorPenghambatSubKegiatan(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penghambat target subkegiatan", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatTargetRenjaSubKegiatanOpdRequest.class)))
             @RequestBody @Valid FaktorPenghambatTargetRenjaSubKegiatanOpdRequest req) {
-        return renjaOpdService.updateFaktorPenghambatSubKegiatan(req.kodeOpd(), req.kodeSubkegiatan(), req.tahun(), req.bulan(), req.faktorPenghambat());
+        return renjaOpdService.updateFaktorPenghambatSubKegiatan(req);
     }
 }

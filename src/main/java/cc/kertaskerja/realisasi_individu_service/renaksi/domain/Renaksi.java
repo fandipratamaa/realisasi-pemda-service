@@ -25,7 +25,6 @@ public record Renaksi(
 
         @Column("nip")
         String nip,
-        @JsonProperty("nama_pegawai")
         @Column("nama_pegawai")
         String namaPegawai,
 

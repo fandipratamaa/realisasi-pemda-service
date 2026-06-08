@@ -23,6 +23,7 @@ import cc.kertaskerja.config.SecurityConfig;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
@@ -262,8 +263,7 @@ public class TujuanControllerWebFluxTests {
                 "Kerjasama antar daerah", "Keterbatasan anggaran",
                 JenisRealisasi.NAIK, TujuanStatus.UNCHECKED);
 
-        when(tujuanService.updateFaktorPenunjang(
-                "TUJ-123", "IND-TUJ-123", "TAR-1", "2025", "01", "Kerjasama antar daerah"))
+        when(tujuanService.updateFaktorPenunjang(any(FaktorPenunjangRequest.class)))
                 .thenReturn(Mono.just(updated));
 
         webTestClient
@@ -296,8 +296,7 @@ public class TujuanControllerWebFluxTests {
                 "Kerjasama antar daerah", "Keterbatasan anggaran",
                 JenisRealisasi.NAIK, TujuanStatus.UNCHECKED);
 
-        when(tujuanService.updateFaktorPenghambat(
-                "TUJ-123", "IND-TUJ-123", "TAR-1", "2025", "01", "Keterbatasan anggaran"))
+        when(tujuanService.updateFaktorPenghambat(any(FaktorPenghambatRequest.class)))
                 .thenReturn(Mono.just(updated));
 
         webTestClient
@@ -323,8 +322,7 @@ public class TujuanControllerWebFluxTests {
         FaktorPenunjangRequest req = new FaktorPenunjangRequest(
                 "TUJ-XX", "IND-XX", "TAR-X", "2099", "01", "Faktor X");
 
-        when(tujuanService.updateFaktorPenunjang(
-                "TUJ-XX", "IND-XX", "TAR-X", "2099", "01", "Faktor X"))
+        when(tujuanService.updateFaktorPenunjang(any(FaktorPenunjangRequest.class)))
                 .thenReturn(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Tujuan tidak ditemukan")));
 
         webTestClient

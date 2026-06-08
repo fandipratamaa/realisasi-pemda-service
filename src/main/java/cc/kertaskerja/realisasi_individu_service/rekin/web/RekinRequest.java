@@ -18,11 +18,6 @@ public record RekinRequest(
         @Schema(description = "ID rekin", example = "REKIN-001")
         String rekinId,
 
-        @NotNull(message = "Rekin tidak boleh kosong")
-        @NotEmpty(message = "Rekin tidak boleh kosong")
-        @Schema(description = "Nama rekin", example = "Rekin Peningkatan Infrastruktur")
-        String rekin,
-
         @NotNull(message = "NIP tidak boleh kosong")
         @NotEmpty(message = "NIP tidak boleh kosong")
         @Schema(description = "NIP pelaksana", example = "198012312005011001")
@@ -37,11 +32,6 @@ public record RekinRequest(
         @NotEmpty(message = "ID indikator tidak boleh kosong")
         @Schema(description = "ID indikator rekin", example = "IND-REK-123")
         String indikatorId,
-
-        @NotNull(message = "Indikator tidak boleh kosong")
-        @NotEmpty(message = "Indikator tidak boleh kosong")
-        @Schema(description = "Nama indikator", example = "Persentase capaian rekin")
-        String indikator,
 
         @NotNull(message = "Target harus terdefinisi")
         @NotEmpty(message = "ID target tidak boleh kosong")

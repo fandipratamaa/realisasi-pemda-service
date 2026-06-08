@@ -1,8 +1,8 @@
-package cc.kertaskerja.realisasi_individu_service.renja.web;
+package cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public record RenjaIndividuProgramResponse(
+public record RenjaIndividuSubKegiatanResponse(
         Long id,
 
         @JsonProperty("kode_opd")
@@ -15,10 +15,10 @@ public record RenjaIndividuProgramResponse(
         @JsonProperty("nama_pegawai")
         String namaPegawai,
 
-        @JsonProperty("kode_program")
-        String kodeProgram,
+        @JsonProperty("kode_subkegiatan")
+        String kodeSubKegiatan,
 
-        String program,
+        String subkegiatan,
 
         @JsonProperty("kode_indikator")
         String kodeIndikator,

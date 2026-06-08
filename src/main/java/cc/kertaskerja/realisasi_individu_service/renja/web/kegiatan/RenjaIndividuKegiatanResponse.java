@@ -1,4 +1,4 @@
-package cc.kertaskerja.realisasi_individu_service.renja.web;
+package cc.kertaskerja.realisasi_individu_service.renja.web.kegiatan;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

@@ -2,6 +2,8 @@ package cc.kertaskerja.realisasi_opd_service.renaksi.domain;
 
 import cc.kertaskerja.capaian.domain.Capaian;
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
+import cc.kertaskerja.realisasi_opd_service.renaksi.web.FaktorPenghambatRenaksiOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.renaksi.web.FaktorPenunjangRenaksiOpdRequest;
 import cc.kertaskerja.realisasi_opd_service.renaksi.web.RenaksiOpdRequest;
 import cc.kertaskerja.realisasi_opd_service.renaksi.web.detail_bulanan_response.RenaksiOpdDetailBulananResponse;
 import cc.kertaskerja.realisasi_opd_service.renaksi.web.detail_bulanan_response.RenaksiOpdDetailBulananRow;
@@ -107,9 +109,9 @@ public class RenaksiOpdService {
                 });
     }
 
-    public Mono<RenaksiOpd> updateFaktorPenunjang(String kodeOpd, String tahun, String bulan, String rekinId, String renaksiId, String targetId, String faktorPenunjang) {
+    public Mono<RenaksiOpd> updateFaktorPenunjang(FaktorPenunjangRenaksiOpdRequest req) {
         return renaksiOpdRepository
-                .findFirstByKodeOpdAndTahunAndBulanAndRekinIdAndRenaksiIdAndTargetId(kodeOpd, tahun, bulan, rekinId, renaksiId, targetId)
+                .findFirstByKodeOpdAndTahunAndBulanAndRekinIdAndRenaksiIdAndTargetId(req.kodeOpd(), req.tahun(), req.bulan(), req.rekinId(), req.renaksiId(), req.targetId())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Renaksi OPD tidak ditemukan")))
                 .flatMap(existing -> {
                     RenaksiOpd updated = new RenaksiOpd(
@@ -126,7 +128,7 @@ public class RenaksiOpdService {
                             existing.tahun(),
                             existing.jenisRealisasi(),
                             existing.kodeOpd(),
-                            faktorPenunjang,
+                            req.faktorPenunjang(),
                             existing.faktorPenghambat(),
                             existing.status(),
                             existing.createdBy(),
@@ -139,9 +141,9 @@ public class RenaksiOpdService {
                 });
     }
 
-    public Mono<RenaksiOpd> updateFaktorPenghambat(String kodeOpd, String tahun, String bulan, String rekinId, String renaksiId, String targetId, String faktorPenghambat) {
+    public Mono<RenaksiOpd> updateFaktorPenghambat(FaktorPenghambatRenaksiOpdRequest req) {
         return renaksiOpdRepository
-                .findFirstByKodeOpdAndTahunAndBulanAndRekinIdAndRenaksiIdAndTargetId(kodeOpd, tahun, bulan, rekinId, renaksiId, targetId)
+                .findFirstByKodeOpdAndTahunAndBulanAndRekinIdAndRenaksiIdAndTargetId(req.kodeOpd(), req.tahun(), req.bulan(), req.rekinId(), req.renaksiId(), req.targetId())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Renaksi OPD tidak ditemukan")))
                 .flatMap(existing -> {
                     RenaksiOpd updated = new RenaksiOpd(
@@ -159,7 +161,7 @@ public class RenaksiOpdService {
                             existing.jenisRealisasi(),
                             existing.kodeOpd(),
                             existing.faktorPenunjang(),
-                            faktorPenghambat,
+                            req.faktorPenghambat(),
                             existing.status(),
                             existing.createdBy(),
                             existing.lastModifiedBy(),

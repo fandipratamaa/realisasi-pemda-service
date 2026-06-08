@@ -1,6 +1,8 @@
 package cc.kertaskerja.realisasi_pemda_service.tujuan.domain;
 
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
+import cc.kertaskerja.realisasi_pemda_service.tujuan.web.FaktorPenghambatRequest;
+import cc.kertaskerja.realisasi_pemda_service.tujuan.web.FaktorPenunjangRequest;
 import cc.kertaskerja.realisasi_pemda_service.tujuan.web.TujuanRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -189,9 +191,9 @@ public class TujuanService {
         return tujuanRepository.findAllByTahunAndBulan(tahun, bulan);
     }
 
-    public Mono<Tujuan> updateFaktorPenunjang(String tujuanId, String indikatorId, String targetId, String tahun, String bulan, String faktorPenunjang) {
+    public Mono<Tujuan> updateFaktorPenunjang(FaktorPenunjangRequest req) {
         return tujuanRepository
-                .findFirstByTujuanIdAndIndikatorIdAndTargetIdAndTahunAndBulan(tujuanId, indikatorId, targetId, tahun, bulan)
+                .findFirstByTujuanIdAndIndikatorIdAndTargetIdAndTahunAndBulan(req.tujuanId(), req.indikatorId(), req.targetId(), req.tahun(), req.bulan())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Tujuan tidak ditemukan")))
                 .flatMap(existing -> {
                     Tujuan updated = new Tujuan(
@@ -209,7 +211,7 @@ public class TujuanService {
                             existing.visiMisi(),
                             existing.rumusPerhitungan(),
                             existing.sumberData(),
-                            faktorPenunjang,
+                            req.faktorPenunjang(),
                             existing.faktorPenghambat(),
                             existing.jenisRealisasi(),
                             TujuanStatus.UNCHECKED,
@@ -223,9 +225,9 @@ public class TujuanService {
                 });
     }
 
-    public Mono<Tujuan> updateFaktorPenghambat(String tujuanId, String indikatorId, String targetId, String tahun, String bulan, String faktorPenghambat) {
+    public Mono<Tujuan> updateFaktorPenghambat(FaktorPenghambatRequest req) {
         return tujuanRepository
-                .findFirstByTujuanIdAndIndikatorIdAndTargetIdAndTahunAndBulan(tujuanId, indikatorId, targetId, tahun, bulan)
+                .findFirstByTujuanIdAndIndikatorIdAndTargetIdAndTahunAndBulan(req.tujuanId(), req.indikatorId(), req.targetId(), req.tahun(), req.bulan())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Tujuan tidak ditemukan")))
                 .flatMap(existing -> {
                     Tujuan updated = new Tujuan(
@@ -244,7 +246,7 @@ public class TujuanService {
                             existing.rumusPerhitungan(),
                             existing.sumberData(),
                             existing.faktorPenunjang(),
-                            faktorPenghambat,
+                            req.faktorPenghambat(),
                             existing.jenisRealisasi(),
                             TujuanStatus.UNCHECKED,
                             existing.createdBy(),

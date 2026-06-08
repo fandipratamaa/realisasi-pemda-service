@@ -39,9 +39,7 @@ public class RekinControllerWebFluxTests {
     void whenGetByKodeOpdTahunBulan_thenReturnsList() {
         Rekin result = RekinService.buildUncheckedRealisasiRekin(
                 "REKIN-001",
-                "Rekin Peningkatan Infrastruktur",
                 "IND-001",
-                "Persentase capaian rekin",
                 "198012312005011001",
                 "Anon",
                 "TAR-001",
@@ -78,11 +76,9 @@ public class RekinControllerWebFluxTests {
         RekinRequest request = new RekinRequest(
                 null,
                 "REKIN-001",
-                "Rekin Peningkatan Infrastruktur",
                 "198012312005011001",
                 "Anon",
                 "IND-001",
-                "Persentase capaian rekin",
                 "TAR-001",
                 "100",
                 85,
@@ -95,9 +91,7 @@ public class RekinControllerWebFluxTests {
 
         Rekin result = RekinService.buildUncheckedRealisasiRekin(
                 request.rekinId(),
-                request.rekin(),
                 request.indikatorId(),
-                request.indikator(),
                 request.nip(),
                 request.namaPegawai(),
                 request.targetId(),
@@ -130,11 +124,9 @@ public class RekinControllerWebFluxTests {
         RekinRequest request = new RekinRequest(
                 null,
                 "REKIN-001",
-                "Rekin Peningkatan Infrastruktur",
                 "198012312005011001",
                 "Anon",
                 "IND-001",
-                "Persentase capaian rekin",
                 "TAR-001",
                 "100",
                 85,
@@ -147,9 +139,7 @@ public class RekinControllerWebFluxTests {
 
         Rekin result = RekinService.buildUncheckedRealisasiRekin(
                 request.rekinId(),
-                request.rekin(),
                 request.indikatorId(),
-                request.indikator(),
                 request.nip(),
                 request.namaPegawai(),
                 request.targetId(),
@@ -193,8 +183,7 @@ public class RekinControllerWebFluxTests {
                 "Kerjasama tim", "Perubahan prioritas",
                 JenisRealisasi.NAIK, RekinStatus.UNCHECKED);
 
-        when(rekinService.updateFaktorPenunjang(
-                "198012312005011001", "2025", "01", "REKIN-001", "TAR-001", "Kerjasama tim"))
+        when(rekinService.updateFaktorPenunjang(any(FaktorPenunjangRekinRequest.class)))
                 .thenReturn(Mono.just(updated));
 
         webTestClient
@@ -228,8 +217,7 @@ public class RekinControllerWebFluxTests {
                 "Kerjasama tim", "Perubahan prioritas",
                 JenisRealisasi.NAIK, RekinStatus.UNCHECKED);
 
-        when(rekinService.updateFaktorPenghambat(
-                "198012312005011001", "2025", "01", "REKIN-001", "TAR-001", "Perubahan prioritas"))
+        when(rekinService.updateFaktorPenghambat(any(FaktorPenghambatRekinRequest.class)))
                 .thenReturn(Mono.just(updated));
 
         webTestClient
@@ -255,8 +243,7 @@ public class RekinControllerWebFluxTests {
         FaktorPenunjangRekinRequest req = new FaktorPenunjangRekinRequest(
                 "99", "2099", "01", "REKIN-XX", "TAR-001", "Faktor X");
 
-        when(rekinService.updateFaktorPenunjang(
-                "99", "2099", "01", "REKIN-XX", "TAR-001", "Faktor X"))
+        when(rekinService.updateFaktorPenunjang(any(FaktorPenunjangRekinRequest.class)))
                 .thenReturn(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Rekin tidak ditemukan")));
 
         webTestClient

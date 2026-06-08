@@ -4,6 +4,8 @@ import cc.kertaskerja.integration.penetapan.PenetapanSasaranOpdClient;
 import cc.kertaskerja.integration.penetapan.sasaran_opd.PenetapanSasaranOpd;
 import cc.kertaskerja.realisasi_opd_service.sasaran.domain.target.TargetIndikatorSasaranOpdRepository;
 import cc.kertaskerja.realisasi_opd_service.sasaran.domain.indikator.IndikatorSasaranOpdRepository;
+import cc.kertaskerja.realisasi_opd_service.sasaran.web.FaktorPenghambatSasaranOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.sasaran.web.FaktorPenunjangSasaranOpdRequest;
 import cc.kertaskerja.realisasi_opd_service.sasaran.web.PenetapanSasaranOpdListResponse;
 import cc.kertaskerja.realisasi_opd_service.sasaran.web.SasaranOpdPenetapanResponse;
 import cc.kertaskerja.realisasi_opd_service.sasaran.web.SasaranOpdResponse;
@@ -60,14 +62,14 @@ public class SasaranOpdService {
                 });
     }
 
-    public Mono<SasaranOpd> updateFaktorPenunjang(String kodeOpd, String kodeSasaranOpd, String tahun, String bulan, String faktorPenunjang) {
-        return findAndUpdateFaktor(kodeOpd, kodeSasaranOpd, tahun, bulan,
-                existing -> existing.withFaktorPenunjang(faktorPenunjang));
+    public Mono<SasaranOpd> updateFaktorPenunjang(FaktorPenunjangSasaranOpdRequest req) {
+        return findAndUpdateFaktor(req.kodeOpd(), req.kodeSasaranOpd(), req.tahun(), req.bulan(),
+                existing -> existing.withFaktorPenunjang(req.faktorPenunjang()));
     }
 
-    public Mono<SasaranOpd> updateFaktorPenghambat(String kodeOpd, String kodeSasaranOpd, String tahun, String bulan, String faktorPenghambat) {
-        return findAndUpdateFaktor(kodeOpd, kodeSasaranOpd, tahun, bulan,
-                existing -> existing.withFaktorPenghambat(faktorPenghambat));
+    public Mono<SasaranOpd> updateFaktorPenghambat(FaktorPenghambatSasaranOpdRequest req) {
+        return findAndUpdateFaktor(req.kodeOpd(), req.kodeSasaranOpd(), req.tahun(), req.bulan(),
+                existing -> existing.withFaktorPenghambat(req.faktorPenghambat()));
     }
 
     // ========================================================================

@@ -7,9 +7,8 @@ import reactor.core.publisher.Mono;
 
 public interface RenjaKegiatanOpdRepository extends ReactiveCrudRepository<RenjaKegiatanOpd, Long> {
     Mono<RenjaKegiatanOpd> findByKodeTarget(String kodeTarget);
-    Mono<RenjaKegiatanOpd> findByKodeOpdAndKodeKegiatanAndTahunAndBulan(
-            String kodeOpd, String kodeKegiatan, String tahun, String bulan);
     Mono<RenjaKegiatanOpd> findByIndikatorRenjaKegiatanOpdIdAndKodeTargetAndTahunAndBulan(
             Long indikatorRenjaKegiatanOpdId, String kodeTarget, String tahun, String bulan);
+    Flux<RenjaKegiatanOpd> findAllByIndikatorRenjaKegiatanOpdId(Long indikatorRenjaKegiatanOpdId);
     Flux<RenjaKegiatanOpd> findAllByTahunAndBulan(String tahun, String bulan);
 }

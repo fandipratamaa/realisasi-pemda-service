@@ -142,14 +142,7 @@ public Mono<Sasaran> submitRealisasiSasaran(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload parsial faktor penunjang", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenunjangSasaranRequest.class)))
             @RequestBody @Valid FaktorPenunjangSasaranRequest req) {
-        return sasaranService.updateFaktorPenunjang(
-                req.sasaranId(),
-                req.indikatorId(),
-                req.targetId(),
-                req.tahun(),
-                req.bulan(),
-                req.faktorPenunjang()
-        );
+        return sasaranService.updateFaktorPenunjang(req);
     }
 
     @PostMapping("/faktor-penghambat")
@@ -164,13 +157,6 @@ public Mono<Sasaran> submitRealisasiSasaran(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload parsial faktor penghambat", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatSasaranRequest.class)))
             @RequestBody @Valid FaktorPenghambatSasaranRequest req) {
-        return sasaranService.updateFaktorPenghambat(
-                req.sasaranId(),
-                req.indikatorId(),
-                req.targetId(),
-                req.tahun(),
-                req.bulan(),
-                req.faktorPenghambat()
-        );
+        return sasaranService.updateFaktorPenghambat(req);
     }
 }

@@ -20,6 +20,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -125,8 +126,7 @@ public class SasaranControllerWebFluxTests {
                 "Kerjasama antar daerah", "Keterbatasan anggaran",
                 JenisRealisasi.NAIK, SasaranStatus.UNCHECKED);
 
-        when(sasaranService.updateFaktorPenunjang(
-                "SAS-001", "IND-SAS-123", "TAR-1", "2025", "01", "Kerjasama antar daerah"))
+        when(sasaranService.updateFaktorPenunjang(any(FaktorPenunjangSasaranRequest.class)))
                 .thenReturn(Mono.just(updated));
 
         webTestClient
@@ -159,8 +159,7 @@ public class SasaranControllerWebFluxTests {
                 "Kerjasama antar daerah", "Keterbatasan anggaran",
                 JenisRealisasi.NAIK, SasaranStatus.UNCHECKED);
 
-        when(sasaranService.updateFaktorPenghambat(
-                "SAS-001", "IND-SAS-123", "TAR-1", "2025", "01", "Keterbatasan anggaran"))
+        when(sasaranService.updateFaktorPenghambat(any(FaktorPenghambatSasaranRequest.class)))
                 .thenReturn(Mono.just(updated));
 
         webTestClient
@@ -186,8 +185,7 @@ public class SasaranControllerWebFluxTests {
         FaktorPenunjangSasaranRequest req = new FaktorPenunjangSasaranRequest(
                 "SAS-XX", "IND-XX", "TAR-X", "2099", "01", "Faktor X");
 
-        when(sasaranService.updateFaktorPenunjang(
-                "SAS-XX", "IND-XX", "TAR-X", "2099", "01", "Faktor X"))
+        when(sasaranService.updateFaktorPenunjang(any(FaktorPenunjangSasaranRequest.class)))
                 .thenReturn(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Sasaran tidak ditemukan")));
 
         webTestClient

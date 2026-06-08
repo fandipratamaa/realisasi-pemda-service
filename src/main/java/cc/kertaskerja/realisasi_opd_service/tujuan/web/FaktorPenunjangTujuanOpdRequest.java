@@ -9,7 +9,7 @@ public record FaktorPenunjangTujuanOpdRequest(
 
         @NotNull(message = "Kode OPD tidak boleh kosong")
         @NotEmpty(message = "Kode OPD tidak boleh kosong")
-        @Schema(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000")
+        @Schema(description = "Kode OPD", example = "5.01.5.05.0.00.01.0000")
         String kodeOpd,
 
         @NotNull(message = "Kode tujuan OPD tidak boleh kosong")
@@ -19,7 +19,7 @@ public record FaktorPenunjangTujuanOpdRequest(
 
         @NotNull(message = "Tahun tidak boleh kosong")
         @NotEmpty(message = "Tahun tidak boleh kosong")
-        @Schema(description = "Tahun realisasi", example = "2025")
+        @Schema(description = "Tahun realisasi", example = "2026")
         String tahun,
 
         @NotNull(message = "Bulan tidak boleh kosong")

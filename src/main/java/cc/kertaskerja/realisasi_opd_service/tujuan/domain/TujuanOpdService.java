@@ -6,6 +6,8 @@ import cc.kertaskerja.realisasi_opd_service.tujuan.domain.target.TargetIndikator
 import cc.kertaskerja.realisasi_opd_service.tujuan.domain.target.TargetIndikatorTujuanOpdRepository;
 import cc.kertaskerja.realisasi_opd_service.tujuan.domain.indikator.IndikatorTujuanOpd;
 import cc.kertaskerja.realisasi_opd_service.tujuan.domain.indikator.IndikatorTujuanOpdRepository;
+import cc.kertaskerja.realisasi_opd_service.tujuan.web.FaktorPenghambatTujuanOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.tujuan.web.FaktorPenunjangTujuanOpdRequest;
 import cc.kertaskerja.realisasi_opd_service.tujuan.web.PenetapanTujuanOpdListResponse;
 import cc.kertaskerja.realisasi_opd_service.tujuan.web.TujuanOpdPenetapanResponse;
 import cc.kertaskerja.realisasi_opd_service.tujuan.web.TujuanOpdRequest;
@@ -87,14 +89,14 @@ public class TujuanOpdService {
     // Public API - Update
     // ========================================================================
 
-    public Mono<TujuanOpd> updateFaktorPenunjang(String kodeOpd, String kodeTujuanOpd, String tahun, String bulan, String faktorPenunjang) {
-        return findAndUpdateFaktor(kodeOpd, kodeTujuanOpd, tahun, bulan,
-                existing -> existing.withFaktorPenunjang(faktorPenunjang));
+    public Mono<TujuanOpd> updateFaktorPenunjang(FaktorPenunjangTujuanOpdRequest req) {
+        return findAndUpdateFaktor(req.kodeOpd(), req.kodeTujuanOpd(), req.tahun(), req.bulan(),
+                existing -> existing.withFaktorPenunjang(req.faktorPenunjang()));
     }
 
-    public Mono<TujuanOpd> updateFaktorPenghambat(String kodeOpd, String kodeTujuanOpd, String tahun, String bulan, String faktorPenghambat) {
-        return findAndUpdateFaktor(kodeOpd, kodeTujuanOpd, tahun, bulan,
-                existing -> existing.withFaktorPenghambat(faktorPenghambat));
+    public Mono<TujuanOpd> updateFaktorPenghambat(FaktorPenghambatTujuanOpdRequest req) {
+        return findAndUpdateFaktor(req.kodeOpd(), req.kodeTujuanOpd(), req.tahun(), req.bulan(),
+                existing -> existing.withFaktorPenghambat(req.faktorPenghambat()));
     }
 
     // ========================================================================

@@ -1,10 +1,16 @@
 package cc.kertaskerja.realisasi_pemda_service.iku.domain;
 
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
+import cc.kertaskerja.realisasi_pemda_service.iku.web.FaktorPenghambatIkuRequest;
+import cc.kertaskerja.realisasi_pemda_service.iku.web.FaktorPenunjangIkuRequest;
 import cc.kertaskerja.realisasi_pemda_service.sasaran.domain.SasaranRepository;
 import cc.kertaskerja.realisasi_pemda_service.sasaran.domain.SasaranService;
+import cc.kertaskerja.realisasi_pemda_service.sasaran.web.FaktorPenghambatSasaranRequest;
+import cc.kertaskerja.realisasi_pemda_service.sasaran.web.FaktorPenunjangSasaranRequest;
 import cc.kertaskerja.realisasi_pemda_service.tujuan.domain.TujuanRepository;
 import cc.kertaskerja.realisasi_pemda_service.tujuan.domain.TujuanService;
+import cc.kertaskerja.realisasi_pemda_service.tujuan.web.FaktorPenghambatRequest;
+import cc.kertaskerja.realisasi_pemda_service.tujuan.web.FaktorPenunjangRequest;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -100,37 +106,41 @@ public class IkuService {
         return Iku.of(indikatorId, indikator, targetId, target, realisasi, satuan, capaian, tahun, faktorPenunjang, faktorPenghambat, jenisRealisasi, JenisIku.SASARAN);
     }
 
-    public Mono<Iku> updateFaktorPenunjang(JenisIku jenisIku, String entityId, String indikatorId, String targetId, String tahun, String bulan, String faktorPenunjang) {
-        if (jenisIku == JenisIku.TUJUAN) {
-            return tujuanService.updateFaktorPenunjang(entityId, indikatorId, targetId, tahun, bulan, faktorPenunjang)
-                    .map(t -> buildIkuTujuan(
-                            t.indikatorId(), t.indikator(), t.targetId(), t.target(),
-                            t.realisasi(), t.satuan(), t.capaian(), t.tahun(),
-                            t.faktorPenunjang(), t.faktorPenghambat(), t.jenisRealisasi()
-                    ));
+    public Mono<Iku> updateFaktorPenunjang(FaktorPenunjangIkuRequest req) {
+        if (req.jenisIku() == JenisIku.TUJUAN) {
+            return tujuanService.updateFaktorPenunjang(new FaktorPenunjangRequest(
+                    req.jenisId(), req.indikatorId(), req.targetId(), req.tahun(), req.bulan(), req.faktorPenunjang()
+            )).map(t -> buildIkuTujuan(
+                    t.indikatorId(), t.indikator(), t.targetId(), t.target(),
+                    t.realisasi(), t.satuan(), t.capaian(), t.tahun(),
+                    t.faktorPenunjang(), t.faktorPenghambat(), t.jenisRealisasi()
+            ));
         }
-        return sasaranService.updateFaktorPenunjang(entityId, indikatorId, targetId, tahun, bulan, faktorPenunjang)
-                .map(s -> buildIkuSasaran(
-                        s.indikatorId(), s.indikator(), s.targetId(), s.target(),
-                        s.realisasi(), s.satuan(), s.capaian(), s.tahun(),
-                        s.faktorPenunjang(), s.faktorPenghambat(), s.jenisRealisasi()
-                ));
+        return sasaranService.updateFaktorPenunjang(new FaktorPenunjangSasaranRequest(
+                req.jenisId(), req.indikatorId(), req.targetId(), req.tahun(), req.bulan(), req.faktorPenunjang()
+        )).map(s -> buildIkuSasaran(
+                s.indikatorId(), s.indikator(), s.targetId(), s.target(),
+                s.realisasi(), s.satuan(), s.capaian(), s.tahun(),
+                s.faktorPenunjang(), s.faktorPenghambat(), s.jenisRealisasi()
+        ));
     }
 
-    public Mono<Iku> updateFaktorPenghambat(JenisIku jenisIku, String entityId, String indikatorId, String targetId, String tahun, String bulan, String faktorPenghambat) {
-        if (jenisIku == JenisIku.TUJUAN) {
-            return tujuanService.updateFaktorPenghambat(entityId, indikatorId, targetId, tahun, bulan, faktorPenghambat)
-                    .map(t -> buildIkuTujuan(
-                            t.indikatorId(), t.indikator(), t.targetId(), t.target(),
-                            t.realisasi(), t.satuan(), t.capaian(), t.tahun(),
-                            t.faktorPenunjang(), t.faktorPenghambat(), t.jenisRealisasi()
-                    ));
+    public Mono<Iku> updateFaktorPenghambat(FaktorPenghambatIkuRequest req) {
+        if (req.jenisIku() == JenisIku.TUJUAN) {
+            return tujuanService.updateFaktorPenghambat(new FaktorPenghambatRequest(
+                    req.jenisId(), req.indikatorId(), req.targetId(), req.tahun(), req.bulan(), req.faktorPenghambat()
+            )).map(t -> buildIkuTujuan(
+                    t.indikatorId(), t.indikator(), t.targetId(), t.target(),
+                    t.realisasi(), t.satuan(), t.capaian(), t.tahun(),
+                    t.faktorPenunjang(), t.faktorPenghambat(), t.jenisRealisasi()
+            ));
         }
-        return sasaranService.updateFaktorPenghambat(entityId, indikatorId, targetId, tahun, bulan, faktorPenghambat)
-                .map(s -> buildIkuSasaran(
-                        s.indikatorId(), s.indikator(), s.targetId(), s.target(),
-                        s.realisasi(), s.satuan(), s.capaian(), s.tahun(),
-                        s.faktorPenunjang(), s.faktorPenghambat(), s.jenisRealisasi()
-                ));
+        return sasaranService.updateFaktorPenghambat(new FaktorPenghambatSasaranRequest(
+                req.jenisId(), req.indikatorId(), req.targetId(), req.tahun(), req.bulan(), req.faktorPenghambat()
+        )).map(s -> buildIkuSasaran(
+                s.indikatorId(), s.indikator(), s.targetId(), s.target(),
+                s.realisasi(), s.satuan(), s.capaian(), s.tahun(),
+                s.faktorPenunjang(), s.faktorPenghambat(), s.jenisRealisasi()
+        ));
     }
 }
