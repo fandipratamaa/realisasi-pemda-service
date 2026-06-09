@@ -31,4 +31,20 @@ public record RenjaSubKegiatanOpd(
         @LastModifiedDate Instant lastModifiedDate,
         @CreatedBy String createdBy,
         @LastModifiedBy String lastModifiedBy
-) {}
+) {
+    public RenjaSubKegiatanOpd withFaktorPenunjang(String faktorPenunjang) {
+        return new RenjaSubKegiatanOpd(
+                id, indikatorRenjaSubKegiatanOpdId, kodeTarget, tahun, bulan, realisasi,
+                faktorPenunjang, faktorPenghambat,
+                createdDate, lastModifiedDate, createdBy, lastModifiedBy
+        );
+    }
+
+    public RenjaSubKegiatanOpd withFaktorPenghambat(String faktorPenghambat) {
+        return new RenjaSubKegiatanOpd(
+                id, indikatorRenjaSubKegiatanOpdId, kodeTarget, tahun, bulan, realisasi,
+                faktorPenunjang, faktorPenghambat,
+                createdDate, lastModifiedDate, createdBy, lastModifiedBy
+        );
+    }
+}

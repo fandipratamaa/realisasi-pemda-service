@@ -18,6 +18,16 @@ public record FaktorPenunjangTargetRenjaProgramOpdRequest(
         @Schema(description = "Kode program", example = "5.01.02")
         String kodeProgram,
 
+        @NotNull(message = "Kode indikator tidak boleh kosong")
+        @NotEmpty(message = "Kode indikator tidak boleh kosong")
+        @Schema(description = "Kode indikator program", example = "IND-PROG-001")
+        String kodeIndikator,
+
+        @NotNull(message = "Kode target tidak boleh kosong")
+        @NotEmpty(message = "Kode target tidak boleh kosong")
+        @Schema(description = "Kode target program", example = "TGT-PROG-001")
+        String kodeTarget,
+
         @NotNull(message = "Tahun tidak boleh kosong")
         @NotEmpty(message = "Tahun tidak boleh kosong")
         @Schema(description = "Tahun realisasi", example = "2026")

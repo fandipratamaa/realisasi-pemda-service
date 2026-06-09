@@ -18,6 +18,16 @@ public record FaktorPenghambatTargetRenjaKegiatanOpdRequest(
         @Schema(description = "Kode kegiatan", example = "5.01.02.001")
         String kodeKegiatan,
 
+        @NotNull(message = "Kode indikator tidak boleh kosong")
+        @NotEmpty(message = "Kode indikator tidak boleh kosong")
+        @Schema(description = "Kode indikator kegiatan", example = "IND-KEG-001")
+        String kodeIndikator,
+
+        @NotNull(message = "Kode target tidak boleh kosong")
+        @NotEmpty(message = "Kode target tidak boleh kosong")
+        @Schema(description = "Kode target kegiatan", example = "TGT-KEG-001")
+        String kodeTarget,
+
         @NotNull(message = "Tahun tidak boleh kosong")
         @NotEmpty(message = "Tahun tidak boleh kosong")
         @Schema(description = "Tahun realisasi", example = "2026")

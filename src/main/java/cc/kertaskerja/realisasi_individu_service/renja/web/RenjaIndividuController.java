@@ -139,7 +139,7 @@ public class RenjaIndividuController {
     }
 
     @PostMapping("/program/faktor-penunjang")
-    @Operation(summary = "Perbarui faktor penunjang target renja program", description = "Memperbarui hanya field faktor_penunjang pada record TargetRenjaProgramIndividu yang cocok dengan kode_program, tahun, bulan, dan nip.")
+    @Operation(summary = "Perbarui faktor penunjang target renja program", description = "Memperbarui hanya field faktor_penunjang pada record TargetRenjaProgramIndividu yang cocok dengan kode_program, kode_indikator, kode_target, tahun, dan bulan.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = TargetRenjaProgramIndividu.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
@@ -154,7 +154,7 @@ public class RenjaIndividuController {
     }
 
     @PostMapping("/program/faktor-penghambat")
-    @Operation(summary = "Perbarui faktor penghambat target renja program", description = "Memperbarui hanya field faktor_penghambat pada record TargetRenjaProgramIndividu yang cocok dengan kode_program, tahun, bulan, dan nip.")
+    @Operation(summary = "Perbarui faktor penghambat target renja program", description = "Memperbarui hanya field faktor_penghambat pada record TargetRenjaProgramIndividu yang cocok dengan kode_program, kode_indikator, kode_target, tahun, dan bulan.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = TargetRenjaProgramIndividu.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
@@ -169,7 +169,7 @@ public class RenjaIndividuController {
     }
 
     @PostMapping("/kegiatan/faktor-penunjang")
-    @Operation(summary = "Perbarui faktor penunjang target renja kegiatan", description = "Memperbarui hanya field faktor_penunjang pada record TargetRenjaKegiatanIndividu yang cocok dengan kode_kegiatan, tahun, bulan, dan nip.")
+    @Operation(summary = "Perbarui faktor penunjang target renja kegiatan", description = "Memperbarui hanya field faktor_penunjang pada record TargetRenjaKegiatanIndividu yang cocok dengan kode_kegiatan, kode_indikator, kode_target, tahun, dan bulan.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = TargetRenjaKegiatanIndividu.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
@@ -184,7 +184,7 @@ public class RenjaIndividuController {
     }
 
     @PostMapping("/kegiatan/faktor-penghambat")
-    @Operation(summary = "Perbarui faktor penghambat target renja kegiatan", description = "Memperbarui hanya field faktor_penghambat pada record TargetRenjaKegiatanIndividu yang cocok dengan kode_kegiatan, tahun, bulan, dan nip.")
+    @Operation(summary = "Perbarui faktor penghambat target renja kegiatan", description = "Memperbarui hanya field faktor_penghambat pada record TargetRenjaKegiatanIndividu yang cocok dengan kode_kegiatan, kode_indikator, kode_target, tahun, dan bulan.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = TargetRenjaKegiatanIndividu.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
@@ -199,7 +199,7 @@ public class RenjaIndividuController {
     }
 
     @PostMapping("/subkegiatan/faktor-penunjang")
-    @Operation(summary = "Perbarui faktor penunjang target renja subkegiatan", description = "Memperbarui hanya field faktor_penunjang pada record TargetRenjaSubKegiatanIndividu yang cocok dengan kode_subkegiatan, tahun, bulan, dan nip.")
+    @Operation(summary = "Perbarui faktor penunjang target renja subkegiatan", description = "Memperbarui hanya field faktor_penunjang pada record TargetRenjaSubKegiatanIndividu yang cocok dengan kode_subkegiatan, kode_indikator, kode_target, tahun, dan bulan.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = TargetRenjaSubKegiatanIndividu.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
@@ -214,7 +214,7 @@ public class RenjaIndividuController {
     }
 
     @PostMapping("/subkegiatan/faktor-penghambat")
-    @Operation(summary = "Perbarui faktor penghambat target renja subkegiatan", description = "Memperbarui hanya field faktor_penghambat pada record TargetRenjaSubKegiatanIndividu yang cocok dengan kode_subkegiatan, tahun, bulan, dan nip.")
+    @Operation(summary = "Perbarui faktor penghambat target renja subkegiatan", description = "Memperbarui hanya field faktor_penghambat pada record TargetRenjaSubKegiatanIndividu yang cocok dengan kode_subkegiatan, kode_indikator, kode_target, tahun, dan bulan.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = TargetRenjaSubKegiatanIndividu.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),

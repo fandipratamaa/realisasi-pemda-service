@@ -20,10 +20,6 @@ public record TujuanOpd(
         String kodeTujuanOpd,
         String tahun,
         String bulan,
-        @Column("faktor_penunjang")
-        String faktorPenunjang,
-        @Column("faktor_penghambat")
-        String faktorPenghambat,
 
         @CreatedBy
         @Column("created_by")
@@ -42,20 +38,7 @@ public record TujuanOpd(
     ) {
         return new TujuanOpd(null,
                 kodeOpd, kodeTujuanOpd, tahun, bulan,
-                "", "",
                 null, null, null, null);
-    }
-
-    public TujuanOpd withFaktorPenunjang(String faktorPenunjang) {
-        return new TujuanOpd(id, kodeOpd, kodeTujuanOpd, tahun, bulan,
-                faktorPenunjang, faktorPenghambat,
-                createdBy, createdDate, lastModifiedDate, lastModifiedBy);
-    }
-
-    public TujuanOpd withFaktorPenghambat(String faktorPenghambat) {
-        return new TujuanOpd(id, kodeOpd, kodeTujuanOpd, tahun, bulan,
-                faktorPenunjang, faktorPenghambat,
-                createdBy, createdDate, lastModifiedDate, lastModifiedBy);
     }
 
     public record CapaianResult(Double capaian, String keteranganCapaian) {}
