@@ -5,16 +5,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface TujuanRepository extends ReactiveCrudRepository<Tujuan, Long> {
-    Flux<Tujuan> findAllByTahun(String tahun);
-
-    Flux<Tujuan> findAllByTujuanId(String tujuanId);
-
-    Flux<Tujuan> findAllByTahunAndTujuanId(String tahun, String tujuanId);
-
-    Flux<Tujuan> findAllByIndikatorId(String indikatorId);
-
-    Flux<Tujuan> findAllByTahunBetween(String tahunAwal, String tahunAkhir);
-
     Flux<Tujuan> findAllByTahunAndBulan(String tahun, String bulan);
 
     Mono<Tujuan> findFirstByTujuanIdAndIndikatorIdAndTargetIdAndTahunAndBulan(

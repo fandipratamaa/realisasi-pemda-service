@@ -20,26 +20,6 @@ public class TujuanService {
         this.tujuanRepository = tujuanRepository;
     }
 
-    public Flux<Tujuan> getAllRealisasiTujuan() {
-        return tujuanRepository.findAll();
-    }
-
-    public Flux<Tujuan> getRealisasiTujuanByTahun(String tahun) {
-        return tujuanRepository.findAllByTahun(tahun);
-    }
-
-    public Flux<Tujuan> getRealisasiTujuanByTahunAndTujuanId(String tahun, String tujuanId) {
-        return tujuanRepository.findAllByTahunAndTujuanId(tahun, tujuanId);
-    }
-
-    public Flux<Tujuan> getRealisasiTujuanByTujuanId(String tujuanId) {
-        return tujuanRepository.findAllByTujuanId(tujuanId);
-    }
-
-    public Mono<Tujuan> getRealisasiTujuanById(Long id) {
-        return tujuanRepository.findById(id);
-    }
-
     public Mono<Tujuan> submitRealisasiTujuan(TujuanRequest req) {
         if (req.targetRealisasiId() != null) {
             return tujuanRepository.findById(req.targetRealisasiId())
@@ -167,10 +147,6 @@ public class TujuanService {
         );
     }
 
-    public Flux<Tujuan> getRealisasiTujuanByIndikatorId(String indikatorId) {
-        return tujuanRepository.findAllByIndikatorId(indikatorId);
-    }
-
     public static Tujuan buildUncheckedRealisasiTujuan(String tujuanId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, String visiMisi, String rumusPerhitungan, String sumberData, JenisRealisasi jenisRealisasi) {
         return Tujuan.of(tujuanId,
                 "Realisasi Tujuan " + tujuanId,
@@ -181,10 +157,6 @@ public class TujuanService {
                 "",
                 jenisRealisasi,
                 TujuanStatus.UNCHECKED);
-    }
-
-    public Flux<Tujuan> getRealisasiTujuanByPeriodeRpjmd(String tahunAwal, String tahunAkhir) {
-        return tujuanRepository.findAllByTahunBetween(tahunAwal, tahunAkhir);
     }
 
     public Flux<Tujuan> getRealisasiTujuanByTahunAndBulan(String tahun, String bulan) {

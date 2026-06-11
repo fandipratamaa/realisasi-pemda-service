@@ -64,7 +64,8 @@ public class IkuService {
     }
 
     public Flux<Iku> getAllIkuByTahun(String tahun) {
-        Flux<Iku> ikuTujuan = tujuanRepository.findAllByTahun(tahun)
+        Flux<Iku> ikuTujuan = tujuanRepository.findAll()
+                .filter(t -> tahun.equals(t.tahun()))
                 .map(t -> buildIkuTujuan(
                         t.indikatorId(),
                         t.indikator(),
@@ -79,7 +80,8 @@ public class IkuService {
                         t.jenisRealisasi()
                 ));
 
-        Flux<Iku> ikuSasaran = sasaranRepository.findAllByTahun(tahun)
+        Flux<Iku> ikuSasaran = sasaranRepository.findAll()
+                .filter(s -> tahun.equals(s.tahun()))
                 .map(s -> buildIkuSasaran(
                         s.indikatorId(),
                         s.indikator(),

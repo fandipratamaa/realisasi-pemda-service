@@ -21,28 +21,8 @@ public class SasaranService {
         this.sasaranRepository = sasaranRepository;
     }
 
-    public Flux<Sasaran> getAllRealisasiSasaran() {
-        return sasaranRepository.findAll();
-    }
-
-    public Flux<Sasaran> getAllRealisasiSasaranByTahun(String tahun) {
-        return sasaranRepository.findAllByTahun(tahun);
-    }
-
     public Flux<Sasaran> getAllRealisasiSasaranByTahunAndBulan(String tahun, String bulan) {
         return sasaranRepository.findAllByTahunAndBulan(tahun, bulan);
-    }
-
-    public Flux<Sasaran> getAllRealisasiSasaranByTahunAndSasaranId(String tahun, String sasaranId) {
-        return sasaranRepository.findAllByTahunAndSasaranId(tahun,  sasaranId);
-    }
-
-    public Flux<Sasaran> getAllRealisasiSasaranBySasaranId(String sasaranId) {
-        return sasaranRepository.findAllBySasaranId(sasaranId);
-    }
-
-    public Mono<Sasaran> getSasaranById(Long id) {
-        return sasaranRepository.findById(id);
     }
 
     public Mono<Sasaran> submitRealisasiSasaran(SasaranRequest req) {
@@ -112,10 +92,6 @@ public class SasaranService {
                 "",
                 jenisRealisasi,
                 SasaranStatus.UNCHECKED);
-    }
-
-    public Flux<Sasaran> getRealisasiSasaranByPeriodeRpjmd(String tahunAwal, String tahunAkhir) {
-        return sasaranRepository.findAllByTahunBetween(tahunAwal, tahunAkhir);
     }
 
     public Flux<Sasaran> batchSubmitRealisasiSasaran(@Valid List<SasaranRequest> sasaranRequests) {
