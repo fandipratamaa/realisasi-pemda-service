@@ -1,0 +1,1 @@
+ALTER TABLE rekin ADD COLUMN kode_sasaran_opd VARCHAR(255) NOT NULL DEFAULT '';

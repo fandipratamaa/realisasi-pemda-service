@@ -3,9 +3,12 @@ package cc.kertaskerja.realisasi_individu_service.renaksi.web;
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 
 import java.math.BigDecimal;
-import cc.kertaskerja.realisasi_individu_service.renaksi.domain.Renaksi;
 import cc.kertaskerja.realisasi_individu_service.renaksi.domain.RenaksiService;
-import cc.kertaskerja.realisasi_opd_service.renaksi.domain.RenaksiOpdService;
+import cc.kertaskerja.realisasi_individu_service.renaksi.domain.RenaksiStatus;
+import cc.kertaskerja.realisasi_individu_service.renaksi.domain.SasaranIndividu;
+import cc.kertaskerja.realisasi_individu_service.renaksi.domain.SasaranWithDetails;
+import cc.kertaskerja.realisasi_individu_service.renaksi.domain.indikator.IndikatorRenaksiIndividu;
+import cc.kertaskerja.realisasi_individu_service.renaksi.domain.target.TargetIndikatorRenaksiIndividu;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +18,8 @@ import org.springframework.security.test.web.reactive.server.SecurityMockServerC
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
+
+import java.util.List;
 
 import static org.mockito.Mockito.when;
 
@@ -26,48 +31,22 @@ public class RenaksiControllerWebFluxTests {
     @MockitoBean
     private RenaksiService renaksiService;
 
-    @MockitoBean
-    private RenaksiOpdService renaksiOpdService;
-
     @Test
     void whenGetByKodeOpdTahunBulan_thenReturnsList() {
         String kodeOpd = "4.01.01.";
         String tahun = "2026";
         String bulan = "Januari";
 
-        Renaksi r1 = RenaksiService.buildUncheckedRealisasiRenaksi(
-                "RENAKSI-1",
-                "Renaksi A",
-                "198012312005011001",
-                "Anon",
-                "REKIN-1",
-                "TAR-1",
-                50,
-                BigDecimal.ZERO,
-                "%",
-                bulan,
-                tahun,
-                JenisRealisasi.NAIK,
-                kodeOpd
-        );
-        Renaksi r2 = RenaksiService.buildUncheckedRealisasiRenaksi(
-                "RENAKSI-2",
-                "Renaksi B",
-                "198012312005011001",
-                "Anon",
-                "REKIN-1",
-                "TAR-2",
-                120,
-                BigDecimal.ZERO,
-                "%",
-                bulan,
-                tahun,
-                JenisRealisasi.NAIK,
-                kodeOpd
-        );
+        SasaranIndividu s1 = SasaranIndividu.of(kodeOpd, "198012312005011001", "SASARAN-1",
+                "Sasaran A", tahun, bulan, RenaksiStatus.UNCHECKED);
+        SasaranIndividu s2 = SasaranIndividu.of(kodeOpd, "198012312005011001", "SASARAN-2",
+                "Sasaran B", tahun, bulan, RenaksiStatus.UNCHECKED);
 
-        when(renaksiService.getRealisasiRenaksiByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan))
-                .thenReturn(Flux.just(r1, r2));
+        SasaranWithDetails d1 = new SasaranWithDetails(s1, List.of(), List.of(), List.of());
+        SasaranWithDetails d2 = new SasaranWithDetails(s2, List.of(), List.of(), List.of());
+
+        when(renaksiService.getSasaranWithDetailsByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan))
+                .thenReturn(Flux.just(d1, d2));
 
         webTestClient
                 .mutateWith(SecurityMockServerConfigurers.mockJwt()
@@ -76,13 +55,13 @@ public class RenaksiControllerWebFluxTests {
                 .uri("/renaksi/by-kode-opd/{kodeOpd}/by-tahun/{tahun}/by-bulan/{bulan}", kodeOpd, tahun, bulan)
                 .exchange()
                 .expectStatus().isOk()
-                .expectBodyList(Renaksi.class)
+                .expectBodyList(SasaranWithDetails.class)
                 .consumeWith(response -> {
                     var body = response.getResponseBody();
                     Assertions.assertNotNull(body);
                     Assertions.assertEquals(2, body.size());
-                    Assertions.assertEquals(r1, body.get(0));
-                    Assertions.assertEquals(r2, body.get(1));
+                    Assertions.assertEquals(d1, body.get(0));
+                    Assertions.assertEquals(d2, body.get(1));
                 });
     }
 }

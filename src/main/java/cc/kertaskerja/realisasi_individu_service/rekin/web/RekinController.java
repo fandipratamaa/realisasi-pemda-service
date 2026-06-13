@@ -1,12 +1,12 @@
 package cc.kertaskerja.realisasi_individu_service.rekin.web;
 
-import cc.kertaskerja.realisasi_individu_service.rekin.domain.Rekin;
 import cc.kertaskerja.realisasi_individu_service.rekin.domain.RekinService;
+import cc.kertaskerja.realisasi_individu_service.rekin.domain.RekinWithDetails;
+import cc.kertaskerja.realisasi_individu_service.rekin.domain.target.TargetIndikatorRekin;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -23,11 +23,9 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("rekin")
-@Tag(name = "Individu - Rekin", description = "Endpoint realisasi rekin tingkat individu. Role `super_admin` dan `admin_opd` hanya diizinkan mengakses endpoint `GET` pada resource ini, sedangkan role `level_1`, `level_2`, `level_3`, dan `level_4` dapat mengakses seluruh endpoint pada resource ini.")
+@Tag(name = "Individu - Rekin", description = "Endpoint rekin tingkat individu.")
 public class RekinController {
     private final RekinService rekinService;
 
@@ -36,116 +34,80 @@ public class RekinController {
     }
 
     @GetMapping("/by-nip/{nip}/by-tahun/{tahun}/by-bulan/{bulan}")
-    @Operation(summary = "Cari realisasi rekin berdasarkan NIP, tahun, dan bulan", description = "Mengambil daftar data realisasi rekin berdasarkan `nip`, `tahun`, dan `bulan`. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
+    @Operation(summary = "Cari rekin berdasarkan NIP, tahun, dan bulan (dengan indikator & target)")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realisasi rekin", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Rekin.class)))),
+            @ApiResponse(responseCode = "200", description = "Daftar rekin", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RekinWithDetails.class)))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Flux<Rekin> getRealisasiRekinByNipAndTahunAndBulan(
+    public Flux<RekinWithDetails> getRekinByNipAndTahunAndBulan(
             @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
             @Parameter(description = "Tahun realisasi", example = "2026") @PathVariable String tahun,
             @Parameter(description = "Bulan realisasi", example = "1") @PathVariable String bulan) {
         if (nip == null || nip.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip, tahun, dan bulan tidak boleh kosong");
         }
-        return rekinService.getRealisasiRekinByNipAndTahunAndBulan(nip, tahun, bulan);
+        return rekinService.getRekinWithDetailsByNipAndTahunAndBulan(nip, tahun, bulan);
     }
 
     @GetMapping("/by-kode-opd/{kodeOpd}/by-tahun/{tahun}/by-bulan/{bulan}")
-    @Operation(summary = "Cari realisasi rekin berdasarkan kode OPD, tahun, dan bulan", description = "Mengambil daftar data realisasi rekin berdasarkan `kode_opd`, `tahun`, dan `bulan`. Endpoint `GET` ini dapat diakses oleh role `super_admin` dan `admin_opd`.")
+    @Operation(summary = "Cari rekin berdasarkan kode OPD, tahun, dan bulan (dengan indikator & target)")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realisasi rekin", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Rekin.class)))),
+            @ApiResponse(responseCode = "200", description = "Daftar rekin", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RekinWithDetails.class)))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Flux<Rekin> getRealisasiRekinByKodeOpdAndTahunAndBulan(
+    public Flux<RekinWithDetails> getRekinByKodeOpdAndTahunAndBulan(
             @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun realisasi", example = "2026") @PathVariable String tahun,
             @Parameter(description = "Bulan realisasi", example = "01") @PathVariable String bulan) {
         if (kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd, tahun, dan bulan tidak boleh kosong");
         }
-        return rekinService.getRealisasiRekinByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
+        return rekinService.getRekinWithDetailsByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
     }
 
     @PostMapping
-    @Operation(summary = "Simpan realisasi rekin (belum digunakan di endpoint realisasi)", description = "Menyimpan satu data realisasi rekin. Role `super_admin` dan `admin_opd` tidak diizinkan mengakses endpoint ini.")
+    @Operation(summary = "Buat rekin baru (dengan upsert)", description = "Menyimpan satu data rekin beserta indikator dan target. Jika `id` disertakan akan memperbarui data yang sudah ada (upsert).")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Data realisasi rekin tersimpan", content = @Content(schema = @Schema(implementation = Rekin.class))),
+            @ApiResponse(responseCode = "200", description = "Rekin tersimpan dengan indikator dan target", content = @Content(schema = @Schema(implementation = RekinWithDetails.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Forbidden untuk role super_admin dan admin_opd", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Mono<Rekin> submitRealisasiRekin(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload realisasi rekin", required = true,
+    public Mono<RekinWithDetails> createRekin(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload rekin dengan indikator dan target", required = true,
                     content = @Content(schema = @Schema(implementation = RekinRequest.class)))
-            @RequestBody @Valid RekinRequest rekinRequest) {
-        return rekinService.submitRealisasiRekin(rekinRequest);
-    }
-
-    @PostMapping("/batch")
-    @Operation(summary = "Simpan batch realisasi rekin", description = "Menyimpan beberapa data realisasi rekin dalam satu request. Role `super_admin` dan `admin_opd` tidak diizinkan mengakses endpoint ini.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Batch berhasil disimpan", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Rekin.class)))),
-            @ApiResponse(responseCode = "400", description = "Payload batch tidak valid", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Forbidden untuk role super_admin dan admin_opd", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<Rekin> batchSubmitRealisasiRekin(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Daftar payload realisasi rekin", required = true,
-                    content = @Content(
-                            array = @ArraySchema(schema = @Schema(implementation = RekinRequest.class)),
-                            examples = @ExampleObject(name = "ArrayRequest", value = "[\n" +
-                                    "  {\n" +
-                                    "    \"targetRealisasiId\": \"1\",\n" +
-                                    "    \"rekinId\": \"REKIN-001\",\n" +
-                                    "    \"rekin\": \"Rekin Peningkatan Infrastruktur\",\n" +
-                                    "    \"indikatorId\": \"IND-REK-123\",\n" +
-                                    "    \"indikator\": \"Persentase capaian rekin\",\n" +
-                                     "    \"nip\": \"198012312005011001\",\n" +
-                                     "    \"namaPegawai\": \"Budi Santoso\",\n" +
-                                    "    \"targetId\": \"TAR-1\",\n" +
-                                    "    \"target\": \"100\",\n" +
-                                    "    \"realisasi\": 85,\n" +
-                                    "    \"satuan\": \"%\",\n" +
-                                    "    \"tahun\": \"2026\",\n" +
-                                    "    \"bulan\": \"1\",\n" +
-                                    "    \"kodeOpd\": \"1.01.0.00.0.00.01.0000\",\n" +
-                                    "    \"jenisRealisasi\": \"NAIK\"\n" +
-                                    "  }\n" +
-                                    "]")))
-            @RequestBody @Valid List<RekinRequest> rekinRequests) {
-        return rekinService.batchSubmitRealisasiRekin(rekinRequests);
+            @RequestBody @Valid RekinRequest request) {
+        return rekinService.createRekin(request);
     }
 
     @PostMapping("/faktor-penunjang")
-    @Operation(summary = "Perbarui faktor penunjang rekin", description = "Memperbarui hanya field faktor_penunjang pada record Rekin yang cocok dengan composite key (nip, tahun, bulan, rekinId, targetId).")
+    @Operation(summary = "Perbarui faktor penunjang rekin", description = "Memperbarui hanya field faktor_penunjang pada target indikator rekin yang cocok dengan composite key.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = Rekin.class))),
+            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = TargetIndikatorRekin.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Rekin tidak ditemukan", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Data tidak ditemukan", content = @Content)
     })
-    public Mono<Rekin> updateFaktorPenunjang(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload parsial faktor penunjang", required = true,
+    public Mono<TargetIndikatorRekin> updateFaktorPenunjang(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penunjang rekin", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenunjangRekinRequest.class)))
-            @RequestBody @Valid FaktorPenunjangRekinRequest req) {
-        return rekinService.updateFaktorPenunjang(req);
+            @RequestBody @Valid FaktorPenunjangRekinRequest request) {
+        return rekinService.updateFaktorPenunjang(request);
     }
 
     @PostMapping("/faktor-penghambat")
-    @Operation(summary = "Perbarui faktor penghambat rekin", description = "Memperbarui hanya field faktor_penghambat pada record Rekin yang cocok dengan composite key (nip, tahun, bulan, rekinId, targetId).")
+    @Operation(summary = "Perbarui faktor penghambat rekin", description = "Memperbarui hanya field faktor_penghambat pada target indikator rekin yang cocok dengan composite key.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = Rekin.class))),
+            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = TargetIndikatorRekin.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Rekin tidak ditemukan", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Data tidak ditemukan", content = @Content)
     })
-    public Mono<Rekin> updateFaktorPenghambat(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload parsial faktor penghambat", required = true,
+    public Mono<TargetIndikatorRekin> updateFaktorPenghambat(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penghambat rekin", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatRekinRequest.class)))
-            @RequestBody @Valid FaktorPenghambatRekinRequest req) {
-        return rekinService.updateFaktorPenghambat(req);
+            @RequestBody @Valid FaktorPenghambatRekinRequest request) {
+        return rekinService.updateFaktorPenghambat(request);
     }
 }

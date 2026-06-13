@@ -1,4 +1,4 @@
-package cc.kertaskerja.realisasi_individu_service.rekin.web;
+package cc.kertaskerja.realisasi_individu_service.renaksi.web;
 
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import io.micrometer.common.lang.Nullable;
@@ -9,11 +9,11 @@ import jakarta.validation.constraints.PositiveOrZero;
 
 import java.math.BigDecimal;
 
-@Schema(name = "RekinRequest", description = "Payload untuk membuat/memperbarui rekin beserta indikator dan target")
-public record RekinRequest(
+@Schema(name = "RenaksiIndividuRequest", description = "Payload untuk membuat/memperbarui sasaran individu beserta renaksi, indikator, dan target")
+public record RenaksiIndividuRequest(
 
         @Nullable
-        @Schema(description = "ID internal data rekin. Kosongkan saat create.", example = "1", nullable = true)
+        @Schema(description = "ID internal data sasaran. Kosongkan saat create.", example = "1", nullable = true)
         Long id,
 
         @NotNull(message = "Kode OPD tidak boleh kosong")
@@ -26,19 +26,19 @@ public record RekinRequest(
         @Schema(description = "NIP pelaksana", example = "198012312005011001")
         String nip,
 
-        @NotNull(message = "Kode rekin tidak boleh kosong")
-        @NotEmpty(message = "Kode rekin tidak boleh kosong")
-        @Schema(description = "Kode rekin", example = "REKIN-001")
-        String kodeRekin,
+        @NotNull(message = "Kode sasaran tidak boleh kosong")
+        @NotEmpty(message = "Kode sasaran tidak boleh kosong")
+        @Schema(description = "Kode sasaran", example = "SASARAN-001")
+        String kodeSasaran,
 
-        @NotNull(message = "Kode sasaran OPD tidak boleh kosong")
-        @NotEmpty(message = "Kode sasaran OPD tidak boleh kosong")
-        @Schema(description = "Kode sasaran OPD", example = "SAS-001")
-        String kodeSasaranOpd,
+        @NotNull(message = "Kode renaksi tidak boleh kosong")
+        @NotEmpty(message = "Kode renaksi tidak boleh kosong")
+        @Schema(description = "Kode renaksi", example = "RENAKSI-001")
+        String kodeRenaksi,
 
         @NotNull(message = "Kode indikator tidak boleh kosong")
         @NotEmpty(message = "Kode indikator tidak boleh kosong")
-        @Schema(description = "Kode indikator", example = "IND-REKIN-001")
+        @Schema(description = "Kode indikator", example = "IND-RENAKSI-001")
         String kodeIndikator,
 
         @NotNull(message = "Kode target tidak boleh kosong")
@@ -50,7 +50,7 @@ public record RekinRequest(
         @Schema(description = "Nilai target yang ditetapkan", example = "100.0")
         BigDecimal target,
 
-        @NotNull(message = "Realisasi harus terdefinisi")
+        @Nullable
         @PositiveOrZero(message = "Realisasi tidak boleh negatif")
         @Schema(description = "Nilai realisasi aktual", example = "75.5", minimum = "0")
         BigDecimal realisasi,
@@ -58,6 +58,10 @@ public record RekinRequest(
         @NotNull(message = "Pilih jenis NAIK atau TURUN")
         @Schema(description = "Jenis perhitungan capaian", example = "NAIK", allowableValues = {"NAIK", "TURUN"})
         JenisRealisasi jenisRealisasi,
+
+        @Nullable
+        @Schema(description = "Pagu anggaran", example = "50000000.00")
+        BigDecimal paguAnggaran,
 
         @NotNull(message = "Tahun harus terdefinisi")
         @NotEmpty(message = "Tahun tidak boleh kosong")

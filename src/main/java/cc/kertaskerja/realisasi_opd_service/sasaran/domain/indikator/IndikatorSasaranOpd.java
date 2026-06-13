@@ -22,4 +22,15 @@ public record IndikatorSasaranOpd(
         @CreatedBy String createdBy,
         @LastModifiedBy String lastModifiedBy
 ) {
+    public static IndikatorSasaranOpd of(
+            Long sasaranOpdId,
+            String kodeIndikator,
+            String kodeOpd,
+            String tahun,
+            String bulan
+    ) {
+        return new IndikatorSasaranOpd(
+                null, sasaranOpdId, kodeIndikator, kodeOpd, tahun, bulan,
+                null, null, null, null);
+    }
 }

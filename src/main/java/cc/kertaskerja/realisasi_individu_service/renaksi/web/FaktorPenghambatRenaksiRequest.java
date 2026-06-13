@@ -4,8 +4,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-@Schema(name = "FaktorPenghambatRenaksiRequest", description = "Payload untuk memperbarui faktor penghambat pada realisasi renaksi")
+@Schema(name = "FaktorPenghambatRenaksiRequest", description = "Payload untuk memperbarui faktor penghambat pada target indikator renaksi")
 public record FaktorPenghambatRenaksiRequest(
+        @NotNull(message = "Kode OPD tidak boleh kosong")
+        @NotEmpty(message = "Kode OPD tidak boleh kosong")
+        @Schema(description = "Kode OPD", example = "1234")
+        String kodeOpd,
+
         @NotNull(message = "NIP tidak boleh kosong")
         @NotEmpty(message = "NIP tidak boleh kosong")
         @Schema(description = "NIP pelaksana", example = "198012312005011001")
@@ -21,20 +26,25 @@ public record FaktorPenghambatRenaksiRequest(
         @Schema(description = "Bulan realisasi", example = "Januari")
         String bulan,
 
-        @NotNull(message = "ID rekin tidak boleh kosong")
-        @NotEmpty(message = "ID rekin tidak boleh kosong")
-        @Schema(description = "ID rekin", example = "REKIN-001")
-        String rekinId,
+        @NotNull(message = "Kode sasaran tidak boleh kosong")
+        @NotEmpty(message = "Kode sasaran tidak boleh kosong")
+        @Schema(description = "Kode sasaran", example = "SASARAN-001")
+        String kodeSasaran,
 
-        @NotNull(message = "ID renaksi tidak boleh kosong")
-        @NotEmpty(message = "ID renaksi tidak boleh kosong")
-        @Schema(description = "ID renaksi", example = "RENAKSI-001")
-        String renaksiId,
+        @NotNull(message = "Kode renaksi tidak boleh kosong")
+        @NotEmpty(message = "Kode renaksi tidak boleh kosong")
+        @Schema(description = "Kode renaksi", example = "RENAKSI-001")
+        String kodeRenaksi,
 
-        @NotNull(message = "ID target tidak boleh kosong")
-        @NotEmpty(message = "ID target tidak boleh kosong")
-        @Schema(description = "ID target", example = "TAR-1")
-        String targetId,
+        @NotNull(message = "Kode indikator tidak boleh kosong")
+        @NotEmpty(message = "Kode indikator tidak boleh kosong")
+        @Schema(description = "Kode indikator", example = "IND-RENAKSI-001")
+        String kodeIndikator,
+
+        @NotNull(message = "Kode target tidak boleh kosong")
+        @NotEmpty(message = "Kode target tidak boleh kosong")
+        @Schema(description = "Kode target", example = "TAR-1")
+        String kodeTarget,
 
         @NotNull(message = "Faktor penghambat tidak boleh kosong")
         @NotEmpty(message = "Faktor penghambat tidak boleh kosong")

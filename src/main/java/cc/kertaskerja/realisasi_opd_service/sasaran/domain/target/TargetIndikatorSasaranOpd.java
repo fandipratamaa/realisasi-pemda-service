@@ -28,6 +28,18 @@ public record TargetIndikatorSasaranOpd(
         @CreatedBy String createdBy,
         @LastModifiedBy String lastModifiedBy
 ) {
+    public static TargetIndikatorSasaranOpd of(
+            Long indikatorSasaranId,
+            String kodeTarget,
+            BigDecimal realisasi,
+            String tahun,
+            String bulan
+    ) {
+        return new TargetIndikatorSasaranOpd(
+                null, indikatorSasaranId, kodeTarget, realisasi, tahun, bulan,
+                "", "", null, null, null, null);
+    }
+
     public TargetIndikatorSasaranOpd withFaktorPenunjang(String faktorPenunjang) {
         return new TargetIndikatorSasaranOpd(
                 id, indikatorSasaranId, kodeTarget, realisasi, tahun, bulan,
