@@ -77,6 +77,11 @@ public record TargetIndikatorRekin(
         return formatCapaian(Math.min(calculatedCapaian, 100));
     }
 
+    @JsonProperty("satuan")
+    public String satuan() {
+        return "%";
+    }
+
     @JsonProperty("keteranganCapaian")
     public String keteranganCapaian() {
         double calculatedCapaian = capaianTarget();
