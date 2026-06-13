@@ -1,4 +1,4 @@
-package cc.kertaskerja.realisasi_individu_service.rekin.domain;
+package cc.kertaskerja.realisasi_individu_service.rekin.domain.indikator;
 
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -10,23 +10,22 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
 
-@Table("rekin")
-public record Rekin(
+@Table("indikator_rekin")
+public record IndikatorRekin(
         @Id Long id,
+
+        @Column("rekin_id")
+        Long rekinId,
+
+        @Column("kode_indikator")
+        String kodeIndikator,
+        String indikator,
 
         @Column("kode_opd")
         String kodeOpd,
         String nip,
-
-        @Column("kode_rekin")
-        String kodeRekin,
-
-        @Column("kode_sasaran_opd")
-        String kodeSasaranOpd,
-        String rekin,
         String tahun,
         String bulan,
-        RekinStatus status,
 
         @CreatedBy
         @Column("created_by")
@@ -41,17 +40,16 @@ public record Rekin(
         @Column("last_modified_date")
         Instant lastModifiedDate
 ) {
-    public static Rekin of(
+    public static IndikatorRekin of(
+            Long rekinId,
+            String kodeIndikator,
+            String indikator,
             String kodeOpd,
             String nip,
-            String kodeRekin,
-            String kodeSasaranOpd,
-            String rekin,
             String tahun,
-            String bulan,
-            RekinStatus status
+            String bulan
     ) {
-        return new Rekin(null, kodeOpd, nip, kodeRekin, kodeSasaranOpd, rekin, tahun, bulan, status,
+        return new IndikatorRekin(null, rekinId, kodeIndikator, indikator, kodeOpd, nip, tahun, bulan,
                 null, null, null, null);
     }
 }

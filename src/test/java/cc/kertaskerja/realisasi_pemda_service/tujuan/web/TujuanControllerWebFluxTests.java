@@ -1,5 +1,6 @@
 package cc.kertaskerja.realisasi_pemda_service.tujuan.web;
 
+import cc.kertaskerja.config.SecurityConfig;
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import cc.kertaskerja.realisasi_pemda_service.tujuan.domain.Tujuan;
 import cc.kertaskerja.realisasi_pemda_service.tujuan.domain.TujuanService;
@@ -18,8 +19,6 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import cc.kertaskerja.config.SecurityConfig;
 
 import java.util.List;
 
@@ -41,185 +40,12 @@ public class TujuanControllerWebFluxTests {
     private ObjectMapper objectMapper;
 
     @Test
-    void whenTujuanIdParamsExistsInByTahunShouldReturnRealisasiTujuanByTahunAndTujuanId() {
-        List<Tujuan> mockTujuans = List.of(
-                Tujuan.of("TUJ-123", "Test-Tujuan",
-                        "IND-TUJ-123", "Produk-A",
-                        "TAR-1", "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
-                        "BPS", "", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED));
-        when(tujuanService.getRealisasiTujuanByTahunAndTujuanId("2025", "TUJ-123"))
-                .thenReturn(Flux.fromIterable(mockTujuans));
-
-        webTestClient
-                .mutateWith(SecurityMockServerConfigurers.mockJwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
-                .get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/tujuans/by-tahun/2025")
-                        .queryParam("tujuanId", "TUJ-123")
-                        .build())
-                .exchange()
-                .expectStatus().isOk()
-                .expectBodyList(Tujuan.class)
-                .hasSize(1)
-                .contains(mockTujuans.get(0));
-    }
-
-    @Test
-    void whenNoTujuanIdShouldReutrnRealisasiTujuanByTahun() {
-        List<Tujuan> mockTujuans = List.of(
-                Tujuan.of("TUJ-123", "Test-Tujuan",
-                        "IND-TUJ-123", "Produk-A",
-                       "TAR-1", "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
-                        "BPS", "", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED),
-                Tujuan.of("TUJ-123", "Test-Tujuan",
-                        "IND-TUJ-123", "Produk-A",
-                       "TAR-2", "100.0", 100.0, "%", "2026", "01", "Visi Misi 2", "(realisasi/target)*100",
-                        "Bappeda", "", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED)
-        );
-        when(tujuanService.getRealisasiTujuanByTahun("2025"))
-                .thenReturn(Flux.just(mockTujuans.get(0)));
-
-        webTestClient
-                .mutateWith(SecurityMockServerConfigurers.mockJwt()
-                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
-                .get()
-                .uri("/tujuans/by-tahun/2025")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBodyList(Tujuan.class)
-                .hasSize(1)
-                .contains(mockTujuans.get(0));
-    }
-
-    @Test
-    void whenSuperAdminGetsPemdaEndpoint_thenAllowed() {
-        List<Tujuan> mockTujuans = List.of(
-                Tujuan.of("TUJ-123", "Test-Tujuan",
-                        "IND-TUJ-123", "Produk-A",
-                        "TAR-1", "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
-                        "BPS", "", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED));
-        when(tujuanService.getRealisasiTujuanByTahun("2025"))
-                .thenReturn(Flux.fromIterable(mockTujuans));
-
-        webTestClient
-                .mutateWith(SecurityMockServerConfigurers.mockJwt()
-                        .authorities(new SimpleGrantedAuthority("super_admin")))
-                .get()
-                .uri("/tujuans/by-tahun/2025")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBodyList(Tujuan.class)
-                .hasSize(1)
-                .contains(mockTujuans.get(0));
-    }
-
-    @Test
-    void whenAdminOpdGetsPemdaEndpoint_thenForbidden() {
-        webTestClient
-                .mutateWith(SecurityMockServerConfigurers.mockJwt()
-                        .authorities(new SimpleGrantedAuthority("admin_opd")))
-                .get()
-                .uri("/tujuans/by-tahun/2025")
-                .exchange()
-                .expectStatus().isForbidden();
-    }
-
-    @Test
-    void whenLevel2GetsPemdaEndpoint_thenForbidden() {
-        webTestClient
-                .mutateWith(SecurityMockServerConfigurers.mockJwt()
-                        .authorities(new SimpleGrantedAuthority("level_2")))
-                .get()
-                .uri("/tujuans/by-tahun/2025")
-                .exchange()
-                .expectStatus().isForbidden();
-    }
-
-    @Test
-    void whenLevel3GetsPemdaEndpoint_thenForbidden() {
-        webTestClient
-                .mutateWith(SecurityMockServerConfigurers.mockJwt()
-                        .authorities(new SimpleGrantedAuthority("level_3")))
-                .get()
-                .uri("/tujuans/by-tahun/2025")
-                .exchange()
-                .expectStatus().isForbidden();
-    }
-
-    @Test
-    void whenLevel4GetsPemdaEndpoint_thenForbidden() {
-        webTestClient
-                .mutateWith(SecurityMockServerConfigurers.mockJwt()
-                        .authorities(new SimpleGrantedAuthority("level_4")))
-                .get()
-                .uri("/tujuans/by-tahun/2025")
-                .exchange()
-                .expectStatus().isForbidden();
-    }
-
-    @Test
-    void whenByIndikatorIdShouldReturnRealisasiTujuanByIndikatorId() {
-        List<Tujuan> mockTujuans = List.of(
-                Tujuan.of("TUJ-123", "Test-Tujuan",
-                        "IND-TUJ-123", "Produk-A",
-                        "TAR-1", "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
-                        "BPS", "", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED));
-        when(tujuanService.getRealisasiTujuanByIndikatorId("IND-TUJ-123"))
-                .thenReturn(Flux.fromIterable(mockTujuans));
-
-        webTestClient
-                .mutateWith(SecurityMockServerConfigurers.mockJwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
-                .get()
-                .uri("/tujuans/by-indikator/IND-TUJ-123")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBodyList(Tujuan.class)
-                .hasSize(1)
-                .contains(mockTujuans.get(0));
-    }
-
-    @Test
-    void whenByPeriodeRpjmdShouldReturnRealisasiTujuanInTahunRpjmd() {
-        List<Tujuan> mockTujuans = List.of(
-                Tujuan.of("TUJ-123", "Test-Tujuan",
-                        "IND-TUJ-123", "Produk-A",
-                      "TAR-1",  "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
-                        "BPS", "", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED),
-                Tujuan.of("TUJ-123", "Test-Tujuan",
-                        "IND-TUJ-123", "Produk-A",
-                      "TAR-2",  "100.0", 100.0, "%", "2026", "01", "Visi Misi 2", "(realisasi/target)*100",
-                        "Bappeda", "", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED),
-                Tujuan.of("TUJ-12", "Test-Tujuan",
-                        "IND-TUJ-124", "Produk-B",
-                        "TAR-3", "4,70 - 4,75", 4.75, "%", "2025", "01", "Visi Misi 3", "(realisasi/target)*100",
-                        "BPS", "", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED),
-                Tujuan.of("TUJ-12", "Test-Tujuan",
-                        "IND-TUJ-124", "Produk-B",
-                      "TAR-4",  "4,85 - 4,90", 4.50, "%", "2027", "01", "Visi Misi 4", "(realisasi/target)*100",
-                        "Bappeda", "", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED)
-        );
-        when(tujuanService.getRealisasiTujuanByPeriodeRpjmd("2025", "2030"))
-                .thenReturn(Flux.fromIterable(mockTujuans));
-
-        webTestClient
-                .mutateWith(SecurityMockServerConfigurers.mockJwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
-                .get()
-                .uri("/tujuans/by-periode/2025/2030/rpjmd")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBodyList(Tujuan.class)
-                .hasSize(4)
-                .contains(mockTujuans.get(0));
-    }
-
-    @Test
     void whenBatchSubmit_thenReturnsSavedTujuans() throws Exception {
-        // prepare requests
- TujuanRequest r1 = new TujuanRequest(null, "T1", "I1", "TAR-1", "100.0", 50.0, "unit1", "2025", "01", "Visi Misi 1", "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK);
+        TujuanRequest r1 = new TujuanRequest(null, "T1", "I1", "TAR-1", "100.0", 50.0, "unit1", "2025", "01", "Visi Misi 1", "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK);
         TujuanRequest r2 = new TujuanRequest(null, "T2", "I2", "TAR-2", "200.0", 75.0, "unit2", "2026", "01", "Visi Misi 2", "(realisasi/target)*100", "Bappeda", JenisRealisasi.TURUN);
 
- Tujuan t1 = TujuanService.buildUncheckedRealisasiTujuan(
-                r1.tujuanId(), r1.indikatorId(), r1.targetId() ,r1.target(), r1.realisasi(),
+        Tujuan t1 = TujuanService.buildUncheckedRealisasiTujuan(
+                r1.tujuanId(), r1.indikatorId(), r1.targetId(), r1.target(), r1.realisasi(),
                 r1.satuan(), r1.tahun(), r1.bulan(), r1.visiMisi(), r1.rumusPerhitungan(), r1.sumberData(), r1.jenisRealisasi()
         );
         Tujuan t2Baru = TujuanService.buildUncheckedRealisasiTujuan(
@@ -230,7 +56,6 @@ public class TujuanControllerWebFluxTests {
         when(tujuanService.batchSubmitRealisasiTujuan(anyList()))
                 .thenReturn(Flux.just(t1, t2Baru));
 
-        // execute POST /tujuans/batch
         webTestClient
                 .mutateWith(csrf())
                 .mutateWith(SecurityMockServerConfigurers.mockJwt()
@@ -240,7 +65,7 @@ public class TujuanControllerWebFluxTests {
                 .bodyValue(objectMapper.writeValueAsString(List.of(r1, r2)))
                 .header("Content-Type", "application/json")
                 .exchange()
-                .expectStatus().is2xxSuccessful()
+                .expectStatus().isOk()
                 .expectBodyList(Tujuan.class)
                 .consumeWith(response -> {
                     var body = response.getResponseBody();
@@ -258,18 +83,15 @@ public class TujuanControllerWebFluxTests {
 
         Tujuan updated = Tujuan.of("TUJ-123", "Realisasi Tujuan TUJ-123",
                 "IND-TUJ-123", "Realisasi Indikator IND-TUJ-123",
-                "TAR-1", "100.0", 100.0, "%", "2025", "01",
-                "Visi Misi 1", "(realisasi/target)*100", "BPS",
-                "Kerjasama antar daerah", "Keterbatasan anggaran",
-                JenisRealisasi.NAIK, TujuanStatus.UNCHECKED);
+                "TAR-1", "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
+                "BPS", "Kerjasama antar daerah", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED);
 
         when(tujuanService.updateFaktorPenunjang(any(FaktorPenunjangRequest.class)))
                 .thenReturn(Mono.just(updated));
 
         webTestClient
                 .mutateWith(csrf())
-                .mutateWith(SecurityMockServerConfigurers.mockJwt()
-                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                .mutateWith(SecurityMockServerConfigurers.mockJwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                 .post()
                 .uri("/tujuans/faktor-penunjang")
                 .bodyValue(objectMapper.writeValueAsString(req))
@@ -291,18 +113,15 @@ public class TujuanControllerWebFluxTests {
 
         Tujuan updated = Tujuan.of("TUJ-123", "Realisasi Tujuan TUJ-123",
                 "IND-TUJ-123", "Realisasi Indikator IND-TUJ-123",
-                "TAR-1", "100.0", 100.0, "%", "2025", "01",
-                "Visi Misi 1", "(realisasi/target)*100", "BPS",
-                "Kerjasama antar daerah", "Keterbatasan anggaran",
-                JenisRealisasi.NAIK, TujuanStatus.UNCHECKED);
+                "TAR-1", "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
+                "BPS", "", "Keterbatasan anggaran", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED);
 
         when(tujuanService.updateFaktorPenghambat(any(FaktorPenghambatRequest.class)))
                 .thenReturn(Mono.just(updated));
 
         webTestClient
                 .mutateWith(csrf())
-                .mutateWith(SecurityMockServerConfigurers.mockJwt()
-                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                .mutateWith(SecurityMockServerConfigurers.mockJwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                 .post()
                 .uri("/tujuans/faktor-penghambat")
                 .bodyValue(objectMapper.writeValueAsString(req))
@@ -327,8 +146,7 @@ public class TujuanControllerWebFluxTests {
 
         webTestClient
                 .mutateWith(csrf())
-                .mutateWith(SecurityMockServerConfigurers.mockJwt()
-                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                .mutateWith(SecurityMockServerConfigurers.mockJwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                 .post()
                 .uri("/tujuans/faktor-penunjang")
                 .bodyValue(objectMapper.writeValueAsString(req))

@@ -1,7 +1,14 @@
 package cc.kertaskerja.realisasi_individu_service.rekin.domain;
 
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
+import cc.kertaskerja.realisasi_individu_service.rekin.domain.indikator.IndikatorRekin;
+import cc.kertaskerja.realisasi_individu_service.rekin.domain.indikator.IndikatorRekinRepository;
+import cc.kertaskerja.realisasi_individu_service.rekin.domain.target.TargetIndikatorRekin;
+import cc.kertaskerja.realisasi_individu_service.rekin.domain.target.TargetIndikatorRekinRepository;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.RekinRequest;
+import cc.kertaskerja.realisasi_opd_service.sasaran.domain.indikator.IndikatorSasaranOpdRepository;
+import cc.kertaskerja.realisasi_opd_service.sasaran.domain.target.TargetIndikatorSasaranOpdRepository;
+import cc.kertaskerja.realisasi_opd_service.sasaran.domain.SasaranOpdRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
@@ -12,7 +19,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.List;
+import java.math.BigDecimal;
 
 import static org.mockito.Mockito.*;
 
@@ -21,178 +28,310 @@ public class RekinServiceTests {
     @Mock
     private RekinRepository rekinRepository;
 
+    @Mock
+    private IndikatorRekinRepository indikatorRekinRepository;
+
+    @Mock
+    private TargetIndikatorRekinRepository targetIndikatorRekinRepository;
+
+    @Mock
+    private SasaranOpdRepository sasaranOpdRepository;
+
+    @Mock
+    private IndikatorSasaranOpdRepository indikatorSasaranOpdRepository;
+
+    @Mock
+    private TargetIndikatorSasaranOpdRepository targetIndikatorSasaranOpdRepository;
+
     @InjectMocks
     private RekinService rekinService;
 
-    @Test
-    void whenBatchSubmitWithoutTargetIdAndExistingFound_thenUpdatesUsingFourKeys() {
-        RekinRequest req = new RekinRequest(
-                null,
-                "REKIN-1",
-                "198012312005011001",
-                "Anon",
-                "IND-1",
-                "TAR-1",
-                "100",
-                55,
-                "%",
-                "2026",
-                "Januari",
-                "1.01.0.00.0.00.01.0000",
-                JenisRealisasi.NAIK
-        );
+    private IndikatorRekin buildSavedIndikator(Long rekinId, String kodeOpd, String nip, String tahun, String bulan) {
+        return new IndikatorRekin(
+                100L, rekinId, "IND-REKIN-001", "Realisasi Indikator IND-REKIN-001",
+                kodeOpd, nip, tahun, bulan,
+                null, null, null, null);
+    }
 
-        Rekin existing = new Rekin(
-                10L,
-                "REKIN-1",
-                "Rekin A",
-                "IND-1",
-                "Indikator A",
-                "198012312005011001",
-                "Anon",
-                "TAR-1",
-                "100",
-                10,
-                "old",
-                "2026",
-                "Desember",
-                "1.01.0.00.0.00.01.0000",
-                "",
-                "",
-                JenisRealisasi.NAIK,
-                RekinStatus.UNCHECKED,
-                null,
-                null,
-                null,
-                null,
-                0
-        );
+    private TargetIndikatorRekin buildSavedTarget(Long indikatorRekinId, String kodeOpd, String nip, String tahun, String bulan) {
+        return new TargetIndikatorRekin(
+                200L, indikatorRekinId, "TAR-1",
+                kodeOpd, nip, tahun, bulan,
+                new BigDecimal("100.0"), new BigDecimal("75.5"), JenisRealisasi.NAIK,
+                "", "", null, null, null, null);
+    }
 
-        when(rekinRepository.findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(
-                req.nip(), req.tahun(), req.bulan(), req.rekinId(), req.targetId()))
-                .thenReturn(Mono.just(existing));
-        when(rekinRepository.save(ArgumentMatchers.any(Rekin.class)))
-                .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
-
-        Flux<Rekin> result = rekinService.batchSubmitRealisasiRekin(List.of(req));
-
-        StepVerifier.create(result)
-                .expectNextMatches(saved ->
-                        saved.id().equals(existing.id())
-                                && saved.realisasi().equals(req.realisasi())
-                                && saved.satuan().equals(req.satuan())
-                                && saved.tahun().equals(req.tahun()))
-                .verifyComplete();
-
-        verify(rekinRepository, times(1))
-                .findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(
-                        req.nip(), req.tahun(), req.bulan(), req.rekinId(), req.targetId());
-        verify(rekinRepository, times(1)).save(any(Rekin.class));
-        verify(rekinRepository, never()).findById(anyLong());
+    private void stubSasaranSync() {
+        when(targetIndikatorSasaranOpdRepository.findFirstByKodeOpdAndKodeSasaranOpdAndKodeIndikatorSasaranOpdAndKodeTargetSasaranOpdAndTahunAndBulan(
+                anyString(), anyString(), anyString(), anyString(), anyString(), anyString()))
+                .thenReturn(Mono.empty());
     }
 
     @Test
-    void whenBatchSubmitWithoutTargetIdAndNoExisting_thenInsertsNew() {
+    void whenCreateRekinWithoutIdAndNotExists_thenCreates() {
         RekinRequest req = new RekinRequest(
                 null,
-                "REKIN-2",
-                "198012312005011001",
-                "Anon",
-                "IND-2",
-                "TAR-2",
-                "200",
-                70,
-                "%",
-                "2026",
-                "Februari",
                 "1.01.0.00.0.00.01.0000",
-                JenisRealisasi.NAIK
+                "198012312005011001",
+                "REKIN-001",
+                "SAS-001",
+                "IND-REKIN-001",
+                "TAR-1",
+                new BigDecimal("100.0"),
+                new BigDecimal("75.5"),
+                JenisRealisasi.NAIK,
+                "2026",
+                "1"
         );
 
-        when(rekinRepository.findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(
-                req.nip(), req.tahun(), req.bulan(), req.rekinId(), req.targetId()))
+        when(rekinRepository.findFirstByNipAndTahunAndBulanAndKodeRekin(
+                anyString(), anyString(), anyString(), anyString()))
                 .thenReturn(Mono.empty());
         when(rekinRepository.save(ArgumentMatchers.any(Rekin.class)))
-                .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+                .thenAnswer(invocation -> {
+                    Rekin r = invocation.getArgument(0);
+                    return Mono.just(new Rekin(
+                            1L, r.kodeOpd(), r.nip(), r.kodeRekin(), r.kodeSasaranOpd(), r.rekin(),
+                            r.tahun(), r.bulan(), r.status(),
+                            null, null, null, null));
+                });
 
-        Flux<Rekin> result = rekinService.batchSubmitRealisasiRekin(List.of(req));
+        IndikatorRekin savedInd = buildSavedIndikator(1L, req.kodeOpd(), req.nip(), req.tahun(), req.bulan());
+        TargetIndikatorRekin savedTarget = buildSavedTarget(100L, req.kodeOpd(), req.nip(), req.tahun(), req.bulan());
+
+        when(indikatorRekinRepository.findAllByRekinId(anyLong()))
+                .thenReturn(Flux.empty(), Flux.just(savedInd));
+        when(indikatorRekinRepository.save(ArgumentMatchers.any(IndikatorRekin.class)))
+                .thenReturn(Mono.just(savedInd));
+        when(targetIndikatorRekinRepository.findAllByIndikatorRekinIdIn(anyList()))
+                .thenReturn(Flux.just(savedTarget));
+        when(targetIndikatorRekinRepository.save(ArgumentMatchers.any(TargetIndikatorRekin.class)))
+                .thenReturn(Mono.just(savedTarget));
+
+        stubSasaranSync();
+
+        var result = rekinService.createRekin(req);
 
         StepVerifier.create(result)
-                .expectNextMatches(saved ->
-                        saved.id() == null
-                                && saved.rekinId().equals(req.rekinId())
-                                && saved.nip().equals(req.nip())
-                                && saved.tahun().equals(req.tahun()))
+                .expectNextMatches(details ->
+                        details.rekin().id().equals(1L)
+                                && details.rekin().kodeRekin().equals(req.kodeRekin())
+                                && details.rekin().rekin().equals("Realisasi Rekin " + req.kodeRekin())
+                                && details.rekin().status() == RekinStatus.UNCHECKED
+                                && details.indikators().size() == 1
+                                && details.targets().size() == 1)
                 .verifyComplete();
 
         verify(rekinRepository, times(1))
-                .findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(
-                        req.nip(), req.tahun(), req.bulan(), req.rekinId(), req.targetId());
+                .findFirstByNipAndTahunAndBulanAndKodeRekin(anyString(), anyString(), anyString(), anyString());
         verify(rekinRepository, times(1)).save(any(Rekin.class));
-        verify(rekinRepository, never()).findById(anyLong());
+        verify(indikatorRekinRepository, times(1)).save(any(IndikatorRekin.class));
+        verify(targetIndikatorRekinRepository, times(1)).save(any(TargetIndikatorRekin.class));
     }
 
     @Test
-    void whenBatchSubmitWithTargetId_thenUsesFindById() {
-        RekinRequest req = new RekinRequest(
-                99L,
-                "REKIN-3",
-                "198012312005011001",
-                "Anon",
-                "IND-3",
-                "TAR-3",
-                "300",
-                80,
-                "%",
-                "2026",
-                "Maret",
-                "1.01.0.00.0.00.01.0000",
-                JenisRealisasi.NAIK
-        );
-
+    void whenCreateRekinWithoutIdAndExistsByCompositeKey_thenUpdates() {
         Rekin existing = new Rekin(
-                99L,
-                "REKIN-3",
-                "Rekin C",
-                "IND-3",
-                "Indikator C",
-                "198012312005011001",
-                "Anon",
-                "TAR-3",
-                "300",
-                10,
-                "old",
-                "2026",
-                "Januari",
+                99L, "1.01.0.00.0.00.01.0000", "198012312005011001",
+                "REKIN-001", "SAS-001", "Realisasi Rekin REKIN-001", "2025", "1", RekinStatus.UNCHECKED,
+                null, null, null, null);
+
+        RekinRequest req = new RekinRequest(
+                null,
                 "1.01.0.00.0.00.01.0000",
-                "",
-                "",
+                "198012312005011001",
+                "REKIN-001",
+                "SAS-001",
+                "IND-REKIN-001",
+                "TAR-1",
+                new BigDecimal("100.0"),
+                new BigDecimal("75.5"),
                 JenisRealisasi.NAIK,
-                RekinStatus.UNCHECKED,
-                null,
-                null,
-                null,
-                null,
-                0
+                "2026",
+                "2"
         );
 
-        when(rekinRepository.findById(req.targetRealisasiId()))
+        when(rekinRepository.findFirstByNipAndTahunAndBulanAndKodeRekin(
+                anyString(), anyString(), anyString(), anyString()))
                 .thenReturn(Mono.just(existing));
         when(rekinRepository.save(ArgumentMatchers.any(Rekin.class)))
-                .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+                .thenAnswer(invocation -> {
+                    Rekin r = invocation.getArgument(0);
+                    return Mono.just(r);
+                });
 
-        Flux<Rekin> result = rekinService.batchSubmitRealisasiRekin(List.of(req));
+        IndikatorRekin savedInd = buildSavedIndikator(99L, req.kodeOpd(), req.nip(), req.tahun(), req.bulan());
+        TargetIndikatorRekin savedTarget = buildSavedTarget(100L, req.kodeOpd(), req.nip(), req.tahun(), req.bulan());
+
+        when(indikatorRekinRepository.findAllByRekinId(anyLong()))
+                .thenReturn(Flux.empty(), Flux.just(savedInd));
+        when(indikatorRekinRepository.save(ArgumentMatchers.any(IndikatorRekin.class)))
+                .thenReturn(Mono.just(savedInd));
+        when(targetIndikatorRekinRepository.findAllByIndikatorRekinIdIn(anyList()))
+                .thenReturn(Flux.just(savedTarget));
+        when(targetIndikatorRekinRepository.save(ArgumentMatchers.any(TargetIndikatorRekin.class)))
+                .thenReturn(Mono.just(savedTarget));
+
+        stubSasaranSync();
+
+        var result = rekinService.createRekin(req);
 
         StepVerifier.create(result)
-                .expectNextMatches(saved ->
-                        saved.id().equals(existing.id())
-                                && saved.realisasi().equals(req.realisasi())
-                                && saved.satuan().equals(req.satuan()))
+                .expectNextMatches(details ->
+                        details.rekin().kodeOpd().equals(req.kodeOpd())
+                                && details.rekin().tahun().equals(req.tahun())
+                                && details.rekin().bulan().equals(req.bulan())
+                                && details.rekin().status() == RekinStatus.UNCHECKED
+                                && details.rekin().rekin().equals("Realisasi Rekin REKIN-001"))
                 .verifyComplete();
 
-        verify(rekinRepository, times(1)).findById(req.targetRealisasiId());
+        verify(rekinRepository, times(1))
+                .findFirstByNipAndTahunAndBulanAndKodeRekin(anyString(), anyString(), anyString(), anyString());
         verify(rekinRepository, times(1)).save(any(Rekin.class));
-        verify(rekinRepository, never())
-                .findFirstByNipAndTahunAndBulanAndRekinIdAndTargetId(anyString(), anyString(), anyString(), anyString(), anyString());
+    }
+
+    @Test
+    void whenCreateRekinWithIdAndExists_thenUpdates() {
+        Rekin existing = new Rekin(
+                99L, "1.01.0.00.0.00.01.0000", "198012312005011001",
+                "REKIN-001", "SAS-001", "Realisasi Rekin REKIN-001", "2025", "1", RekinStatus.CHECKED,
+                "user1", "user1", null, null);
+
+        RekinRequest req = new RekinRequest(
+                99L,
+                "1.01.0.00.0.00.01.0000",
+                "198012312005011001",
+                "REKIN-001",
+                "SAS-001",
+                "IND-REKIN-001",
+                "TAR-1",
+                new BigDecimal("100.0"),
+                new BigDecimal("75.5"),
+                JenisRealisasi.NAIK,
+                "2026",
+                "2"
+        );
+
+        when(rekinRepository.findById(99L))
+                .thenReturn(Mono.just(existing));
+        when(rekinRepository.save(ArgumentMatchers.any(Rekin.class)))
+                .thenAnswer(invocation -> {
+                    Rekin r = invocation.getArgument(0);
+                    return Mono.just(r);
+                });
+
+        IndikatorRekin savedInd = buildSavedIndikator(99L, req.kodeOpd(), req.nip(), req.tahun(), req.bulan());
+        TargetIndikatorRekin savedTarget = buildSavedTarget(100L, req.kodeOpd(), req.nip(), req.tahun(), req.bulan());
+
+        when(indikatorRekinRepository.findAllByRekinId(anyLong()))
+                .thenReturn(Flux.empty(), Flux.just(savedInd));
+        when(indikatorRekinRepository.save(ArgumentMatchers.any(IndikatorRekin.class)))
+                .thenReturn(Mono.just(savedInd));
+        when(targetIndikatorRekinRepository.findAllByIndikatorRekinIdIn(anyList()))
+                .thenReturn(Flux.just(savedTarget));
+        when(targetIndikatorRekinRepository.save(ArgumentMatchers.any(TargetIndikatorRekin.class)))
+                .thenReturn(Mono.just(savedTarget));
+
+        stubSasaranSync();
+
+        var result = rekinService.createRekin(req);
+
+        StepVerifier.create(result)
+                .expectNextMatches(details ->
+                        details.rekin().id().equals(99L)
+                                && details.rekin().tahun().equals(req.tahun())
+                                && details.rekin().bulan().equals(req.bulan())
+                                && details.rekin().status() == RekinStatus.UNCHECKED
+                                && details.rekin().rekin().equals("Realisasi Rekin REKIN-001")
+                                && details.rekin().createdBy().equals("user1"))
+                .verifyComplete();
+
+        verify(rekinRepository, times(1)).findById(99L);
+        verify(rekinRepository, times(1)).save(any(Rekin.class));
+    }
+
+    @Test
+    void whenCreateRekinWithIdAndNotExists_thenCreates() {
+        RekinRequest req = new RekinRequest(
+                99L,
+                "1.01.0.00.0.00.01.0000",
+                "198012312005011001",
+                "REKIN-001",
+                "SAS-001",
+                "IND-REKIN-001",
+                "TAR-1",
+                new BigDecimal("100.0"),
+                new BigDecimal("75.5"),
+                JenisRealisasi.NAIK,
+                "2026",
+                "1"
+        );
+
+        when(rekinRepository.findById(99L))
+                .thenReturn(Mono.empty());
+        when(rekinRepository.findFirstByNipAndTahunAndBulanAndKodeRekin(
+                anyString(), anyString(), anyString(), anyString()))
+                .thenReturn(Mono.empty());
+        when(rekinRepository.save(ArgumentMatchers.any(Rekin.class)))
+                .thenAnswer(invocation -> {
+                    Rekin r = invocation.getArgument(0);
+                    return Mono.just(new Rekin(
+                            1L, r.kodeOpd(), r.nip(), r.kodeRekin(), r.kodeSasaranOpd(), r.rekin(),
+                            r.tahun(), r.bulan(), r.status(),
+                            null, null, null, null));
+                });
+
+        IndikatorRekin savedInd = buildSavedIndikator(1L, req.kodeOpd(), req.nip(), req.tahun(), req.bulan());
+        TargetIndikatorRekin savedTarget = buildSavedTarget(100L, req.kodeOpd(), req.nip(), req.tahun(), req.bulan());
+
+        when(indikatorRekinRepository.findAllByRekinId(anyLong()))
+                .thenReturn(Flux.empty(), Flux.just(savedInd));
+        when(indikatorRekinRepository.save(ArgumentMatchers.any(IndikatorRekin.class)))
+                .thenReturn(Mono.just(savedInd));
+        when(targetIndikatorRekinRepository.findAllByIndikatorRekinIdIn(anyList()))
+                .thenReturn(Flux.just(savedTarget));
+        when(targetIndikatorRekinRepository.save(ArgumentMatchers.any(TargetIndikatorRekin.class)))
+                .thenReturn(Mono.just(savedTarget));
+
+        stubSasaranSync();
+
+        var result = rekinService.createRekin(req);
+
+        StepVerifier.create(result)
+                .expectNextMatches(details ->
+                        details.rekin().id().equals(1L)
+                                && details.rekin().kodeRekin().equals(req.kodeRekin())
+                                && details.rekin().rekin().equals("Realisasi Rekin " + req.kodeRekin())
+                                && details.rekin().status() == RekinStatus.UNCHECKED)
+                .verifyComplete();
+
+        verify(rekinRepository, times(1)).findById(99L);
+        verify(rekinRepository, times(1)).save(any(Rekin.class));
+    }
+
+    @Test
+    void whenGetRekinByNipAndTahunAndBulan_thenReturnsList() {
+        Rekin rekin = new Rekin(
+                1L, "1.01.0.00.0.00.01.0000", "198012312005011001",
+                "REKIN-001", "SAS-001", "Realisasi Rekin REKIN-001", "2026", "1", RekinStatus.UNCHECKED,
+                null, null, null, null);
+
+        when(rekinRepository.findAllByNipAndTahunAndBulan(anyString(), anyString(), anyString()))
+                .thenReturn(Flux.just(rekin));
+        when(indikatorRekinRepository.findAllByRekinId(anyLong()))
+                .thenReturn(Flux.empty());
+
+        var result = rekinService.getRekinWithDetailsByNipAndTahunAndBulan(
+                "198012312005011001", "2026", "1");
+
+        StepVerifier.create(result)
+                .expectNextMatches(details ->
+                        details.rekin().nip().equals("198012312005011001")
+                                && details.indikators().isEmpty()
+                                && details.targets().isEmpty())
+                .verifyComplete();
+
+        verify(rekinRepository, times(1))
+                .findAllByNipAndTahunAndBulan(anyString(), anyString(), anyString());
     }
 }

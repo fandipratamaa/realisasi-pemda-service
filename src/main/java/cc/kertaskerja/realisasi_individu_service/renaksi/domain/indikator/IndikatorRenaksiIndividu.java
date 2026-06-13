@@ -1,32 +1,32 @@
-package cc.kertaskerja.realisasi_individu_service.rekin.domain;
+package cc.kertaskerja.realisasi_individu_service.renaksi.domain.indikator;
 
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
 
-@Table("rekin")
-public record Rekin(
+@Table("indikator_renaksi_individu")
+public record IndikatorRenaksiIndividu(
         @Id Long id,
+
+        @Column("renaksi_id")
+        Long renaksiId,
+
+        @Column("kode_indikator")
+        String kodeIndikator,
+        String indikator,
 
         @Column("kode_opd")
         String kodeOpd,
         String nip,
-
-        @Column("kode_rekin")
-        String kodeRekin,
-
-        @Column("kode_sasaran_opd")
-        String kodeSasaranOpd,
-        String rekin,
         String tahun,
         String bulan,
-        RekinStatus status,
 
         @CreatedBy
         @Column("created_by")
@@ -39,19 +39,20 @@ public record Rekin(
         Instant createdDate,
         @LastModifiedDate
         @Column("last_modified_date")
-        Instant lastModifiedDate
+        Instant lastModifiedDate,
+
+        @Version int version
 ) {
-    public static Rekin of(
+    public static IndikatorRenaksiIndividu of(
+            Long renaksiId,
+            String kodeIndikator,
+            String indikator,
             String kodeOpd,
             String nip,
-            String kodeRekin,
-            String kodeSasaranOpd,
-            String rekin,
             String tahun,
-            String bulan,
-            RekinStatus status
+            String bulan
     ) {
-        return new Rekin(null, kodeOpd, nip, kodeRekin, kodeSasaranOpd, rekin, tahun, bulan, status,
-                null, null, null, null);
+        return new IndikatorRenaksiIndividu(null, renaksiId, kodeIndikator, indikator, kodeOpd, nip, tahun, bulan,
+                null, null, null, null, 0);
     }
 }
