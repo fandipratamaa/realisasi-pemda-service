@@ -12,39 +12,35 @@ import java.math.BigDecimal;
 @Schema(name = "RekinRequest", description = "Payload untuk membuat/memperbarui rekin beserta indikator dan target")
 public record RekinRequest(
 
-        @Nullable
-        @Schema(description = "ID internal data rekin. Kosongkan saat create.", example = "1", nullable = true)
-        Long id,
-
         @NotNull(message = "Kode OPD tidak boleh kosong")
         @NotEmpty(message = "Kode OPD tidak boleh kosong")
-        @Schema(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000")
+        @Schema(description = "Kode OPD", example = "8.01.0.00.0.00.01.0000")
         String kodeOpd,
 
         @NotNull(message = "NIP tidak boleh kosong")
         @NotEmpty(message = "NIP tidak boleh kosong")
-        @Schema(description = "NIP pelaksana", example = "198012312005011001")
+        @Schema(description = "NIP pelaksana", example = "196909212007012018")
         String nip,
 
-        @NotNull(message = "Kode rekin tidak boleh kosong")
-        @NotEmpty(message = "Kode rekin tidak boleh kosong")
-        @Schema(description = "Kode rekin", example = "REKIN-001")
-        String kodeRekin,
+        @NotNull(message = "Kode rekin PK tidak boleh kosong")
+        @NotEmpty(message = "Kode rekin PK tidak boleh kosong")
+        @Schema(description = "Kode PK rekin", example = "REKIN-PEG-2026-33475")
+        String kodePkRekin,
 
         @NotNull(message = "Kode sasaran OPD tidak boleh kosong")
         @NotEmpty(message = "Kode sasaran OPD tidak boleh kosong")
         @Schema(description = "Kode sasaran OPD", example = "SAS-001")
         String kodeSasaranOpd,
 
-        @NotNull(message = "Kode indikator tidak boleh kosong")
-        @NotEmpty(message = "Kode indikator tidak boleh kosong")
-        @Schema(description = "Kode indikator", example = "IND-REKIN-001")
-        String kodeIndikator,
+        @NotNull(message = "Kode indikator PK rekin tidak boleh kosong")
+        @NotEmpty(message = "Kode indikator PK rekin tidak boleh kosong")
+        @Schema(description = "Kode indikato pk rekinr", example = "IND-REKIN-87169")
+        String kodeIndikatorPKrekin,
 
-        @NotNull(message = "Kode target tidak boleh kosong")
+        @NotNull(message = "Kode PK target rekin tidak boleh kosong")
         @NotEmpty(message = "Kode target tidak boleh kosong")
-        @Schema(description = "Kode target", example = "TAR-1")
-        String kodeTarget,
+        @Schema(description = "Kode target", example = "TRGT-IND-REKIN-66602")
+        String kodeTargetPKrekin,
 
         @NotNull(message = "Target harus terdefinisi")
         @Schema(description = "Nilai target yang ditetapkan", example = "100.0")
@@ -52,7 +48,7 @@ public record RekinRequest(
 
         @NotNull(message = "Realisasi harus terdefinisi")
         @PositiveOrZero(message = "Realisasi tidak boleh negatif")
-        @Schema(description = "Nilai realisasi aktual", example = "75.5", minimum = "0")
+        @Schema(description = "Nilai realisasi aktual", example = "70", minimum = "0")
         BigDecimal realisasi,
 
         @NotNull(message = "Pilih jenis NAIK atau TURUN")

@@ -11,5 +11,5 @@ public interface TargetIndikatorRekinRepository extends ReactiveCrudRepository<T
 
     Flux<TargetIndikatorRekin> findAllByIndikatorRekinIdIn(List<Long> indikatorRekinIds);
 
-    Mono<TargetIndikatorRekin> findFirstByIndikatorRekinIdAndKodeTarget(Long indikatorRekinId, String kodeTarget);
+    Mono<TargetIndikatorRekin> findFirstByIndikatorRekinIdAndKodeTargetPkRekin(Long indikatorRekinId, String kodeTargetPkRekin);
 }

@@ -18,8 +18,8 @@ public record Rekin(
         String kodeOpd,
         String nip,
 
-        @Column("kode_rekin")
-        String kodeRekin,
+        @Column("kode_pk_rekin")
+        String kodePkRekin,
 
         @Column("kode_sasaran_opd")
         String kodeSasaranOpd,
@@ -44,14 +44,30 @@ public record Rekin(
     public static Rekin of(
             String kodeOpd,
             String nip,
-            String kodeRekin,
+            String kodePkRekin,
             String kodeSasaranOpd,
+            Integer levelPk,
+            String namaPemilikPk,
             String rekin,
             String tahun,
             String bulan,
             RekinStatus status
     ) {
-        return new Rekin(null, kodeOpd, nip, kodeRekin, kodeSasaranOpd, rekin, tahun, bulan, status,
+        return new Rekin(null, kodeOpd, nip, kodePkRekin, kodeSasaranOpd, rekin, tahun, bulan, status,
                 null, null, null, null);
+    }
+
+    public record CapaianResult(Double capaian, String keteranganCapaian) {}
+
+    public static CapaianResult hitungCapaian(Double realisasi, Double target) {
+        if (realisasi == null || target == null || target == 0) {
+            return new CapaianResult(null, null);
+        }
+        double calculatedCapaian = realisasi / target * 100;
+        String keteranganCapaian = null;
+        if (calculatedCapaian > 100) {
+            keteranganCapaian = "nilai capaian lebih dari 100% (" + String.format("%.2f%%", calculatedCapaian) + ")";
+        }
+        return new CapaianResult(Math.min(calculatedCapaian, 100), keteranganCapaian);
     }
 }

@@ -1,0 +1,1 @@
+ALTER TABLE rekin RENAME COLUMN kode_rekin TO kode_pk_rekin;

@@ -1,0 +1,3 @@
+ALTER TABLE indikator_rekin RENAME TO indikator_pk_rekin;
+ALTER TABLE target_indikator_rekin RENAME TO target_indikator_pk_rekin;
+ALTER TABLE target_indikator_pk_rekin RENAME CONSTRAINT fk_target_indikator_rekin_indikator TO fk_target_indikator_pk_rekin_indikator;

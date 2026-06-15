@@ -26,10 +26,10 @@ public record FaktorPenghambatRekinRequest(
         @Schema(description = "Bulan realisasi", example = "Januari")
         String bulan,
 
-        @NotNull(message = "Kode rekin tidak boleh kosong")
-        @NotEmpty(message = "Kode rekin tidak boleh kosong")
-        @Schema(description = "Kode rekin", example = "REKIN-001")
-        String kodeRekin,
+        @NotNull(message = "Kode PK rekin tidak boleh kosong")
+        @NotEmpty(message = "Kode PK rekin tidak boleh kosong")
+        @Schema(description = "Kode PK rekin", example = "REKIN-001")
+        String kodePkRekin,
 
         @NotNull(message = "Kode indikator tidak boleh kosong")
         @NotEmpty(message = "Kode indikator tidak boleh kosong")

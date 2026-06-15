@@ -14,15 +14,15 @@ import org.springframework.data.relational.core.mapping.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
 
-@Table("target_indikator_rekin")
+@Table("target_indikator_pk_rekin")
 public record TargetIndikatorRekin(
         @Id Long id,
 
         @Column("indikator_rekin_id")
         Long indikatorRekinId,
 
-        @Column("kode_target")
-        String kodeTarget,
+        @Column("kode_target_pk_rekin")
+        String kodeTargetPkRekin,
 
         @Column("kode_opd")
         String kodeOpd,
@@ -55,7 +55,7 @@ public record TargetIndikatorRekin(
 ) {
     public static TargetIndikatorRekin of(
             Long indikatorRekinId,
-            String kodeTarget,
+            String kodeTargetPkRekin,
             String kodeOpd,
             String nip,
             String tahun,
@@ -66,7 +66,7 @@ public record TargetIndikatorRekin(
             String faktorPenunjang,
             String faktorPenghambat
     ) {
-        return new TargetIndikatorRekin(null, indikatorRekinId, kodeTarget, kodeOpd, nip, tahun, bulan,
+        return new TargetIndikatorRekin(null, indikatorRekinId, kodeTargetPkRekin, kodeOpd, nip, tahun, bulan,
                 target, realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat,
                 null, null, null, null);
     }

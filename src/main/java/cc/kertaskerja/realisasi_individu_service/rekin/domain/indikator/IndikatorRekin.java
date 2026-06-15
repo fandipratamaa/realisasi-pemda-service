@@ -10,16 +10,18 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
 
-@Table("indikator_rekin")
+@Table("indikator_pk_rekin")
 public record IndikatorRekin(
         @Id Long id,
 
         @Column("rekin_id")
         Long rekinId,
 
-        @Column("kode_indikator")
-        String kodeIndikator,
-        String indikator,
+        @Column("kode_indikator_pk_rekin")
+        String kodeIndikatorPkRekin,
+
+        @Column("nama_indikator_pk_rekin")
+        String namaIndikatorPkRekin,
 
         @Column("kode_opd")
         String kodeOpd,
@@ -42,14 +44,14 @@ public record IndikatorRekin(
 ) {
     public static IndikatorRekin of(
             Long rekinId,
-            String kodeIndikator,
-            String indikator,
+            String kodeIndikatorPkRekin,
+            String namaIndikatorPkRekin,
             String kodeOpd,
             String nip,
             String tahun,
             String bulan
     ) {
-        return new IndikatorRekin(null, rekinId, kodeIndikator, indikator, kodeOpd, nip, tahun, bulan,
+        return new IndikatorRekin(null, rekinId, kodeIndikatorPkRekin, namaIndikatorPkRekin, kodeOpd, nip, tahun, bulan,
                 null, null, null, null);
     }
 }

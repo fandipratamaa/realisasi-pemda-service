@@ -5,7 +5,6 @@ import cc.kertaskerja.realisasi_individu_service.rekin.domain.RekinWithDetails;
 import cc.kertaskerja.realisasi_individu_service.rekin.domain.target.TargetIndikatorRekin;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,9 +17,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -33,38 +32,22 @@ public class RekinController {
         this.rekinService = rekinService;
     }
 
-    @GetMapping("/by-nip/{nip}/by-tahun/{tahun}/by-bulan/{bulan}")
-    @Operation(summary = "Cari rekin berdasarkan NIP, tahun, dan bulan (dengan indikator & target)")
+    @GetMapping("/nip/{nip}/kodeOpd/{kodeOpd}/tahun/{tahun}/penetapan")
+    @Operation(summary = "Integrasi penetapan dengan realisasi rekin individu", description = "Menggabungkan data penetapan (dari external service) dengan data realisasi rekin berdasarkan NIP, kode OPD, dan tahun. Parameter bulan bersifat opsional; jika tidak dikirim, hanya data penetapan tanpa realisasi yang dikembalikan.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar rekin", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RekinWithDetails.class)))),
+            @ApiResponse(responseCode = "200", description = "Data penetapan terintegrasi dengan realisasi", content = @Content(schema = @Schema(implementation = PenetapanRekinIndividuResponse.class))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Flux<RekinWithDetails> getRekinByNipAndTahunAndBulan(
+    public Mono<PenetapanRekinIndividuResponse> getPenetapanByNipAndTahun(
             @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
-            @Parameter(description = "Tahun realisasi", example = "2026") @PathVariable String tahun,
-            @Parameter(description = "Bulan realisasi", example = "1") @PathVariable String bulan) {
-        if (nip == null || nip.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip, tahun, dan bulan tidak boleh kosong");
-        }
-        return rekinService.getRekinWithDetailsByNipAndTahunAndBulan(nip, tahun, bulan);
-    }
-
-    @GetMapping("/by-kode-opd/{kodeOpd}/by-tahun/{tahun}/by-bulan/{bulan}")
-    @Operation(summary = "Cari rekin berdasarkan kode OPD, tahun, dan bulan (dengan indikator & target)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar rekin", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RekinWithDetails.class)))),
-            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<RekinWithDetails> getRekinByKodeOpdAndTahunAndBulan(
             @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
-            @Parameter(description = "Tahun realisasi", example = "2026") @PathVariable String tahun,
-            @Parameter(description = "Bulan realisasi", example = "01") @PathVariable String bulan) {
-        if (kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd, tahun, dan bulan tidak boleh kosong");
+            @Parameter(description = "Tahun", example = "2026") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi (opsional)", example = "1") @RequestParam(required = false) String bulan) {
+        if (nip == null || nip.isBlank() || kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip, kodeOpd, dan tahun tidak boleh kosong");
         }
-        return rekinService.getRekinWithDetailsByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
+        return rekinService.getPenetapanByNip(nip, kodeOpd, Integer.parseInt(tahun), bulan);
     }
 
     @PostMapping

@@ -20,9 +20,12 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
 
@@ -36,36 +39,92 @@ public class RekinControllerWebFluxTests {
     private RekinService rekinService;
 
     @Test
-    void whenGetByKodeOpdTahunBulan_thenReturnsDetails() {
-        Rekin rekin = Rekin.of("1.01.0.00.0.00.01.0000", "198012312005011001",
-                "REKIN-001", "SAS-001", "Realisasi Rekin REKIN-001", "2025", "01", RekinStatus.UNCHECKED);
+    void whenGetPenetapanByNipTahun_thenReturnsPenetapanData() {
+        var response = new PenetapanRekinIndividuResponse(
+                "198012312005011001", "MATILDA DEW -, S.Sos",
+                "8.01.0.00.0.00.01.0000", 2026, null,
+                List.of(new PenetapanRekinIndividuResponse.RekinPenetapanResponse(
+                        1L, "REKIN-PEG-2026-33475",
+                        "Peningkatan Pembinaan", 5,
+                        List.of(new PenetapanRekinIndividuResponse.IndikatorPenetapanResponse(
+                                1L, "IND-REKIN-87169", "Persentase terlaksananya",
+                                List.of(new PenetapanRekinIndividuResponse.TargetPenetapanResponse(
+                                        1L, "TRGT-IND-REKIN-66602", 2026, 100.0, "%",
+                                        null, null, null, null, null
+                                ))
+                        ))
+                ))
+        );
 
-        RekinWithDetails details = new RekinWithDetails(rekin, Collections.emptyList(), Collections.emptyList());
-
-        when(rekinService.getRekinWithDetailsByKodeOpdAndTahunAndBulan(anyString(), anyString(), anyString()))
-                .thenReturn(Flux.just(details));
+        when(rekinService.getPenetapanByNip(anyString(), anyString(), anyInt(), eq(null)))
+                .thenReturn(Mono.just(response));
 
         webTestClient
                 .mutateWith(csrf())
                 .mutateWith(SecurityMockServerConfigurers.mockJwt()
                         .authorities(new SimpleGrantedAuthority("ROLE_ADMIN_OPD")))
                 .get()
-                .uri("/rekin/by-kode-opd/1.01.0.00.0.00.01.0000/by-tahun/2025/by-bulan/01")
+                .uri("/rekin/nip/198012312005011001/kodeOpd/8.01.0.00.0.00.01.0000/tahun/2026/penetapan")
                 .exchange()
                 .expectStatus().is2xxSuccessful()
-                .expectBodyList(RekinWithDetails.class)
-                .consumeWith(response -> {
-                    var body = response.getResponseBody();
+                .expectBody(PenetapanRekinIndividuResponse.class)
+                .consumeWith(result -> {
+                    var body = result.getResponseBody();
                     Assertions.assertNotNull(body);
-                    Assertions.assertEquals(1, body.size());
-                    Assertions.assertEquals(rekin.kodeRekin(), body.get(0).rekin().kodeRekin());
+                    Assertions.assertEquals("198012312005011001", body.pegawaiId());
+                    Assertions.assertEquals("MATILDA DEW -, S.Sos", body.nama());
+                    Assertions.assertEquals("8.01.0.00.0.00.01.0000", body.kodeOpd());
+                    Assertions.assertEquals(2026, body.tahunAktif());
+                    Assertions.assertNull(body.bulan());
+                    Assertions.assertNotNull(body.rekins());
+                    Assertions.assertEquals(1, body.rekins().size());
+                    Assertions.assertEquals("REKIN-PEG-2026-33475", body.rekins().getFirst().kodePk());
+                });
+    }
+
+    @Test
+    void whenGetPenetapanWithBulan_thenIncludesRealisasi() {
+        var response = new PenetapanRekinIndividuResponse(
+                "198012312005011001", "MATILDA DEW -, S.Sos",
+                "8.01.0.00.0.00.01.0000", 2026, 1,
+                List.of(new PenetapanRekinIndividuResponse.RekinPenetapanResponse(
+                        1L, "REKIN-PEG-2026-33475",
+                        "Peningkatan Pembinaan", 5,
+                        List.of(new PenetapanRekinIndividuResponse.IndikatorPenetapanResponse(
+                                1L, "IND-REKIN-87169", "Persentase terlaksananya",
+                                List.of(new PenetapanRekinIndividuResponse.TargetPenetapanResponse(
+                                        1L, "TRGT-IND-REKIN-66602", 2026, 100.0, "%",
+                                        75.5, 75.5, null, null, null
+                                ))
+                        ))
+                ))
+        );
+
+        when(rekinService.getPenetapanByNip(eq("198012312005011001"), eq("8.01.0.00.0.00.01.0000"), eq(2026), eq("1")))
+                .thenReturn(Mono.just(response));
+
+        webTestClient
+                .mutateWith(csrf())
+                .mutateWith(SecurityMockServerConfigurers.mockJwt()
+                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN_OPD")))
+                .get()
+                .uri("/rekin/nip/198012312005011001/kodeOpd/8.01.0.00.0.00.01.0000/tahun/2026/penetapan?bulan=1")
+                .exchange()
+                .expectStatus().is2xxSuccessful()
+                .expectBody(PenetapanRekinIndividuResponse.class)
+                .consumeWith(result -> {
+                    var body = result.getResponseBody();
+                    Assertions.assertNotNull(body);
+                    Assertions.assertEquals(1, body.bulan());
+                    var target = body.rekins().getFirst().indikatorPk().getFirst().targetPk().getFirst();
+                    Assertions.assertEquals(75.5, target.realisasi());
+                    Assertions.assertEquals(75.5, target.capaian());
                 });
     }
 
     @Test
     void whenLevel1PostsRekinEndpoint_thenAllowed() {
         RekinRequest request = new RekinRequest(
-                null,
                 "1.01.0.00.0.00.01.0000",
                 "198012312005011001",
                 "REKIN-001",
@@ -82,9 +141,11 @@ public class RekinControllerWebFluxTests {
         Rekin rekin = Rekin.of(
                 request.kodeOpd(),
                 request.nip(),
-                request.kodeRekin(),
+                request.kodePkRekin(),
                 request.kodeSasaranOpd(),
-                "Realisasi Rekin " + request.kodeRekin(),
+                0,
+                "",
+                "Realisasi Rekin " + request.kodePkRekin(),
                 request.tahun(),
                 request.bulan(),
                 RekinStatus.UNCHECKED
@@ -110,7 +171,6 @@ public class RekinControllerWebFluxTests {
     @Test
     void whenLevel4PostsRekinEndpoint_thenAllowed() {
         RekinRequest request = new RekinRequest(
-                null,
                 "1.01.0.00.0.00.01.0000",
                 "198012312005011001",
                 "REKIN-001",
@@ -127,9 +187,11 @@ public class RekinControllerWebFluxTests {
         Rekin rekin = Rekin.of(
                 request.kodeOpd(),
                 request.nip(),
-                request.kodeRekin(),
+                request.kodePkRekin(),
                 request.kodeSasaranOpd(),
-                "Realisasi Rekin " + request.kodeRekin(),
+                0,
+                "",
+                "Realisasi Rekin " + request.kodePkRekin(),
                 request.tahun(),
                 request.bulan(),
                 RekinStatus.UNCHECKED

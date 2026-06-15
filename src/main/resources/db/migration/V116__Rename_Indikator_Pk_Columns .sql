@@ -1,0 +1,3 @@
+ALTER TABLE indikator_pk_rekin RENAME COLUMN kode_indikator TO kode_indikator_pk_rekin;
+ALTER TABLE indikator_pk_rekin RENAME COLUMN indikator TO nama_indikator_pk_rekin;
+ALTER TABLE target_indikator_pk_rekin RENAME COLUMN kode_target TO kode_target_pk_rekin;
