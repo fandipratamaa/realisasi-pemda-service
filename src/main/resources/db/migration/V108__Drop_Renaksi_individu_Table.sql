@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS renaksi_individu;
+DROP TABLE IF EXISTS renaksi;
