@@ -4,7 +4,7 @@ import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.FaktorPenghambatRekinRequest;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.FaktorPenunjangRekinRequest;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.RekinRequest;
-import cc.kertaskerja.realisasi_opd_service.sasaran.domain.target.TargetIndikatorSasaranOpdRepository;
+import cc.kertaskerja.realisasi_opd_service.sasaran.domain.SasaranOpdRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
@@ -25,7 +25,7 @@ public class RekinServiceTests {
     private RekinIndividuRepository repository;
 
     @Mock
-    private TargetIndikatorSasaranOpdRepository targetIndikatorSasaranOpdRepository;
+    private SasaranOpdRepository sasaranOpdRepository;
 
     @InjectMocks
     private RekinService rekinService;
@@ -57,8 +57,8 @@ public class RekinServiceTests {
                             r.realisasi(), r.jenisRealisasi(), r.faktorPenunjang(), r.faktorPenghambat(),
                             null, null, null, null));
                 });
-        when(targetIndikatorSasaranOpdRepository
-                .findFirstByKodeOpdAndKodeSasaranOpdAndKodeIndikatorSasaranOpdAndKodeTargetSasaranOpdAndTahunAndBulan(
+        when(sasaranOpdRepository
+                .findFirstByKodeOpdAndKodeSasaranOpdAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
                         anyString(), anyString(), anyString(), anyString(), anyString(), anyString()))
                 .thenReturn(Mono.empty());
 
@@ -88,8 +88,8 @@ public class RekinServiceTests {
                 .thenReturn(Mono.just(existing));
         when(repository.save(ArgumentMatchers.any(RekinIndividu.class)))
                 .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
-        when(targetIndikatorSasaranOpdRepository
-                .findFirstByKodeOpdAndKodeSasaranOpdAndKodeIndikatorSasaranOpdAndKodeTargetSasaranOpdAndTahunAndBulan(
+        when(sasaranOpdRepository
+                .findFirstByKodeOpdAndKodeSasaranOpdAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
                         anyString(), anyString(), anyString(), anyString(), anyString(), anyString()))
                 .thenReturn(Mono.empty());
 

@@ -6,8 +6,8 @@ import cc.kertaskerja.realisasi_individu_service.rekin.web.FaktorPenghambatRekin
 import cc.kertaskerja.realisasi_individu_service.rekin.web.FaktorPenunjangRekinRequest;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.PenetapanRekinIndividuResponse;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.RekinRequest;
-import cc.kertaskerja.realisasi_opd_service.sasaran.domain.target.TargetIndikatorSasaranOpd;
-import cc.kertaskerja.realisasi_opd_service.sasaran.domain.target.TargetIndikatorSasaranOpdRepository;
+import cc.kertaskerja.realisasi_opd_service.sasaran.domain.SasaranOpd;
+import cc.kertaskerja.realisasi_opd_service.sasaran.domain.SasaranOpdRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -24,16 +24,16 @@ import java.util.stream.Collectors;
 public class RekinService {
     private static final Logger log = LoggerFactory.getLogger(RekinService.class);
     private final RekinIndividuRepository repository;
-    private final TargetIndikatorSasaranOpdRepository targetIndikatorSasaranOpdRepository;
+    private final SasaranOpdRepository sasaranOpdRepository;
     private final PenetapanRekinIndividuClient penetapanClient;
 
     public RekinService(
             RekinIndividuRepository repository,
-            TargetIndikatorSasaranOpdRepository targetIndikatorSasaranOpdRepository,
+            SasaranOpdRepository sasaranOpdRepository,
             PenetapanRekinIndividuClient penetapanClient
     ) {
         this.repository = repository;
-        this.targetIndikatorSasaranOpdRepository = targetIndikatorSasaranOpdRepository;
+        this.sasaranOpdRepository = sasaranOpdRepository;
         this.penetapanClient = penetapanClient;
     }
 
@@ -112,19 +112,18 @@ public class RekinService {
         if (req.kodeSasaranOpd() == null || req.kodeSasaranOpd().isBlank()) {
             return Mono.empty();
         }
-        return targetIndikatorSasaranOpdRepository
-                .findFirstByKodeOpdAndKodeSasaranOpdAndKodeIndikatorSasaranOpdAndKodeTargetSasaranOpdAndTahunAndBulan(
+        return sasaranOpdRepository
+                .findFirstByKodeOpdAndKodeSasaranOpdAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
                         saved.kodeOpd(), req.kodeSasaranOpd(), saved.kodeIndikatorPkRekin(),
                         saved.kodeTargetPkRekin(), saved.tahun(), saved.bulan())
                 .flatMap(existing -> {
-                    TargetIndikatorSasaranOpd updated = new TargetIndikatorSasaranOpd(
-                            existing.id(), existing.indikatorSasaranId(),
-                            existing.kodeTarget(), saved.realisasi(),
-                            existing.tahun(), existing.bulan(),
+                    SasaranOpd updated = new SasaranOpd(
+                            existing.id(), existing.kodeOpd(), existing.tahun(), existing.bulan(),
+                            existing.kodeSasaranOpd(), existing.kodeIndikator(), existing.kodeTarget(),
+                            saved.realisasi(), existing.jenisRealisasi(),
                             existing.faktorPenunjang(), existing.faktorPenghambat(),
-                            existing.createdDate(), existing.lastModifiedDate(),
-                            existing.createdBy(), existing.lastModifiedBy());
-                    return targetIndikatorSasaranOpdRepository.save(updated);
+                            existing.createdBy(), existing.createdDate(), null, null);
+                    return sasaranOpdRepository.save(updated);
                 })
                 .then();
     }

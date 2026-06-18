@@ -1,10 +1,8 @@
 package cc.kertaskerja.realisasi_opd_service.sasaran.domain;
 
 import cc.kertaskerja.integration.penetapan.PenetapanSasaranOpdClient;
-import cc.kertaskerja.realisasi_opd_service.sasaran.domain.indikator.IndikatorSasaranOpd;
-import cc.kertaskerja.realisasi_opd_service.sasaran.domain.indikator.IndikatorSasaranOpdRepository;
-import cc.kertaskerja.realisasi_opd_service.sasaran.domain.target.TargetIndikatorSasaranOpd;
-import cc.kertaskerja.realisasi_opd_service.sasaran.domain.target.TargetIndikatorSasaranOpdRepository;
+import cc.kertaskerja.realisasi.domain.JenisRealisasi;
+import cc.kertaskerja.realisasi_opd_service.sasaran.web.SasaranOpdRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,16 +16,13 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SasaranOpdServiceTest {
     @Mock
     private SasaranOpdRepository sasaranOpdRepository;
-    @Mock
-    private IndikatorSasaranOpdRepository indikatorSasaranOpdRepository;
-    @Mock
-    private TargetIndikatorSasaranOpdRepository targetIndikatorSasaranOpdRepository;
     @Mock
     private PenetapanSasaranOpdClient penetapanSasaranOpdClient;
 
@@ -36,56 +31,90 @@ class SasaranOpdServiceTest {
 
     @Test
     void getRealisasiSasaranOpdByTahunAndKodeOpdAndBulan_ShouldReturnMappedResponses() {
-        SasaranOpd sasaran = new SasaranOpd(1L, "5.01.5.05.0.00.01.0000", "SAS-OPD-001",
-                "2026", "3", "tester", Instant.now(), Instant.now(), "tester");
-        IndikatorSasaranOpd indikator = new IndikatorSasaranOpd(2L, 1L, "IND-01", "5.01.5.05.0.00.01.0000",
-                "2026", "3", Instant.now(), Instant.now(), "tester", null);
-        TargetIndikatorSasaranOpd target = new TargetIndikatorSasaranOpd(3L, 2L, "TGT-001", BigDecimal.valueOf(75),
-                "2026", "3", "", "", Instant.now(), Instant.now(), "tester", null);
+        SasaranOpd entity = new SasaranOpd(1L, "5.01.5.05.0.00.01.0000", "2026", "3",
+                "SAS-OPD-001", "IND-01", "TGT-001", BigDecimal.valueOf(75),
+                JenisRealisasi.NAIK, "", "",
+                "tester", Instant.now(), Instant.now(), "tester");
 
-        when(sasaranOpdRepository.findAllByTahunAndKodeOpdAndBulan("2026", "5.01.5.05.0.00.01.0000", "3"))
-                .thenReturn(Flux.just(sasaran));
-        when(indikatorSasaranOpdRepository.findAll()).thenReturn(Flux.just(indikator));
-        when(targetIndikatorSasaranOpdRepository.findAll()).thenReturn(Flux.just(target));
-        when(penetapanSasaranOpdClient.fetchSasaranOpd("5.01.5.05.0.00.01.0000", 2026)).thenReturn(Mono.just(List.of()));
+        when(sasaranOpdRepository.findAllByKodeOpdAndTahunAndBulan(
+                "5.01.5.05.0.00.01.0000", "2026", "3"))
+                .thenReturn(Flux.just(entity));
+        when(penetapanSasaranOpdClient.fetchSasaranOpd("5.01.5.05.0.00.01.0000", 2026))
+                .thenReturn(Mono.just(List.of()));
 
-        StepVerifier.create(sasaranOpdService.getRealisasiSasaranOpdByTahunAndKodeOpdAndBulan("2026", "5.01.5.05.0.00.01.0000", "3"))
+        StepVerifier.create(sasaranOpdService.getRealisasiSasaranOpdByTahunAndKodeOpdAndBulan(
+                        "2026", "5.01.5.05.0.00.01.0000", "3"))
                 .assertNext(response -> {
                     org.junit.jupiter.api.Assertions.assertEquals(1L, response.id());
-                    org.junit.jupiter.api.Assertions.assertEquals(75.0, response.indikators().getFirst().targets().getFirst().realisasi());
+                    org.junit.jupiter.api.Assertions.assertEquals(75.0, response.realisasi());
+                    org.junit.jupiter.api.Assertions.assertEquals("SAS-OPD-001", response.kodeSasaranOpd());
+                    org.junit.jupiter.api.Assertions.assertEquals("IND-01", response.kodeIndikator());
+                    org.junit.jupiter.api.Assertions.assertEquals("TGT-001", response.kodeTarget());
                 })
                 .verifyComplete();
     }
 
     @Test
     void getRealisasiSasaranOpdByTahunAndKodeOpdAndBulan_ShouldReturnEmpty_WhenNoData() {
-        when(sasaranOpdRepository.findAllByTahunAndKodeOpdAndBulan("2026", "1.01.0.00.0.00.01.0000", "1"))
+        when(sasaranOpdRepository.findAllByKodeOpdAndTahunAndBulan("1.01.0.00.0.00.01.0000", "2026", "1"))
                 .thenReturn(Flux.empty());
 
-        StepVerifier.create(sasaranOpdService.getRealisasiSasaranOpdByTahunAndKodeOpdAndBulan("2026", "1.01.0.00.0.00.01.0000", "1"))
+        StepVerifier.create(sasaranOpdService.getRealisasiSasaranOpdByTahunAndKodeOpdAndBulan(
+                        "2026", "1.01.0.00.0.00.01.0000", "1"))
                 .verifyComplete();
     }
 
     @Test
-    void getRealisasiSasaranOpdByTahunAndKodeOpdAndBulan_ShouldHideOrphanData() {
-        SasaranOpd sasaran = new SasaranOpd(1L, "5.01.5.05.0.00.01.0000", "SAS-ORPHAN",
-                "2026", "3", "tester", Instant.now(), Instant.now(), "tester");
-        IndikatorSasaranOpd indikator = new IndikatorSasaranOpd(2L, 1L, "IND-ORPHAN", "5.01.5.05.0.00.01.0000",
-                "2026", "3", Instant.now(), Instant.now(), "tester", null);
-        TargetIndikatorSasaranOpd target = new TargetIndikatorSasaranOpd(3L, 2L, "TGT-ORPHAN", BigDecimal.valueOf(75),
-                "2026", "3", "", "", Instant.now(), Instant.now(), "tester", null);
+    void submitRealisasiSasaranOpd_ShouldCreateNew_WhenNotExists() {
+        SasaranOpdRequest req = new SasaranOpdRequest("SAS-OPD-001", "IND-01", "TGT-001",
+                75.0, JenisRealisasi.NAIK, "2026", "3", "5.01.5.05.0.00.01.0000");
 
-        when(sasaranOpdRepository.findAllByTahunAndKodeOpdAndBulan("2026", "5.01.5.05.0.00.01.0000", "3"))
-                .thenReturn(Flux.just(sasaran));
-        when(indikatorSasaranOpdRepository.findAll()).thenReturn(Flux.just(indikator));
-        when(targetIndikatorSasaranOpdRepository.findAll()).thenReturn(Flux.just(target));
-        when(penetapanSasaranOpdClient.fetchSasaranOpd("5.01.5.05.0.00.01.0000", 2026)).thenReturn(Mono.just(List.of()));
+        SasaranOpd saved = new SasaranOpd(1L, "5.01.5.05.0.00.01.0000", "2026", "3",
+                "SAS-OPD-001", "IND-01", "TGT-001", BigDecimal.valueOf(75),
+                JenisRealisasi.NAIK, "", "",
+                null, null, null, null);
 
-        StepVerifier.create(sasaranOpdService.getRealisasiSasaranOpdByTahunAndKodeOpdAndBulan("2026", "5.01.5.05.0.00.01.0000", "3"))
+        when(sasaranOpdRepository.findFirstByKodeOpdAndKodeSasaranOpdAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
+                "5.01.5.05.0.00.01.0000", "SAS-OPD-001", "IND-01", "TGT-001", "2026", "3"))
+                .thenReturn(Mono.empty());
+        when(sasaranOpdRepository.save(any(SasaranOpd.class))).thenReturn(Mono.just(saved));
+        when(penetapanSasaranOpdClient.fetchSasaranOpd("5.01.5.05.0.00.01.0000", 2026))
+                .thenReturn(Mono.just(List.of()));
+
+        StepVerifier.create(sasaranOpdService.submitRealisasiSasaranOpd(req))
                 .assertNext(response -> {
-                    org.junit.jupiter.api.Assertions.assertEquals("SAS-ORPHAN", response.kodeSasaranOpd());
-                    org.junit.jupiter.api.Assertions.assertTrue(response.indikators().getFirst().targets().stream()
-                            .anyMatch(t -> "TGT-ORPHAN".equals(t.kodeTarget())));
+                    org.junit.jupiter.api.Assertions.assertEquals(75.0, response.realisasi());
+                    org.junit.jupiter.api.Assertions.assertEquals("SAS-OPD-001", response.kodeSasaranOpd());
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void submitRealisasiSasaranOpd_ShouldUpdate_WhenExists() {
+        SasaranOpdRequest req = new SasaranOpdRequest("SAS-OPD-001", "IND-01", "TGT-001",
+                85.0, JenisRealisasi.NAIK, "2026", "3", "5.01.5.05.0.00.01.0000");
+
+        SasaranOpd existing = new SasaranOpd(1L, "5.01.5.05.0.00.01.0000", "2026", "3",
+                "SAS-OPD-001", "IND-01", "TGT-001", BigDecimal.valueOf(75),
+                JenisRealisasi.NAIK, "faktor", "",
+                "creator", Instant.now(), null, null);
+
+        SasaranOpd updated = new SasaranOpd(1L, "5.01.5.05.0.00.01.0000", "2026", "3",
+                "SAS-OPD-001", "IND-01", "TGT-001", BigDecimal.valueOf(85),
+                JenisRealisasi.NAIK, "faktor", "",
+                "creator", existing.createdDate(), null, null);
+
+        when(sasaranOpdRepository.findFirstByKodeOpdAndKodeSasaranOpdAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
+                "5.01.5.05.0.00.01.0000", "SAS-OPD-001", "IND-01", "TGT-001", "2026", "3"))
+                .thenReturn(Mono.just(existing));
+        when(sasaranOpdRepository.save(any(SasaranOpd.class))).thenReturn(Mono.just(updated));
+        when(penetapanSasaranOpdClient.fetchSasaranOpd("5.01.5.05.0.00.01.0000", 2026))
+                .thenReturn(Mono.just(List.of()));
+
+        StepVerifier.create(sasaranOpdService.submitRealisasiSasaranOpd(req))
+                .assertNext(response -> {
+                    org.junit.jupiter.api.Assertions.assertEquals(85.0, response.realisasi());
+                    org.junit.jupiter.api.Assertions.assertEquals("faktor", response.faktorPenunjang());
                 })
                 .verifyComplete();
     }

@@ -1,17 +1,27 @@
 package cc.kertaskerja.realisasi_opd_service.sasaran.web;
 
+import cc.kertaskerja.realisasi_opd_service.sasaran.domain.SasaranOpd;
 import cc.kertaskerja.realisasi_opd_service.sasaran.domain.SasaranOpdService;
-import cc.kertaskerja.realisasi_opd_service.sasaran.domain.target.TargetIndikatorSasaranOpd;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("sasaran_opd")
@@ -19,27 +29,9 @@ import reactor.core.publisher.Mono;
 public class SasaranOpdController {
     private final SasaranOpdService sasaranOpdService;
 
-    public SasaranOpdController(
-            SasaranOpdService sasaranOpdService
-    ) {
+    public SasaranOpdController(SasaranOpdService sasaranOpdService) {
         this.sasaranOpdService = sasaranOpdService;
     }
-
-//     @GetMapping("/{kodeOpd}/tahun/{tahun}/bulan/{bulan}")
-//     @Operation(summary = "Cari realisasi sasaran OPD per tahun dan bulan", description = "Mengambil realisasi sasaran OPD berdasarkan kode OPD, tahun, dan bulan.")
-//     @ApiResponses(value = {
-//             @ApiResponse(responseCode = "200", description = "Daftar realisasi sasaran OPD", content = @Content(schema = @Schema(implementation = SasaranOpdSubmitListResponse.class))),
-//             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
-//             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-//     })
-//     public Mono<SasaranOpdSubmitListResponse> getRealisasiSasaranOpdByTahunAndKodeOpdAndBulan(
-//             @Parameter(description = "Kode OPD", example = "5.01.5.05.0.00.01.0000") @PathVariable String kodeOpd,
-//             @Parameter(description = "Tahun realisasi", example = "2026") @PathVariable String tahun,
-//             @Parameter(description = "Bulan realisasi", example = "1") @PathVariable String bulan) {
-//         return sasaranOpdService.getRealisasiSasaranOpdByTahunAndKodeOpdAndBulan(tahun, kodeOpd, bulan)
-//                 .collectList()
-//                 .map(items -> new SasaranOpdSubmitListResponse(kodeOpd, Integer.parseInt(tahun), items));
-//     }
 
     @GetMapping("/{kodeOpd}/tahun/{tahun}/penetapan")
     @Operation(summary = "Integrasi penetapan dengan realisasi sasaran OPD", description = "Menggabungkan data penetapan (dari external service) dengan data realisasi sasaran OPD berdasarkan kode OPD dan tahun. Parameter bulan bersifat opsional; jika tidak dikirim, hanya data penetapan tanpa realisasi yang dikembalikan.")
@@ -55,34 +47,63 @@ public class SasaranOpdController {
         return sasaranOpdService.getPenetapanWithRealisasi(kodeOpd, Integer.parseInt(tahun), bulan);
     }
 
-    @PostMapping("/faktor-penunjang")
-    @Operation(summary = "Perbarui faktor penunjang target indikator sasaran OPD", description = "Memperbarui field faktor_penunjang pada record TargetIndikatorSasaranOpd yang cocok dengan composite key (kodeOpd, kodeSasaranOpd, kodeIndikator, kodeTarget, tahun, bulan).")
+    @PostMapping
+    @Operation(summary = "Simpan realisasi sasaran OPD", description = "Menyimpan satu data realisasi sasaran OPD. Role `level_1`, `level_2`, `level_3`, dan `level_4` tidak diizinkan mengakses endpoint ini.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = TargetIndikatorSasaranOpd.class))),
+            @ApiResponse(responseCode = "200", description = "Data realisasi sasaran OPD tersimpan", content = @Content(schema = @Schema(implementation = SasaranOpdResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden untuk role level_1, level_2, level_3, dan level_4", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Mono<SasaranOpdResponse> submitRealisasiSasaranOpd(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload realisasi sasaran OPD", required = true,
+                    content = @Content(schema = @Schema(implementation = SasaranOpdRequest.class)))
+            @RequestBody @Valid SasaranOpdRequest sasaranOpdRequest) {
+        return sasaranOpdService.submitRealisasiSasaranOpd(sasaranOpdRequest);
+    }
+
+    @PostMapping("/faktor-penunjang")
+    @Operation(summary = "Perbarui faktor penunjang sasaran OPD", description = "Memperbarui hanya field faktor_penunjang pada record yang cocok dengan composite key (kodeOpd, kodeSasaranOpd, kodeIndikator, kodeTarget, tahun, bulan).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = SasaranOpd.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Sasaran OPD/Indikator/Target tidak ditemukan", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Data tidak ditemukan", content = @Content)
     })
-    public Mono<TargetIndikatorSasaranOpd> updateFaktorPenunjang(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penunjang target indikator sasaran OPD", required = true,
+    public Mono<SasaranOpd> updateFaktorPenunjang(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penunjang sasaran OPD", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenunjangSasaranOpdRequest.class)))
             @RequestBody @Valid FaktorPenunjangSasaranOpdRequest req) {
         return sasaranOpdService.updateFaktorPenunjang(req);
     }
 
     @PostMapping("/faktor-penghambat")
-    @Operation(summary = "Perbarui faktor penghambat target indikator sasaran OPD", description = "Memperbarui field faktor_penghambat pada record TargetIndikatorSasaranOpd yang cocok dengan composite key (kodeOpd, kodeSasaranOpd, kodeIndikator, kodeTarget, tahun, bulan).")
+    @Operation(summary = "Perbarui faktor penghambat sasaran OPD", description = "Memperbarui hanya field faktor_penghambat pada record yang cocok dengan composite key (kodeOpd, kodeSasaranOpd, kodeIndikator, kodeTarget, tahun, bulan).")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = TargetIndikatorSasaranOpd.class))),
+            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = SasaranOpd.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Sasaran OPD/Indikator/Target tidak ditemukan", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Data tidak ditemukan", content = @Content)
     })
-    public Mono<TargetIndikatorSasaranOpd> updateFaktorPenghambat(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penghambat target indikator sasaran OPD", required = true,
+    public Mono<SasaranOpd> updateFaktorPenghambat(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload faktor penghambat sasaran OPD", required = true,
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatSasaranOpdRequest.class)))
             @RequestBody @Valid FaktorPenghambatSasaranOpdRequest req) {
         return sasaranOpdService.updateFaktorPenghambat(req);
     }
 
+    @PostMapping("/create/batch")
+    @Operation(summary = "Simpan batch realisasi sasaran OPD", description = "Menyimpan beberapa data realisasi sasaran OPD dalam satu request. Role `level_1`, `level_2`, `level_3`, dan `level_4` tidak diizinkan mengakses endpoint ini.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Batch berhasil disimpan", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SasaranOpdResponse.class)))),
+            @ApiResponse(responseCode = "400", description = "Payload batch tidak valid", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden untuk role level_1, level_2, level_3, dan level_4", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<SasaranOpdResponse> batchSubmitRealisasiSasaranOpd(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Daftar payload realisasi sasaran OPD", required = true,
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = SasaranOpdRequest.class))))
+            @RequestBody @Valid List<SasaranOpdRequest> sasaranOpdRequests) {
+        return sasaranOpdService.batchSubmitRealisasiSasaranOpd(sasaranOpdRequests);
+    }
 }

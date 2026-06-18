@@ -6,14 +6,16 @@ import reactor.core.publisher.Mono;
 
 public interface SasaranOpdRepository extends ReactiveCrudRepository<SasaranOpd, Long> {
 
-    Mono<SasaranOpd> findFirstByKodeOpdAndKodeSasaranOpdAndTahunAndBulan(
+    Flux<SasaranOpd> findAllByKodeOpdAndTahunAndBulan(String kodeOpd, String tahun, String bulan);
+
+    Mono<SasaranOpd> findFirstByKodeOpdAndKodeSasaranOpdAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
             String kodeOpd,
             String kodeSasaranOpd,
+            String kodeIndikator,
+            String kodeTarget,
             String tahun,
             String bulan
     );
 
-    Flux<SasaranOpd> findAllByTahunAndKodeOpd(String tahun, String kodeOpd);
-
-    Flux<SasaranOpd> findAllByTahunAndKodeOpdAndBulan(String tahun, String kodeOpd, String bulan);
+    Flux<SasaranOpd> findAllByKodeOpdAndTahun(String kodeOpd, String tahun);
 }
