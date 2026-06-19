@@ -11,7 +11,6 @@ public record RenjaIndividuSubKegiatanRequest(
 
         @NotNull @NotEmpty
         @Schema(example = "5.01.5.05.0.00.01.0000")
-        @JsonProperty("kode_opd")
         String kodeOpd,
 
         @NotNull @NotEmpty
@@ -27,31 +26,24 @@ public record RenjaIndividuSubKegiatanRequest(
         String nip,
 
         @NotNull @NotEmpty
-        @Schema(example = "John Doe")
-        @JsonProperty("nama_pegawai")
-        String namaPegawai,
-
-        @NotNull @NotEmpty
-        @Schema(example = "5.01.02.001")
-        @JsonProperty("kode_kegiatan")
-        String kodeKegiatan,
-
-        @NotNull @NotEmpty
         @Schema(example = "5.01.02.001.001")
-        @JsonProperty("kode_subkegiatan")
         String kodeSubKegiatan,
 
         @NotNull @NotEmpty
         @Schema(example = "IND-RENJA-PENETAPAN-5.01.02.001.001-5.01.5.05.0.00.01.0000-2026-001")
-        @JsonProperty("kode_indikator")
         String kodeIndikator,
 
         @NotNull @NotEmpty
         @Schema(example = "TGT-TRG-PENETAPAN-89457")
-        @JsonProperty("kode_target")
         String kodeTarget,
+
+        @Schema(example = "PAGU-001")
+        String kodePagu,
 
         @NotNull @PositiveOrZero
         @Schema(example = "70")
-        Double realisasi
+        Double realisasi,
+
+        @Schema(hidden = true)
+        String jenisRealisasi
 ) {}

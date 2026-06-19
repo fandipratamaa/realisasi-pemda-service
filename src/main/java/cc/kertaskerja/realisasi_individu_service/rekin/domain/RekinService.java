@@ -2,6 +2,7 @@ package cc.kertaskerja.realisasi_individu_service.rekin.domain;
 
 import cc.kertaskerja.integration.penetapan.PenetapanRekinIndividuClient;
 import cc.kertaskerja.integration.penetapan.rekin.PenetapanRekinIndividu;
+import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.FaktorPenghambatRekinRequest;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.FaktorPenunjangRekinRequest;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.PenetapanRekinIndividuResponse;
@@ -38,6 +39,7 @@ public class RekinService {
     }
 
     public Mono<RekinIndividu> createRekin(RekinRequest req) {
+        JenisRealisasi jenisRealisasi = req.jenisRealisasi() != null ? req.jenisRealisasi() : JenisRealisasi.NAIK;
         return repository
                 .findFirstByKodeOpdAndNipAndTahunAndBulanAndKodePkRekinAndKodeIndikatorPkRekinAndKodeTargetPkRekin(
                         req.kodeOpd(), req.nip(), req.tahun(), req.bulan(),
@@ -47,7 +49,7 @@ public class RekinService {
                             existing.id(),
                             existing.kodeOpd(), existing.nip(), existing.tahun(), existing.bulan(),
                             existing.kodePkRekin(), existing.kodeIndikatorPkRekin(), existing.kodeTargetPkRekin(),
-                            req.realisasi(), req.jenisRealisasi(),
+                            req.realisasi(), jenisRealisasi,
                             existing.faktorPenunjang(), existing.faktorPenghambat(),
                             existing.createdBy(), existing.lastModifiedBy(),
                             existing.createdDate(), existing.lastModifiedDate()
@@ -58,7 +60,7 @@ public class RekinService {
                     RekinIndividu baru = RekinIndividu.of(
                             req.kodeOpd(), req.nip(), req.tahun(), req.bulan(),
                             req.kodePkRekin(), req.kodeIndikatorPKrekin(), req.kodeTargetPKrekin(),
-                            req.realisasi(), req.jenisRealisasi(), "", "");
+                            req.realisasi(), jenisRealisasi, "", "");
                     return repository.save(baru);
                 }))
                 .flatMap(saved -> syncToSasaranOpd(saved, req).then(Mono.just(saved)));
@@ -243,8 +245,7 @@ public class RekinService {
         CapaianResult capaianResult = hitungCapaian(realisasiValue, target.target());
         String faktorPenunjang = local != null ? local.faktorPenunjang() : null;
         String faktorPenghambat = local != null ? local.faktorPenghambat() : null;
-        String jenisRealisasi = local != null && local.jenisRealisasi() != null
-                ? local.jenisRealisasi().name() : null;
+        String jenisRealisasi = "NAIK";
         return new PenetapanRekinIndividuResponse.TargetPenetapanResponse(
                 target.id(), target.kodeTargetPk(), target.tahun(), target.target(), target.satuan(),
                 realisasiValue, capaianResult.capaian(), capaianResult.keteranganCapaian(),

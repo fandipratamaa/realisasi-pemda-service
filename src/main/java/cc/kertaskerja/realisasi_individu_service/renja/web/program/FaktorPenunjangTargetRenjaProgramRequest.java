@@ -1,5 +1,6 @@
 package cc.kertaskerja.realisasi_individu_service.renja.web.program;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -8,8 +9,8 @@ import jakarta.validation.constraints.NotNull;
 public record FaktorPenunjangTargetRenjaProgramRequest(
 
         @NotNull @NotEmpty
-        @Schema(example = "198001012010011000")
-        String nip,
+        @Schema(example = "5.01.5.05.0.00.01.0000")
+        String kodeOpd,
 
         @NotNull @NotEmpty
         @Schema(example = "5.01.02")

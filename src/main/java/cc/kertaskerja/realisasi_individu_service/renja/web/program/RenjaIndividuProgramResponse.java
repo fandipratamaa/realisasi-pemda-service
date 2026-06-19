@@ -12,25 +12,22 @@ public record RenjaIndividuProgramResponse(
         String bulan,
         String nip,
 
-        @JsonProperty("nama_pegawai")
-        String namaPegawai,
-
         @JsonProperty("kode_program")
         String kodeProgram,
-
-        String program,
 
         @JsonProperty("kode_indikator")
         String kodeIndikator,
 
-        String indikator,
-
         @JsonProperty("kode_target")
         String kodeTarget,
 
-        Double target,
+        @JsonProperty("kode_pagu")
+        String kodePagu,
 
         Double realisasi,
+
+        @JsonProperty("jenis_realisasi")
+        String jenisRealisasi,
 
         Double capaian,
 
