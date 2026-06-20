@@ -1,7 +1,5 @@
 package cc.kertaskerja.realisasi_individu_service.renaksi.web;
 
-import cc.kertaskerja.realisasi.domain.JenisRealisasi;
-import io.micrometer.common.lang.Nullable;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -9,12 +7,8 @@ import jakarta.validation.constraints.PositiveOrZero;
 
 import java.math.BigDecimal;
 
-@Schema(name = "RenaksiIndividuRequest", description = "Payload untuk membuat/memperbarui sasaran individu beserta renaksi, indikator, dan target")
+@Schema(name = "RenaksiIndividuRequest", description = "Payload untuk membuat/memperbarui realisasi target renaksi individu")
 public record RenaksiIndividuRequest(
-
-        @Nullable
-        @Schema(description = "ID internal data sasaran. Kosongkan saat create.", example = "1", nullable = true)
-        Long id,
 
         @NotNull(message = "Kode OPD tidak boleh kosong")
         @NotEmpty(message = "Kode OPD tidak boleh kosong")
@@ -46,20 +40,12 @@ public record RenaksiIndividuRequest(
         @Schema(description = "Kode target", example = "TAR-1")
         String kodeTarget,
 
-        @NotNull(message = "Target harus terdefinisi")
-        @Schema(description = "Nilai target yang ditetapkan", example = "100.0")
-        BigDecimal target,
-
-        @Nullable
+        @NotNull(message = "Realisasi tidak boleh kosong")
         @PositiveOrZero(message = "Realisasi tidak boleh negatif")
         @Schema(description = "Nilai realisasi aktual", example = "75.5", minimum = "0")
         BigDecimal realisasi,
 
-        @NotNull(message = "Pilih jenis NAIK atau TURUN")
-        @Schema(description = "Jenis perhitungan capaian", example = "NAIK", allowableValues = {"NAIK", "TURUN"})
-        JenisRealisasi jenisRealisasi,
-
-        @Nullable
+        @NotNull(message = "Pagu anggaran tidak boleh kosong")
         @Schema(description = "Pagu anggaran", example = "50000000.00")
         BigDecimal paguAnggaran,
 

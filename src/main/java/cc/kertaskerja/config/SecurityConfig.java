@@ -27,7 +27,7 @@ public class SecurityConfig {
             "/renja_opd"
     );
     private static final List<String> INDIVIDU_ALLOWED_GET_PREFIXES = List.of(
-            "/renaksi",
+            "/renaksi_individu",
             "/rekin"
     );
     private static final List<String> OPD_ALLOWED_GET_PREFIXES = List.of(
@@ -35,14 +35,14 @@ public class SecurityConfig {
             "/sasaran_opd"
     );
     private static final List<String> INDIVIDU_CORE_FULL_ACCESS_PREFIXES = List.of(
-            "/renaksi",
+            "/renaksi_individu",
             "/rekin"
     );
     private static final List<String> INDIVIDU_RENJA_ALLOWED_GET_PREFIXES = List.of(
             "/renja_individu"
     );
     private static final List<String> INDIVIDU_ALL_FULL_ACCESS_PREFIXES = List.of(
-            "/renaksi",
+            "/renaksi_individu",
             "/rekin"
     );
     private static final List<String> INDIVIDU_RENJA_PROGRAM_FULL_ACCESS_PREFIXES = List.of(

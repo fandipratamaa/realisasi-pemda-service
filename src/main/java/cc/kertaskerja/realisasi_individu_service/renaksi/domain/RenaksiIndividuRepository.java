@@ -4,12 +4,11 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 public interface RenaksiIndividuRepository extends ReactiveCrudRepository<RenaksiIndividu, Long> {
-    Flux<RenaksiIndividu> findAllBySasaranId(Long sasaranId);
+    Flux<RenaksiIndividu> findAllByKodeOpdAndNipAndKodeSasaran(String kodeOpd, String nip, String kodeSasaran);
 
-    Flux<RenaksiIndividu> findAllBySasaranIdIn(List<Long> sasaranIds);
-
-    Mono<RenaksiIndividu> findFirstBySasaranIdAndKodeRenaksi(Long sasaranId, String kodeRenaksi);
+    Mono<RenaksiIndividu> findFirstByKodeOpdAndNipAndKodeSasaranAndKodeRenaksiAndKodeIndikatorAndKodeTarget(
+            String kodeOpd, String nip, String kodeSasaran,
+            String kodeRenaksi, String kodeIndikator, String kodeTarget
+    );
 }

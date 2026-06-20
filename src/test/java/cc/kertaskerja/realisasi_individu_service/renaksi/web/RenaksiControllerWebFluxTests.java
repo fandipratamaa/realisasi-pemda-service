@@ -1,14 +1,9 @@
 package cc.kertaskerja.realisasi_individu_service.renaksi.web;
 
-import cc.kertaskerja.realisasi.domain.JenisRealisasi;
-
-import java.math.BigDecimal;
 import cc.kertaskerja.realisasi_individu_service.renaksi.domain.RenaksiService;
 import cc.kertaskerja.realisasi_individu_service.renaksi.domain.RenaksiStatus;
 import cc.kertaskerja.realisasi_individu_service.renaksi.domain.SasaranIndividu;
 import cc.kertaskerja.realisasi_individu_service.renaksi.domain.SasaranWithDetails;
-import cc.kertaskerja.realisasi_individu_service.renaksi.domain.indikator.IndikatorRenaksiIndividu;
-import cc.kertaskerja.realisasi_individu_service.renaksi.domain.target.TargetIndikatorRenaksiIndividu;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,27 +27,28 @@ public class RenaksiControllerWebFluxTests {
     private RenaksiService renaksiService;
 
     @Test
-    void whenGetByKodeOpdTahunBulan_thenReturnsList() {
+    void whenGetByNipKodeOpdTahunBulan_thenReturnsList() {
+        String nip = "198012312005011001";
         String kodeOpd = "4.01.01.";
         String tahun = "2026";
         String bulan = "Januari";
 
-        SasaranIndividu s1 = SasaranIndividu.of(kodeOpd, "198012312005011001", "SASARAN-1",
+        SasaranIndividu s1 = SasaranIndividu.of(kodeOpd, nip, "SASARAN-1",
                 "Sasaran A", tahun, bulan, RenaksiStatus.UNCHECKED);
-        SasaranIndividu s2 = SasaranIndividu.of(kodeOpd, "198012312005011001", "SASARAN-2",
+        SasaranIndividu s2 = SasaranIndividu.of(kodeOpd, nip, "SASARAN-2",
                 "Sasaran B", tahun, bulan, RenaksiStatus.UNCHECKED);
 
-        SasaranWithDetails d1 = new SasaranWithDetails(s1, List.of(), List.of(), List.of());
-        SasaranWithDetails d2 = new SasaranWithDetails(s2, List.of(), List.of(), List.of());
+        SasaranWithDetails d1 = new SasaranWithDetails(s1, List.of());
+        SasaranWithDetails d2 = new SasaranWithDetails(s2, List.of());
 
-        when(renaksiService.getSasaranWithDetailsByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan))
+        when(renaksiService.getSasaranWithDetailsByNipAndKodeOpdAndTahunAndBulan(nip, kodeOpd, tahun, bulan))
                 .thenReturn(Flux.just(d1, d2));
 
         webTestClient
                 .mutateWith(SecurityMockServerConfigurers.mockJwt()
                         .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                 .get()
-                .uri("/renaksi/by-kode-opd/{kodeOpd}/by-tahun/{tahun}/by-bulan/{bulan}", kodeOpd, tahun, bulan)
+                .uri("/renaksi_individu/nip/{nip}/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}", nip, kodeOpd, tahun, bulan)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(SasaranWithDetails.class)

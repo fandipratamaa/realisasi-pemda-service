@@ -58,7 +58,7 @@ public class OpenApiConfig {
                 .pathsToMatch(
                         "/rekin/**",
                         "/renja_individu/**",
-                        "/renaksi/**")
+                        "/renaksi_individu/**")
                 .build();
     }
 }

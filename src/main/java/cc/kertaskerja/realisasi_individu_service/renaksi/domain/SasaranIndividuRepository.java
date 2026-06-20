@@ -7,9 +7,9 @@ import reactor.core.publisher.Mono;
 public interface SasaranIndividuRepository extends ReactiveCrudRepository<SasaranIndividu, Long> {
     Flux<SasaranIndividu> findAllByNipAndTahun(String nip, String tahun);
 
-    Flux<SasaranIndividu> findAllByNipAndTahunAndBulan(String nip, String tahun, String bulan);
-
     Flux<SasaranIndividu> findAllByKodeOpdAndTahunAndBulan(String kodeOpd, String tahun, String bulan);
+
+    Flux<SasaranIndividu> findAllByNipAndKodeOpdAndTahunAndBulan(String nip, String kodeOpd, String tahun, String bulan);
 
     Mono<SasaranIndividu> findFirstByNipAndTahunAndBulanAndKodeSasaran(String nip, String tahun, String bulan, String kodeSasaran);
 
