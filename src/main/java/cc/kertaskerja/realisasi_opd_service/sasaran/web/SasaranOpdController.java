@@ -1,5 +1,6 @@
 package cc.kertaskerja.realisasi_opd_service.sasaran.web;
 
+import cc.kertaskerja.realisasi.domain.JenisLaporan;
 import cc.kertaskerja.realisasi_opd_service.sasaran.domain.SasaranOpd;
 import cc.kertaskerja.realisasi_opd_service.sasaran.domain.SasaranOpdService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,6 +46,21 @@ public class SasaranOpdController {
             @Parameter(description = "Tahun", example = "2026") @PathVariable String tahun,
             @Parameter(description = "Bulan realisasi (opsional)", example = "1") @RequestParam(required = false) String bulan) {
         return sasaranOpdService.getPenetapanWithRealisasi(kodeOpd, Integer.parseInt(tahun), bulan);
+    }
+
+    @GetMapping("/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
+    @Operation(summary = "Laporan realisasi sasaran OPD per periode", description = "Mengambil total realisasi sasaran OPD yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data laporan realisasi sasaran OPD", content = @Content(schema = @Schema(implementation = LaporanRealisasiSasaranOpdResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Mono<LaporanRealisasiSasaranOpdResponse> getLaporanRealisasi(
+            @Parameter(description = "Kode OPD", example = "5.01.5.05.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun laporan", example = "2026") @PathVariable String tahun,
+            @Parameter(description = "Jenis periode laporan", example = "TAHUNAN") @PathVariable JenisLaporan jenisLaporan,
+            @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN", example = "3") @RequestParam(required = false) String bulan) {
+        return sasaranOpdService.getLaporanRealisasi(kodeOpd, tahun, jenisLaporan, bulan);
     }
 
     @PostMapping

@@ -1,5 +1,6 @@
 package cc.kertaskerja.realisasi_pemda_service.sasaran.web;
 
+import cc.kertaskerja.realisasi.domain.JenisLaporan;
 import cc.kertaskerja.realisasi_pemda_service.sasaran.domain.Sasaran;
 import cc.kertaskerja.realisasi_pemda_service.sasaran.domain.SasaranService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,6 +39,20 @@ public class SasaranController {
             @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
             @Parameter(description = "Bulan realisasi", example = "Januari") @PathVariable String bulan) {
         return sasaranService.getAllRealisasiSasaranByTahunAndBulan(tahun, bulan);
+    }
+
+    @GetMapping("/laporan/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
+    @Operation(summary = "Laporan realisasi sasaran per periode", description = "Mengambil total realisasi sasaran yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data laporan realisasi sasaran", content = @Content(schema = @Schema(implementation = LaporanRealisasiSasaranResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Mono<LaporanRealisasiSasaranResponse> getLaporanRealisasi(
+            @Parameter(description = "Tahun laporan", example = "2025") @PathVariable String tahun,
+            @Parameter(description = "Jenis periode laporan", example = "TAHUNAN") @PathVariable JenisLaporan jenisLaporan,
+            @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN", example = "3") @RequestParam(required = false) String bulan) {
+        return sasaranService.getLaporanRealisasi(tahun, jenisLaporan, bulan);
     }
 
     @PostMapping

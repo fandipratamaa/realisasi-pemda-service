@@ -25,18 +25,34 @@ public record RenaksiIndividu(
         @Column("kode_sasaran")
         String kodeSasaran,
 
+        @Column("sasaran")
+        String sasaran,
+
         @Column("kode_renaksi")
         String kodeRenaksi,
+
+        @Column("renaksi")
+        String renaksi,
 
         @Column("kode_indikator")
         String kodeIndikator,
 
+        @Column("indikator")
+        String indikator,
+
         @Column("kode_target")
         String kodeTarget,
+
+        @Column("target")
+        BigDecimal target,
 
         @Column("pagu_anggaran")
         BigDecimal paguAnggaran,
         BigDecimal realisasi,
+        String tahun,
+        String bulan,
+        String satuan,
+        RenaksiStatus status,
 
         @Column("jenis_realisasi")
         JenisRealisasi jenisRealisasi,
@@ -63,17 +79,27 @@ public record RenaksiIndividu(
             String kodeOpd,
             String nip,
             String kodeSasaran,
+            String sasaran,
             String kodeRenaksi,
+            String renaksi,
             String kodeIndikator,
+            String indikator,
             String kodeTarget,
+            BigDecimal target,
             BigDecimal paguAnggaran,
             BigDecimal realisasi,
+            String tahun,
+            String bulan,
+            String satuan,
+            RenaksiStatus status,
             JenisRealisasi jenisRealisasi,
             String faktorPenunjang,
             String faktorPenghambat
     ) {
-        return new RenaksiIndividu(null, kodeOpd, nip, kodeSasaran, kodeRenaksi, kodeIndikator, kodeTarget,
-                paguAnggaran, realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat,
+        return new RenaksiIndividu(null, kodeOpd, nip, kodeSasaran, sasaran, kodeRenaksi, renaksi,
+                kodeIndikator, indikator, kodeTarget, target, paguAnggaran, realisasi,
+                tahun, bulan, satuan, status, jenisRealisasi,
+                faktorPenunjang, faktorPenghambat,
                 null, null, null, null);
     }
 
@@ -81,11 +107,6 @@ public record RenaksiIndividu(
     public String capaian() {
         double calculatedCapaian = capaianTarget();
         return formatCapaian(Math.min(calculatedCapaian, 100));
-    }
-
-    @JsonProperty("satuan")
-    public String satuan() {
-        return "%";
     }
 
     @JsonProperty("keteranganCapaian")

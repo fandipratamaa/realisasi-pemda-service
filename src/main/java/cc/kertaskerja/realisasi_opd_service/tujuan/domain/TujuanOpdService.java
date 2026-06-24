@@ -9,7 +9,9 @@ import cc.kertaskerja.realisasi_opd_service.tujuan.web.TujuanOpdResponse;
 import cc.kertaskerja.realisasi_opd_service.tujuan.web.faktor_penghambat.FaktorPenghambatTujuanOpdRequest;
 import cc.kertaskerja.realisasi_opd_service.tujuan.web.faktor_penunjang.FaktorPenunjangTujuanOpdRequest;
 
+import cc.kertaskerja.realisasi.domain.JenisLaporan;
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
+import cc.kertaskerja.realisasi_opd_service.tujuan.web.LaporanRealisasiTujuanOpdResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -80,6 +82,48 @@ public class TujuanOpdService {
                 req.kodeOpd(), req.kodeTujuanOpd(), req.kodeIndikator(), req.kodeTarget(),
                 req.tahun(), req.bulan(),
                 existing -> existing.withFaktorPenghambat(req.faktorPenghambat()));
+    }
+
+    public Mono<LaporanRealisasiTujuanOpdResponse> getLaporanRealisasi(String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan) {
+        return tujuanOpdRepository.findAllByKodeOpdAndTahun(kodeOpd, tahun)
+                .collectList()
+                .map(list -> {
+                    Map<String, Double> listData = switch (jenisLaporan) {
+                        case BULANAN -> {
+                            if (bulan == null || bulan.isBlank()) {
+                                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter bulan wajib diisi untuk laporan BULANAN");
+                            }
+                            double total = list.stream()
+                                    .filter(t -> bulan.equals(t.bulan()))
+                                    .filter(t -> t.realisasi() != null)
+                                    .mapToDouble(t -> t.realisasi().doubleValue())
+                                    .sum();
+                            yield Map.of(bulan, total);
+                        }
+                        case TRIWULAN -> {
+                            Map<String, Double> triwulanMap = new HashMap<>();
+                            for (int i = 1; i <= 4; i++) triwulanMap.put(String.valueOf(i), 0.0);
+                            for (TujuanOpd t : list) {
+                                if (t.realisasi() == null) continue;
+                                int noBulan = Integer.parseInt(t.bulan());
+                                String triwulan = String.valueOf((noBulan - 1) / 3 + 1);
+                                triwulanMap.merge(triwulan, t.realisasi().doubleValue(), Double::sum);
+                            }
+                            yield triwulanMap;
+                        }
+                        case TAHUNAN -> {
+                            Map<String, Double> bulanMap = new HashMap<>();
+                            for (int i = 1; i <= 12; i++) bulanMap.put(String.valueOf(i), 0.0);
+                            for (TujuanOpd t : list) {
+                                if (t.realisasi() == null) continue;
+                                String key = t.bulan();
+                                bulanMap.merge(key, t.realisasi().doubleValue(), Double::sum);
+                            }
+                            yield bulanMap;
+                        }
+                    };
+                    return new LaporanRealisasiTujuanOpdResponse(tahun, kodeOpd, jenisLaporan, listData);
+                });
     }
 
     private Mono<TujuanOpd> upsert(TujuanOpdRequest req) {

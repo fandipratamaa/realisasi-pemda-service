@@ -1,9 +1,9 @@
 package cc.kertaskerja.realisasi_individu_service.renaksi.web;
 
+import cc.kertaskerja.realisasi.domain.JenisRealisasi;
+import cc.kertaskerja.realisasi_individu_service.renaksi.domain.RenaksiIndividu;
 import cc.kertaskerja.realisasi_individu_service.renaksi.domain.RenaksiService;
 import cc.kertaskerja.realisasi_individu_service.renaksi.domain.RenaksiStatus;
-import cc.kertaskerja.realisasi_individu_service.renaksi.domain.SasaranIndividu;
-import cc.kertaskerja.realisasi_individu_service.renaksi.domain.SasaranWithDetails;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +14,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
@@ -31,18 +32,25 @@ public class RenaksiControllerWebFluxTests {
         String nip = "198012312005011001";
         String kodeOpd = "4.01.01.";
         String tahun = "2026";
-        String bulan = "Januari";
+        String bulan = "1";
 
-        SasaranIndividu s1 = SasaranIndividu.of(kodeOpd, nip, "SASARAN-1",
-                "Sasaran A", tahun, bulan, RenaksiStatus.UNCHECKED);
-        SasaranIndividu s2 = SasaranIndividu.of(kodeOpd, nip, "SASARAN-2",
-                "Sasaran B", tahun, bulan, RenaksiStatus.UNCHECKED);
+        RenaksiIndividu r1 = RenaksiIndividu.of(
+                kodeOpd, nip, "SASARAN-1", "Realisasi Sasaran SASARAN-1",
+                "RENAKSI-1", "Realisasi Renaksi RENAKSI-1",
+                "IND-1", "Realisasi Indikator IND-1",
+                "TAR-1", BigDecimal.valueOf(100), BigDecimal.valueOf(50000000),
+                BigDecimal.valueOf(75), tahun, bulan, "%",
+                RenaksiStatus.UNCHECKED, JenisRealisasi.NAIK, "", "");
+        RenaksiIndividu r2 = RenaksiIndividu.of(
+                kodeOpd, nip, "SASARAN-2", "Realisasi Sasaran SASARAN-2",
+                "RENAKSI-2", "Realisasi Renaksi RENAKSI-2",
+                "IND-2", "Realisasi Indikator IND-2",
+                "TAR-2", BigDecimal.valueOf(50), BigDecimal.valueOf(25000000),
+                BigDecimal.valueOf(25), tahun, bulan, "%",
+                RenaksiStatus.UNCHECKED, JenisRealisasi.NAIK, "", "");
 
-        SasaranWithDetails d1 = new SasaranWithDetails(s1, List.of());
-        SasaranWithDetails d2 = new SasaranWithDetails(s2, List.of());
-
-        when(renaksiService.getSasaranWithDetailsByNipAndKodeOpdAndTahunAndBulan(nip, kodeOpd, tahun, bulan))
-                .thenReturn(Flux.just(d1, d2));
+        when(renaksiService.getAllByNipAndKodeOpdAndTahunAndBulan(nip, kodeOpd, tahun, bulan))
+                .thenReturn(Flux.just(r1, r2));
 
         webTestClient
                 .mutateWith(SecurityMockServerConfigurers.mockJwt()
@@ -51,13 +59,13 @@ public class RenaksiControllerWebFluxTests {
                 .uri("/renaksi_individu/nip/{nip}/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}", nip, kodeOpd, tahun, bulan)
                 .exchange()
                 .expectStatus().isOk()
-                .expectBodyList(SasaranWithDetails.class)
+                .expectBodyList(RenaksiIndividu.class)
                 .consumeWith(response -> {
                     var body = response.getResponseBody();
                     Assertions.assertNotNull(body);
                     Assertions.assertEquals(2, body.size());
-                    Assertions.assertEquals(d1, body.get(0));
-                    Assertions.assertEquals(d2, body.get(1));
+                    Assertions.assertEquals(r1, body.get(0));
+                    Assertions.assertEquals(r2, body.get(1));
                 });
     }
 }

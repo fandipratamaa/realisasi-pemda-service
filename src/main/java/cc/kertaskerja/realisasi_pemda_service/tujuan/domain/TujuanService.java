@@ -1,8 +1,10 @@
 package cc.kertaskerja.realisasi_pemda_service.tujuan.domain;
 
+import cc.kertaskerja.realisasi.domain.JenisLaporan;
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import cc.kertaskerja.realisasi_pemda_service.tujuan.web.FaktorPenghambatRequest;
 import cc.kertaskerja.realisasi_pemda_service.tujuan.web.FaktorPenunjangRequest;
+import cc.kertaskerja.realisasi_pemda_service.tujuan.web.LaporanRealisasiTujuanResponse;
 import cc.kertaskerja.realisasi_pemda_service.tujuan.web.TujuanRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -10,7 +12,9 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class TujuanService {
@@ -159,6 +163,48 @@ public class TujuanService {
 
     public Flux<Tujuan> getRealisasiTujuanByTahunAndBulan(String tahun, String bulan) {
         return tujuanRepository.findAllByTahunAndBulan(tahun, bulan);
+    }
+
+    public Mono<LaporanRealisasiTujuanResponse> getLaporanRealisasi(String tahun, JenisLaporan jenisLaporan, String bulan) {
+        return tujuanRepository.findAllByTahun(tahun)
+                .collectList()
+                .map(list -> {
+                    Map<String, Double> listData = switch (jenisLaporan) {
+                        case BULANAN -> {
+                            if (bulan == null || bulan.isBlank()) {
+                                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter bulan wajib diisi untuk laporan BULANAN");
+                            }
+                            double total = list.stream()
+                                    .filter(t -> bulan.equals(t.bulan()))
+                                    .filter(t -> t.realisasi() != null)
+                                    .mapToDouble(Tujuan::realisasi)
+                                    .sum();
+                            yield Map.of(bulan, total);
+                        }
+                        case TRIWULAN -> {
+                            Map<String, Double> triwulanMap = new HashMap<>();
+                            for (int i = 1; i <= 4; i++) triwulanMap.put(String.valueOf(i), 0.0);
+                            for (Tujuan t : list) {
+                                if (t.realisasi() == null) continue;
+                                int noBulan = Integer.parseInt(t.bulan());
+                                String triwulan = String.valueOf((noBulan - 1) / 3 + 1);
+                                triwulanMap.merge(triwulan, t.realisasi(), Double::sum);
+                            }
+                            yield triwulanMap;
+                        }
+                        case TAHUNAN -> {
+                            Map<String, Double> bulanMap = new HashMap<>();
+                            for (int i = 1; i <= 12; i++) bulanMap.put(String.valueOf(i), 0.0);
+                            for (Tujuan t : list) {
+                                if (t.realisasi() == null) continue;
+                                String key = t.bulan();
+                                bulanMap.merge(key, t.realisasi(), Double::sum);
+                            }
+                            yield bulanMap;
+                        }
+                    };
+                    return new LaporanRealisasiTujuanResponse(tahun, jenisLaporan, listData);
+                });
     }
 
     public Mono<Tujuan> updateFaktorPenunjang(FaktorPenunjangRequest req) {

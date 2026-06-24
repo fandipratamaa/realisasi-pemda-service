@@ -5,6 +5,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface SasaranRepository extends ReactiveCrudRepository<Sasaran, Long> {
+    Flux<Sasaran> findAllByTahun(String tahun);
+
     Flux<Sasaran> findAllByTahunAndBulan(String tahun, String bulan);
 
     Mono<Sasaran> findFirstBySasaranIdAndIndikatorIdAndTargetIdAndTahunAndBulan(

@@ -8,6 +8,8 @@ import cc.kertaskerja.realisasi_opd_service.renja.domain.RenjaProgramOpd;
 import cc.kertaskerja.realisasi_opd_service.renja.domain.RenjaProgramOpdRepository;
 import cc.kertaskerja.realisasi_opd_service.renja.domain.RenjaSubKegiatanOpd;
 import cc.kertaskerja.realisasi_opd_service.renja.domain.RenjaSubKegiatanOpdRepository;
+import cc.kertaskerja.realisasi.domain.JenisLaporan;
+import cc.kertaskerja.realisasi_opd_service.renja.web.LaporanRealisasiRenjaOpdResponse;
 import cc.kertaskerja.realisasi_opd_service.renja.web.RenjaOpdPenetapanResponse;
 import cc.kertaskerja.realisasi_opd_service.renja.web.kegiatan.FaktorPenghambatTargetRenjaKegiatanOpdRequest;
 import cc.kertaskerja.realisasi_opd_service.renja.web.kegiatan.FaktorPenunjangTargetRenjaKegiatanOpdRequest;
@@ -18,8 +20,11 @@ import cc.kertaskerja.realisasi_opd_service.renja.web.subkegiatan.FaktorPenunjan
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -105,6 +110,56 @@ public class RenjaOpdService {
                         req.kodeOpd(), req.kodeSubkegiatan(), req.kodeIndikator(), req.kodeTarget(), req.tahun(), req.bulan())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target subkegiatan OPD tidak ditemukan")))
                 .flatMap(existing -> targetSubKegiatanRepo.save(existing.withFaktorPenghambat(req.faktorPenghambat())));
+    }
+
+    public Mono<LaporanRealisasiRenjaOpdResponse> getLaporanRealisasi(String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan) {
+        record PeriodeRealisasi(String bulan, BigDecimal realisasi) {}
+
+        Flux<PeriodeRealisasi> programFlux = targetProgramRepo.findAllByKodeOpdAndTahun(kodeOpd, tahun)
+                .map(t -> new PeriodeRealisasi(t.bulan(), t.realisasi()));
+        Flux<PeriodeRealisasi> kegiatanFlux = targetKegiatanRepo.findAllByKodeOpdAndTahun(kodeOpd, tahun)
+                .map(t -> new PeriodeRealisasi(t.bulan(), t.realisasi()));
+        Flux<PeriodeRealisasi> subkegiatanFlux = targetSubKegiatanRepo.findAllByKodeOpdAndTahun(kodeOpd, tahun)
+                .map(t -> new PeriodeRealisasi(t.bulan(), t.realisasi()));
+
+        return Flux.merge(programFlux, kegiatanFlux, subkegiatanFlux)
+                .collectList()
+                .map(list -> {
+                    Map<String, Double> listData = switch (jenisLaporan) {
+                        case BULANAN -> {
+                            if (bulan == null || bulan.isBlank()) {
+                                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter bulan wajib diisi untuk laporan BULANAN");
+                            }
+                            double total = list.stream()
+                                    .filter(p -> bulan.equals(p.bulan()))
+                                    .filter(p -> p.realisasi() != null)
+                                    .mapToDouble(p -> p.realisasi().doubleValue())
+                                    .sum();
+                            yield Map.of(bulan, total);
+                        }
+                        case TRIWULAN -> {
+                            Map<String, Double> triwulanMap = new HashMap<>();
+                            for (int i = 1; i <= 4; i++) triwulanMap.put(String.valueOf(i), 0.0);
+                            for (PeriodeRealisasi p : list) {
+                                if (p.realisasi() == null) continue;
+                                int noBulan = Integer.parseInt(p.bulan());
+                                String triwulan = String.valueOf((noBulan - 1) / 3 + 1);
+                                triwulanMap.merge(triwulan, p.realisasi().doubleValue(), Double::sum);
+                            }
+                            yield triwulanMap;
+                        }
+                        case TAHUNAN -> {
+                            Map<String, Double> bulanMap = new HashMap<>();
+                            for (int i = 1; i <= 12; i++) bulanMap.put(String.valueOf(i), 0.0);
+                            for (PeriodeRealisasi p : list) {
+                                if (p.realisasi() == null) continue;
+                                bulanMap.merge(p.bulan(), p.realisasi().doubleValue(), Double::sum);
+                            }
+                            yield bulanMap;
+                        }
+                    };
+                    return new LaporanRealisasiRenjaOpdResponse(tahun, kodeOpd, jenisLaporan, listData);
+                });
     }
 
     // ========================================================================

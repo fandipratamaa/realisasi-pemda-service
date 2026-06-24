@@ -1,6 +1,8 @@
 package cc.kertaskerja.realisasi_individu_service.renaksi.web;
 
+import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -9,6 +11,10 @@ import java.math.BigDecimal;
 
 @Schema(name = "RenaksiIndividuRequest", description = "Payload untuk membuat/memperbarui realisasi target renaksi individu")
 public record RenaksiIndividuRequest(
+
+        @Nullable
+        @Schema(description = "ID internal data realisasi. Kosongkan saat create.", example = "1", nullable = true)
+        Long targetRealisasiId,
 
         @NotNull(message = "Kode OPD tidak boleh kosong")
         @NotEmpty(message = "Kode OPD tidak boleh kosong")
@@ -40,14 +46,19 @@ public record RenaksiIndividuRequest(
         @Schema(description = "Kode target", example = "TAR-1")
         String kodeTarget,
 
-        @NotNull(message = "Realisasi tidak boleh kosong")
-        @PositiveOrZero(message = "Realisasi tidak boleh negatif")
-        @Schema(description = "Nilai realisasi aktual", example = "75.5", minimum = "0")
-        BigDecimal realisasi,
+        @NotNull(message = "Target tidak boleh kosong")
+        @PositiveOrZero(message = "Target tidak boleh negatif")
+        @Schema(description = "Nilai target", example = "100.00")
+        BigDecimal target,
 
         @NotNull(message = "Pagu anggaran tidak boleh kosong")
         @Schema(description = "Pagu anggaran", example = "50000000.00")
         BigDecimal paguAnggaran,
+
+        @NotNull(message = "Realisasi tidak boleh kosong")
+        @PositiveOrZero(message = "Realisasi tidak boleh negatif")
+        @Schema(description = "Nilai realisasi aktual", example = "75.5", minimum = "0")
+        BigDecimal realisasi,
 
         @NotNull(message = "Tahun harus terdefinisi")
         @NotEmpty(message = "Tahun tidak boleh kosong")
@@ -57,6 +68,14 @@ public record RenaksiIndividuRequest(
         @NotNull(message = "Bulan harus terdefinisi")
         @NotEmpty(message = "Bulan tidak boleh kosong")
         @Schema(description = "Bulan realisasi", example = "1")
-        String bulan
+        String bulan,
+
+        @NotEmpty(message = "Satuan tidak boleh kosong")
+        @Schema(description = "Satuan target/realisasi", example = "%")
+        String satuan,
+
+        @NotNull(message = "Pilih jenis NAIK atau TURUN")
+        @Schema(description = "Jenis perhitungan capaian", example = "NAIK", allowableValues = {"NAIK", "TURUN"})
+        JenisRealisasi jenisRealisasi
 ) {
 }

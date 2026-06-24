@@ -22,14 +22,20 @@ public record RenjaProgramIndividu(
         @Column("kode_program")
         String kodeProgram,
 
+        String program,
+
         @Column("kode_indikator")
         String kodeIndikator,
+
+        String indikator,
 
         @Column("kode_target")
         String kodeTarget,
 
         @Column("kode_pagu")
         String kodePagu,
+
+        BigDecimal pagu,
 
         BigDecimal target,
 
@@ -51,16 +57,16 @@ public record RenjaProgramIndividu(
 ) {
     public RenjaProgramIndividu withFaktorPenunjang(String faktorPenunjang) {
         return new RenjaProgramIndividu(
-                id, kodeOpd, nip, tahun, bulan, kodeProgram, kodeIndikator, kodeTarget, kodePagu,
-                target, realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat,
+                id, kodeOpd, nip, tahun, bulan, kodeProgram, program, kodeIndikator, indikator, kodeTarget, kodePagu,
+                pagu, target, realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat,
                 createdDate, lastModifiedDate, createdBy, lastModifiedBy
         );
     }
 
     public RenjaProgramIndividu withFaktorPenghambat(String faktorPenghambat) {
         return new RenjaProgramIndividu(
-                id, kodeOpd, nip, tahun, bulan, kodeProgram, kodeIndikator, kodeTarget, kodePagu,
-                target, realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat,
+                id, kodeOpd, nip, tahun, bulan, kodeProgram, program, kodeIndikator, indikator, kodeTarget, kodePagu,
+                pagu, target, realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat,
                 createdDate, lastModifiedDate, createdBy, lastModifiedBy
         );
     }

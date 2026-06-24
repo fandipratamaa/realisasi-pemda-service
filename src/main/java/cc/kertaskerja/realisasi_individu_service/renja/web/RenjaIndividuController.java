@@ -1,29 +1,36 @@
 package cc.kertaskerja.realisasi_individu_service.renja.web;
 
+import cc.kertaskerja.realisasi.domain.JenisLaporan;
 import cc.kertaskerja.realisasi_individu_service.renja.domain.kegiatan.RenjaKegiatanIndividu;
 import cc.kertaskerja.realisasi_individu_service.renja.domain.program.RenjaProgramIndividu;
 import cc.kertaskerja.realisasi_individu_service.renja.domain.subkegiatan.RenjaSubKegiatanIndividu;
 import cc.kertaskerja.realisasi_individu_service.renja.domain.RenjaIndividuService;
+import cc.kertaskerja.realisasi_individu_service.renja.web.kegiatan.LaporanRealisasiRenjaKegiatanIndividuResponse;
 import cc.kertaskerja.realisasi_individu_service.renja.web.kegiatan.FaktorPenunjangTargetRenjaKegiatanRequest;
 import cc.kertaskerja.realisasi_individu_service.renja.web.program.FaktorPenunjangTargetRenjaProgramRequest;
 import cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan.FaktorPenunjangTargetRenjaSubKegiatanRequest;
 import cc.kertaskerja.realisasi_individu_service.renja.web.kegiatan.FaktorPenghambatTargetRenjaKegiatanRequest;
 import cc.kertaskerja.realisasi_individu_service.renja.web.program.FaktorPenghambatTargetRenjaProgramRequest;
 import cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan.FaktorPenghambatTargetRenjaSubKegiatanRequest;
+import cc.kertaskerja.realisasi_individu_service.renja.web.program.LaporanRealisasiRenjaProgramIndividuResponse;
 import cc.kertaskerja.realisasi_individu_service.renja.web.kegiatan.RenjaIndividuKegiatanRequest;
 import cc.kertaskerja.realisasi_individu_service.renja.web.program.RenjaIndividuProgramRequest;
+import cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan.LaporanRealisasiRenjaSubKegiatanIndividuResponse;
 import cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan.RenjaIndividuSubKegiatanRequest;
 import cc.kertaskerja.realisasi_individu_service.renja.web.kegiatan.RenjaIndividuKegiatanResponse;
 import cc.kertaskerja.realisasi_individu_service.renja.web.program.RenjaIndividuProgramResponse;
 import cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan.RenjaIndividuSubKegiatanResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -80,6 +87,57 @@ public class RenjaIndividuController {
             @PathVariable String tahun,
             @PathVariable String bulan) {
         return renjaIndividuService.getSubKegiatanByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
+    }
+
+    @GetMapping("/program/laporan/nip/{nip}/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
+    @Operation(summary = "Laporan realisasi renja individu program per periode", description = "Mengambil total realisasi renja individu tingkat program yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data laporan realisasi renja individu program", content = @Content(schema = @Schema(implementation = LaporanRealisasiRenjaProgramIndividuResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Mono<LaporanRealisasiRenjaProgramIndividuResponse> getLaporanRealisasiProgram(
+            @Parameter(description = "NIP pegawai", example = "198012312005011001") @PathVariable String nip,
+            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun laporan", example = "2026") @PathVariable String tahun,
+            @Parameter(description = "Jenis periode laporan", example = "TAHUNAN") @PathVariable JenisLaporan jenisLaporan,
+            @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN", example = "3") @RequestParam(required = false) String bulan) {
+        validateLaporanParams(nip, kodeOpd, tahun);
+        return renjaIndividuService.getLaporanRealisasiProgram(nip, kodeOpd, tahun, jenisLaporan, bulan);
+    }
+
+    @GetMapping("/kegiatan/laporan/nip/{nip}/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
+    @Operation(summary = "Laporan realisasi renja individu kegiatan per periode", description = "Mengambil total realisasi renja individu tingkat kegiatan yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data laporan realisasi renja individu kegiatan", content = @Content(schema = @Schema(implementation = LaporanRealisasiRenjaKegiatanIndividuResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Mono<LaporanRealisasiRenjaKegiatanIndividuResponse> getLaporanRealisasiKegiatan(
+            @Parameter(description = "NIP pegawai", example = "198012312005011001") @PathVariable String nip,
+            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun laporan", example = "2026") @PathVariable String tahun,
+            @Parameter(description = "Jenis periode laporan", example = "TAHUNAN") @PathVariable JenisLaporan jenisLaporan,
+            @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN", example = "3") @RequestParam(required = false) String bulan) {
+        validateLaporanParams(nip, kodeOpd, tahun);
+        return renjaIndividuService.getLaporanRealisasiKegiatan(nip, kodeOpd, tahun, jenisLaporan, bulan);
+    }
+
+    @GetMapping("/subkegiatan/laporan/nip/{nip}/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
+    @Operation(summary = "Laporan realisasi renja individu subkegiatan per periode", description = "Mengambil total realisasi target renja individu tingkat subkegiatan yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data laporan realisasi renja individu subkegiatan", content = @Content(schema = @Schema(implementation = LaporanRealisasiRenjaSubKegiatanIndividuResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Mono<LaporanRealisasiRenjaSubKegiatanIndividuResponse> getLaporanRealisasiSubKegiatan(
+            @Parameter(description = "NIP pegawai", example = "198012312005011001") @PathVariable String nip,
+            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun laporan", example = "2026") @PathVariable String tahun,
+            @Parameter(description = "Jenis periode laporan", example = "TAHUNAN") @PathVariable JenisLaporan jenisLaporan,
+            @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN", example = "3") @RequestParam(required = false) String bulan) {
+        validateLaporanParams(nip, kodeOpd, tahun);
+        return renjaIndividuService.getLaporanRealisasiSubKegiatan(nip, kodeOpd, tahun, jenisLaporan, bulan);
     }
 
     @PostMapping("/program")
@@ -212,5 +270,11 @@ public class RenjaIndividuController {
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatTargetRenjaSubKegiatanRequest.class)))
             @RequestBody @Valid FaktorPenghambatTargetRenjaSubKegiatanRequest req) {
         return renjaIndividuService.updateFaktorPenghambatSubKegiatan(req);
+    }
+
+    private void validateLaporanParams(String nip, String kodeOpd, String tahun) {
+        if (nip == null || nip.isBlank() || kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip, kodeOpd, dan tahun tidak boleh kosong");
+        }
     }
 }

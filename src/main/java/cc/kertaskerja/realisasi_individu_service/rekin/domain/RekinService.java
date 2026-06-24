@@ -2,13 +2,14 @@ package cc.kertaskerja.realisasi_individu_service.rekin.domain;
 
 import cc.kertaskerja.integration.penetapan.PenetapanRekinIndividuClient;
 import cc.kertaskerja.integration.penetapan.rekin.PenetapanRekinIndividu;
+import cc.kertaskerja.realisasi.domain.JenisLaporan;
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.FaktorPenghambatRekinRequest;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.FaktorPenunjangRekinRequest;
+import cc.kertaskerja.realisasi_individu_service.rekin.web.LaporanRealisasiRekinIndividuResponse;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.PenetapanRekinIndividuResponse;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.RekinRequest;
-import cc.kertaskerja.realisasi_opd_service.sasaran.domain.SasaranOpd;
-import cc.kertaskerja.realisasi_opd_service.sasaran.domain.SasaranOpdRepository;
+import cc.kertaskerja.realisasi_individu_service.rekin.web.RekinResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -25,20 +27,23 @@ import java.util.stream.Collectors;
 public class RekinService {
     private static final Logger log = LoggerFactory.getLogger(RekinService.class);
     private final RekinIndividuRepository repository;
-    private final SasaranOpdRepository sasaranOpdRepository;
     private final PenetapanRekinIndividuClient penetapanClient;
 
     public RekinService(
             RekinIndividuRepository repository,
-            SasaranOpdRepository sasaranOpdRepository,
             PenetapanRekinIndividuClient penetapanClient
     ) {
         this.repository = repository;
-        this.sasaranOpdRepository = sasaranOpdRepository;
         this.penetapanClient = penetapanClient;
     }
 
-    public Mono<RekinIndividu> createRekin(RekinRequest req) {
+    public Mono<RekinResponse> createRekin(RekinRequest req) {
+        return upsert(req)
+                .map(this::toResponse)
+                .flatMap(response -> applyPenetapan(Mono.just(response), req));
+    }
+
+    private Mono<RekinIndividu> upsert(RekinRequest req) {
         JenisRealisasi jenisRealisasi = req.jenisRealisasi() != null ? req.jenisRealisasi() : JenisRealisasi.NAIK;
         return repository
                 .findFirstByKodeOpdAndNipAndTahunAndBulanAndKodePkRekinAndKodeIndikatorPkRekinAndKodeTargetPkRekin(
@@ -49,6 +54,7 @@ public class RekinService {
                             existing.id(),
                             existing.kodeOpd(), existing.nip(), existing.tahun(), existing.bulan(),
                             existing.kodePkRekin(), existing.kodeIndikatorPkRekin(), existing.kodeTargetPkRekin(),
+                            req.kodeSasaranOpd(),
                             req.realisasi(), jenisRealisasi,
                             existing.faktorPenunjang(), existing.faktorPenghambat(),
                             existing.createdBy(), existing.lastModifiedBy(),
@@ -57,13 +63,76 @@ public class RekinService {
                     return repository.save(updated);
                 })
                 .switchIfEmpty(Mono.defer(() -> {
-                    RekinIndividu baru = RekinIndividu.of(
+                    RekinIndividu newEntity = RekinIndividu.of(
                             req.kodeOpd(), req.nip(), req.tahun(), req.bulan(),
                             req.kodePkRekin(), req.kodeIndikatorPKrekin(), req.kodeTargetPKrekin(),
-                            req.realisasi(), jenisRealisasi, "", "");
-                    return repository.save(baru);
-                }))
-                .flatMap(saved -> syncToSasaranOpd(saved, req).then(Mono.just(saved)));
+                            req.kodeSasaranOpd(),
+                            req.realisasi(), jenisRealisasi,
+                            "", "");
+                    return repository.save(newEntity);
+                }));
+    }
+
+    private RekinResponse toResponse(RekinIndividu entity) {
+        return RekinResponse.from(entity, null, null);
+    }
+
+    private Mono<RekinResponse> applyPenetapan(Mono<RekinResponse> responseMono, RekinRequest req) {
+        Mono<PenetapanRekinIndividu.RekinIndividuData> penetapanData =
+                penetapanClient.fetchRekinIndividu(req.nip(), req.kodeOpd(), Integer.parseInt(req.tahun()));
+
+        return responseMono.flatMap(response -> penetapanData
+                .map(data -> enrichWithPenetapan(response, data))
+                .switchIfEmpty(Mono.just(response))
+        ).onErrorResume(e -> {
+            log.warn("Gagal menghubungi penetapan untuk nip={}, kodeOpd={}, tahun={}: {}",
+                    req.nip(), req.kodeOpd(), req.tahun(), e.getMessage());
+            return responseMono;
+        });
+    }
+
+    private RekinResponse enrichWithPenetapan(
+            RekinResponse response,
+            PenetapanRekinIndividu.RekinIndividuData data
+    ) {
+        if (data.rekins() == null) {
+            return response;
+        }
+        PenetapanRekinIndividu.RekinData matchingRekin = data.rekins().stream()
+                .filter(r -> r.kodePk().equals(response.kodePkRekin()))
+                .findFirst()
+                .orElse(null);
+        if (matchingRekin == null) {
+            return response;
+        }
+        PenetapanRekinIndividu.IndikatorRekinData matchingIndikator = matchingRekin.indikatorPk().stream()
+                .filter(i -> i.kodeIndikatorPk().equals(response.kodeIndikatorPkRekin()))
+                .findFirst()
+                .orElse(null);
+        if (matchingIndikator == null) {
+            return response;
+        }
+        PenetapanRekinIndividu.TargetRekinData matchingTarget = matchingIndikator.targetPk().stream()
+                .filter(t -> t.kodeTargetPk().equals(response.kodeTargetPkRekin()))
+                .findFirst()
+                .orElse(null);
+        if (matchingTarget == null) {
+            return response;
+        }
+        Double realisasiValue = response.realisasi() != null
+                ? response.realisasi().doubleValue() : null;
+        var capaianResult = RekinIndividu.hitungCapaian(realisasiValue, matchingTarget.target());
+        return new RekinResponse(
+                response.id(), response.kodeOpd(), response.nip(),
+                response.tahun(), response.bulan(),
+                response.kodePkRekin(), response.kodeIndikatorPkRekin(), response.kodeTargetPkRekin(),
+                response.kodeSasaranOpd(),
+                response.realisasi(), response.jenisRealisasi(),
+                response.faktorPenunjang(), response.faktorPenghambat(),
+                response.createdBy(), response.lastModifiedBy(),
+                response.createdDate(), response.lastModifiedDate(),
+                capaianResult.capaian(), capaianResult.keteranganCapaian()
+        );
     }
 
     public Mono<RekinIndividu> updateFaktorPenunjang(FaktorPenunjangRekinRequest req) {
@@ -77,6 +146,7 @@ public class RekinService {
                             existing.id(),
                             existing.kodeOpd(), existing.nip(), existing.tahun(), existing.bulan(),
                             existing.kodePkRekin(), existing.kodeIndikatorPkRekin(), existing.kodeTargetPkRekin(),
+                            existing.kodeSasaranOpd(),
                             existing.realisasi(), existing.jenisRealisasi(),
                             req.faktorPenunjang(),
                             existing.faktorPenghambat(),
@@ -98,6 +168,7 @@ public class RekinService {
                             existing.id(),
                             existing.kodeOpd(), existing.nip(), existing.tahun(), existing.bulan(),
                             existing.kodePkRekin(), existing.kodeIndikatorPkRekin(), existing.kodeTargetPkRekin(),
+                            existing.kodeSasaranOpd(),
                             existing.realisasi(), existing.jenisRealisasi(),
                             existing.faktorPenunjang(),
                             req.faktorPenghambat(),
@@ -108,26 +179,48 @@ public class RekinService {
                 });
     }
 
-    // --- Sync ke Sasaran OPD ---
+    // --- Laporan ---
 
-    private Mono<Void> syncToSasaranOpd(RekinIndividu saved, RekinRequest req) {
-        if (req.kodeSasaranOpd() == null || req.kodeSasaranOpd().isBlank()) {
-            return Mono.empty();
-        }
-        return sasaranOpdRepository
-                .findFirstByKodeOpdAndKodeSasaranOpdAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
-                        saved.kodeOpd(), req.kodeSasaranOpd(), saved.kodeIndikatorPkRekin(),
-                        saved.kodeTargetPkRekin(), saved.tahun(), saved.bulan())
-                .flatMap(existing -> {
-                    SasaranOpd updated = new SasaranOpd(
-                            existing.id(), existing.kodeOpd(), existing.tahun(), existing.bulan(),
-                            existing.kodeSasaranOpd(), existing.kodeIndikator(), existing.kodeTarget(),
-                            saved.realisasi(), existing.jenisRealisasi(),
-                            existing.faktorPenunjang(), existing.faktorPenghambat(),
-                            existing.createdBy(), existing.createdDate(), null, null);
-                    return sasaranOpdRepository.save(updated);
-                })
-                .then();
+    public Mono<LaporanRealisasiRekinIndividuResponse> getLaporanRealisasi(
+            String nip, String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan) {
+        return repository.findAllByKodeOpdAndNipAndTahun(kodeOpd, nip, tahun)
+                .collectList()
+                .map(list -> {
+                    Map<String, Double> listData = switch (jenisLaporan) {
+                        case BULANAN -> {
+                            if (bulan == null || bulan.isBlank()) {
+                                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter bulan wajib diisi untuk laporan BULANAN");
+                            }
+                            double total = list.stream()
+                                    .filter(t -> bulan.equals(t.bulan()))
+                                    .filter(t -> t.realisasi() != null)
+                                    .mapToDouble(t -> t.realisasi().doubleValue())
+                                    .sum();
+                            yield Map.of(bulan, total);
+                        }
+                        case TRIWULAN -> {
+                            Map<String, Double> triwulanMap = new HashMap<>();
+                            for (int i = 1; i <= 4; i++) triwulanMap.put(String.valueOf(i), 0.0);
+                            for (RekinIndividu t : list) {
+                                if (t.realisasi() == null) continue;
+                                int noBulan = Integer.parseInt(t.bulan());
+                                String triwulan = String.valueOf((noBulan - 1) / 3 + 1);
+                                triwulanMap.merge(triwulan, t.realisasi().doubleValue(), Double::sum);
+                            }
+                            yield triwulanMap;
+                        }
+                        case TAHUNAN -> {
+                            Map<String, Double> bulanMap = new HashMap<>();
+                            for (int i = 1; i <= 12; i++) bulanMap.put(String.valueOf(i), 0.0);
+                            for (RekinIndividu t : list) {
+                                if (t.realisasi() == null) continue;
+                                bulanMap.merge(t.bulan(), t.realisasi().doubleValue(), Double::sum);
+                            }
+                            yield bulanMap;
+                        }
+                    };
+                    return new LaporanRealisasiRekinIndividuResponse(tahun, kodeOpd, nip, jenisLaporan, listData);
+                });
     }
 
     // --- Penetapan Integration ---
@@ -242,7 +335,7 @@ public class RekinService {
         RekinIndividu local = localTargetMap.get(key);
         Double realisasiValue = local != null && local.realisasi() != null
                 ? local.realisasi().doubleValue() : null;
-        CapaianResult capaianResult = hitungCapaian(realisasiValue, target.target());
+        RekinIndividu.CapaianResult capaianResult = RekinIndividu.hitungCapaian(realisasiValue, target.target());
         String faktorPenunjang = local != null ? local.faktorPenunjang() : null;
         String faktorPenghambat = local != null ? local.faktorPenghambat() : null;
         String jenisRealisasi = "NAIK";
@@ -251,20 +344,6 @@ public class RekinService {
                 realisasiValue, capaianResult.capaian(), capaianResult.keteranganCapaian(),
                 faktorPenunjang, faktorPenghambat, jenisRealisasi
         );
-    }
-
-    private record CapaianResult(Double capaian, String keteranganCapaian) {}
-
-    private static CapaianResult hitungCapaian(Double realisasi, Double target) {
-        if (realisasi == null || target == null || target == 0) {
-            return new CapaianResult(null, null);
-        }
-        double calculatedCapaian = realisasi / target * 100;
-        String keteranganCapaian = null;
-        if (calculatedCapaian > 100) {
-            keteranganCapaian = "nilai capaian lebih dari 100% (" + String.format("%.2f%%", calculatedCapaian) + ")";
-        }
-        return new CapaianResult(Math.min(calculatedCapaian, 100), keteranganCapaian);
     }
 
     private Integer parseInteger(String value) {

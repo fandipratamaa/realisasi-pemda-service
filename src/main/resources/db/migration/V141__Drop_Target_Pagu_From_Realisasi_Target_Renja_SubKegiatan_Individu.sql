@@ -1,0 +1,2 @@
+ALTER TABLE realisasi_target_renja_subkegiatan_individu
+DROP COLUMN target_pagu;

@@ -9,6 +9,7 @@ public interface RenjaProgramIndividuRepository extends ReactiveCrudRepository<R
             String kodeOpd, String kodeProgram, String kodeIndikator, String kodeTarget, String tahun, String bulan);
     Flux<RenjaProgramIndividu> findAllByTahunAndBulan(String tahun, String bulan);
     Flux<RenjaProgramIndividu> findAllByKodeOpdAndTahun(String kodeOpd, String tahun);
+    Flux<RenjaProgramIndividu> findAllByKodeOpdAndNipAndTahun(String kodeOpd, String nip, String tahun);
     Flux<RenjaProgramIndividu> findAllByKodeOpdAndTahunAndBulan(String kodeOpd, String tahun, String bulan);
     Flux<RenjaProgramIndividu> findAllByKodeOpdAndNipAndTahunAndBulan(String kodeOpd, String nip, String tahun, String bulan);
 }

@@ -41,12 +41,12 @@ public record TujuanRequest(
 
 @NotNull(message = "Tahun harus terdefinisi")
         @NotEmpty(message = "Tahun tidak boleh kosong")
-        @Schema(description = "Tahun realisasi", example = "2025")
+        @Schema(description = "Tahun realisasi", example = "2026")
         String tahun,
 
         @NotNull(message = "Bulan harus terdefinisi")
         @NotEmpty(message = "Bulan tidak boleh kosong")
-        @Schema(description = "Bulan realisasi", example = "Januari")
+        @Schema(description = "Bulan realisasi", example = "1")
         String bulan,
 
         @NotNull(message = "Visi/misi tidak boleh kosong")

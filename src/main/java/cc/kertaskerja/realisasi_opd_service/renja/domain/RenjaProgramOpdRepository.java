@@ -10,6 +10,8 @@ public interface RenjaProgramOpdRepository extends ReactiveCrudRepository<RenjaP
 
     Flux<RenjaProgramOpd> findAllByTahunAndBulan(String tahun, String bulan);
 
+    Flux<RenjaProgramOpd> findAllByKodeOpdAndTahun(String kodeOpd, String tahun);
+
     Mono<RenjaProgramOpd> findByKodeOpdAndKodeProgramAndKodeIndikatorAndKodeTargetAndTahun(
             String kodeOpd, String kodeProgram, String kodeIndikator, String kodeTarget, String tahun);
 }

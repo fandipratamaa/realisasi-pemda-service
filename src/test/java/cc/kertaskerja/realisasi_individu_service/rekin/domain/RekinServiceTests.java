@@ -1,10 +1,12 @@
 package cc.kertaskerja.realisasi_individu_service.rekin.domain;
 
+import cc.kertaskerja.integration.penetapan.PenetapanRekinIndividuClient;
+import cc.kertaskerja.integration.penetapan.rekin.PenetapanRekinIndividu;
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.FaktorPenghambatRekinRequest;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.FaktorPenunjangRekinRequest;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.RekinRequest;
-import cc.kertaskerja.realisasi_opd_service.sasaran.domain.SasaranOpdRepository;
+import cc.kertaskerja.realisasi_individu_service.rekin.web.RekinResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
@@ -15,7 +17,9 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
+import java.util.List;
 
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -25,7 +29,7 @@ public class RekinServiceTests {
     private RekinIndividuRepository repository;
 
     @Mock
-    private SasaranOpdRepository sasaranOpdRepository;
+    private PenetapanRekinIndividuClient penetapanClient;
 
     @InjectMocks
     private RekinService rekinService;
@@ -43,6 +47,13 @@ public class RekinServiceTests {
             "1"
     );
 
+    private PenetapanRekinIndividu.RekinIndividuData createPenetapanData(Double targetValue) {
+        var target = new PenetapanRekinIndividu.TargetRekinData(1L, "TAR-1", 2026, targetValue, "%");
+        var indikator = new PenetapanRekinIndividu.IndikatorRekinData(1L, "IND-REKIN-001", "Indikator test", List.of(target));
+        var rekin = new PenetapanRekinIndividu.RekinData(1L, 1, null, "REKIN-001", "Rekin test", null, 1, List.of(indikator));
+        return new PenetapanRekinIndividu.RekinIndividuData("198012312005011001", "Test User", "1.01.0.00.0.00.01.0000", 2026, List.of(rekin));
+    }
+
     @Test
     void whenCreateRekinNotExists_thenCreates() {
         when(repository.findFirstByKodeOpdAndNipAndTahunAndBulanAndKodePkRekinAndKodeIndikatorPkRekinAndKodeTargetPkRekin(
@@ -54,13 +65,12 @@ public class RekinServiceTests {
                     return Mono.just(new RekinIndividu(
                             1L, r.kodeOpd(), r.nip(), r.tahun(), r.bulan(),
                             r.kodePkRekin(), r.kodeIndikatorPkRekin(), r.kodeTargetPkRekin(),
+                            r.kodeSasaranOpd(),
                             r.realisasi(), r.jenisRealisasi(), r.faktorPenunjang(), r.faktorPenghambat(),
                             null, null, null, null));
                 });
-        when(sasaranOpdRepository
-                .findFirstByKodeOpdAndKodeSasaranOpdAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
-                        anyString(), anyString(), anyString(), anyString(), anyString(), anyString()))
-                .thenReturn(Mono.empty());
+        when(penetapanClient.fetchRekinIndividu(anyString(), anyString(), anyInt()))
+                .thenReturn(Mono.just(createPenetapanData(100.0)));
 
         var result = rekinService.createRekin(req);
 
@@ -69,7 +79,10 @@ public class RekinServiceTests {
                         r.id().equals(1L)
                                 && r.kodePkRekin().equals(req.kodePkRekin())
                                 && r.realisasi().compareTo(req.realisasi()) == 0
-                                && r.jenisRealisasi() == JenisRealisasi.NAIK)
+                                && r.jenisRealisasi() == JenisRealisasi.NAIK
+                                && r.capaian() != null
+                                && Double.compare(r.capaian(), 75.5) == 0
+                                && r.keteranganCapaian() == null)
                 .verifyComplete();
 
         verify(repository, times(1)).save(any(RekinIndividu.class));
@@ -79,7 +92,7 @@ public class RekinServiceTests {
     void whenCreateRekinExists_thenUpdates() {
         RekinIndividu existing = new RekinIndividu(
                 99L, "1.01.0.00.0.00.01.0000", "198012312005011001", "2025", "1",
-                "REKIN-001", "IND-REKIN-001", "TAR-1",
+                "REKIN-001", "IND-REKIN-001", "TAR-1", null,
                 new BigDecimal("50.0"), JenisRealisasi.NAIK, "", "",
                 null, null, null, null);
 
@@ -88,20 +101,51 @@ public class RekinServiceTests {
                 .thenReturn(Mono.just(existing));
         when(repository.save(ArgumentMatchers.any(RekinIndividu.class)))
                 .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
-        when(sasaranOpdRepository
-                .findFirstByKodeOpdAndKodeSasaranOpdAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
-                        anyString(), anyString(), anyString(), anyString(), anyString(), anyString()))
-                .thenReturn(Mono.empty());
+        when(penetapanClient.fetchRekinIndividu(anyString(), anyString(), anyInt()))
+                .thenReturn(Mono.just(createPenetapanData(100.0)));
 
         var result = rekinService.createRekin(req);
 
         StepVerifier.create(result)
                 .expectNextMatches(r ->
                         r.id().equals(99L)
-                                && r.realisasi().compareTo(new BigDecimal("75.5")) == 0)
+                                && r.realisasi().compareTo(new BigDecimal("75.5")) == 0
+                                && r.capaian() != null
+                                && Double.compare(r.capaian(), 75.5) == 0
+                                && r.keteranganCapaian() == null)
                 .verifyComplete();
 
         verify(repository, times(1)).save(any(RekinIndividu.class));
+    }
+
+    @Test
+    void whenPenetapanEmpty_thenReturnsResponseWithoutCapaian() {
+        when(repository.findFirstByKodeOpdAndNipAndTahunAndBulanAndKodePkRekinAndKodeIndikatorPkRekinAndKodeTargetPkRekin(
+                anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString()))
+                .thenReturn(Mono.empty());
+        when(repository.save(ArgumentMatchers.any(RekinIndividu.class)))
+                .thenAnswer(invocation -> {
+                    RekinIndividu r = invocation.getArgument(0);
+                    return Mono.just(new RekinIndividu(
+                            1L, r.kodeOpd(), r.nip(), r.tahun(), r.bulan(),
+                            r.kodePkRekin(), r.kodeIndikatorPkRekin(), r.kodeTargetPkRekin(),
+                            r.kodeSasaranOpd(),
+                            r.realisasi(), r.jenisRealisasi(), r.faktorPenunjang(), r.faktorPenghambat(),
+                            null, null, null, null));
+                });
+        when(penetapanClient.fetchRekinIndividu(anyString(), anyString(), anyInt()))
+                .thenReturn(Mono.empty());
+
+        var result = rekinService.createRekin(req);
+
+        StepVerifier.create(result)
+                .expectNextMatches(r ->
+                        r.id().equals(1L)
+                                && r.kodePkRekin().equals(req.kodePkRekin())
+                                && r.realisasi().compareTo(req.realisasi()) == 0
+                                && r.capaian() == null
+                                && r.keteranganCapaian() == null)
+                .verifyComplete();
     }
 
     @Test
@@ -113,7 +157,7 @@ public class RekinServiceTests {
 
         RekinIndividu existing = new RekinIndividu(
                 1L, "1.01.0.00.0.00.01.0000", "198012312005011001", "2026", "1",
-                "REKIN-001", "IND-REKIN-001", "TAR-1",
+                "REKIN-001", "IND-REKIN-001", "TAR-1", null,
                 new BigDecimal("75.5"), JenisRealisasi.NAIK, "", "",
                 null, null, null, null);
 

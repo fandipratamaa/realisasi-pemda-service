@@ -1,5 +1,6 @@
 package cc.kertaskerja.realisasi_individu_service.rekin.web;
 
+import cc.kertaskerja.realisasi.domain.JenisLaporan;
 import cc.kertaskerja.realisasi_individu_service.rekin.domain.RekinIndividu;
 import cc.kertaskerja.realisasi_individu_service.rekin.domain.RekinService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -49,14 +50,33 @@ public class RekinController {
         return rekinService.getPenetapanByNip(nip, kodeOpd, Integer.parseInt(tahun), bulan);
     }
 
+    @GetMapping("/laporan/nip/{nip}/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
+    @Operation(summary = "Laporan realisasi rekin individu per periode", description = "Mengambil total realisasi rekin individu yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data laporan realisasi rekin individu", content = @Content(schema = @Schema(implementation = LaporanRealisasiRekinIndividuResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Mono<LaporanRealisasiRekinIndividuResponse> getLaporanRealisasi(
+            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
+            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun laporan", example = "2026") @PathVariable String tahun,
+            @Parameter(description = "Jenis periode laporan", example = "TAHUNAN") @PathVariable JenisLaporan jenisLaporan,
+            @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN", example = "3") @RequestParam(required = false) String bulan) {
+        if (nip == null || nip.isBlank() || kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip, kodeOpd, dan tahun tidak boleh kosong");
+        }
+        return rekinService.getLaporanRealisasi(nip, kodeOpd, tahun, jenisLaporan, bulan);
+    }
+
     @PostMapping
     @Operation(summary = "Buat realisasi target rekin individu (upsert)", description = "Menyimpan realisasi target rekin individu. Jika data dengan composite key yang sama sudah ada, akan diperbarui.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Realisasi tersimpan", content = @Content(schema = @Schema(implementation = RekinIndividu.class))),
+            @ApiResponse(responseCode = "200", description = "Realisasi tersimpan", content = @Content(schema = @Schema(implementation = RekinResponse.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Mono<RekinIndividu> createRekin(
+    public Mono<RekinResponse> createRekin(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload realisasi target rekin", required = true,
                     content = @Content(schema = @Schema(implementation = RekinRequest.class)))
             @RequestBody @Valid RekinRequest request) {

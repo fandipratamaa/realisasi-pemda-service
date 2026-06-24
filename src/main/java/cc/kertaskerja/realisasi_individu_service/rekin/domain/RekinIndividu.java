@@ -30,6 +30,10 @@ public record RekinIndividu(
 
         @Column("kode_target_pk_rekin")
         String kodeTargetPkRekin,
+
+        @Column("kode_sasaran_opd")
+        String kodeSasaranOpd,
+        
         BigDecimal realisasi,
 
         @Column("jenis_realisasi")
@@ -54,6 +58,20 @@ public record RekinIndividu(
         @Column("last_modified_date")
         Instant lastModifiedDate
 ) {
+    public record CapaianResult(Double capaian, String keteranganCapaian) {}
+
+    public static CapaianResult hitungCapaian(Double realisasi, Double target) {
+        if (realisasi == null || target == null || target == 0) {
+            return new CapaianResult(null, null);
+        }
+        double calculatedCapaian = realisasi / target * 100;
+        String keteranganCapaian = null;
+        if (calculatedCapaian > 100) {
+            keteranganCapaian = "nilai capaian lebih dari 100% (" + String.format("%.2f%%", calculatedCapaian) + ")";
+        }
+        return new CapaianResult(Math.min(calculatedCapaian, 100), keteranganCapaian);
+    }
+
     public static RekinIndividu of(
             String kodeOpd,
             String nip,
@@ -62,6 +80,7 @@ public record RekinIndividu(
             String kodePkRekin,
             String kodeIndikatorPkRekin,
             String kodeTargetPkRekin,
+            String kodeSasaranOpd,
             BigDecimal realisasi,
             JenisRealisasi jenisRealisasi,
             String faktorPenunjang,
@@ -70,6 +89,7 @@ public record RekinIndividu(
         return new RekinIndividu(
                 null, kodeOpd, nip, tahun, bulan,
                 kodePkRekin, kodeIndikatorPkRekin, kodeTargetPkRekin,
+                kodeSasaranOpd,
                 realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat,
                 null, null, null, null
         );

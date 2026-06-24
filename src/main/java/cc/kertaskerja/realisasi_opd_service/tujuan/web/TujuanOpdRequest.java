@@ -33,7 +33,7 @@ public record TujuanOpdRequest(
 
         @NotNull(message = "Tahun harus terdefinisi")
         @NotEmpty(message = "Tahun tidak boleh kosong")
-        @Schema(description = "Tahun realisasi", example = "2025")
+        @Schema(description = "Tahun realisasi", example = "2026")
         String tahun,
 
         @NotNull(message = "Bulan harus terdefinisi")

@@ -1,8 +1,8 @@
 package cc.kertaskerja.realisasi_individu_service.renaksi.web;
 
+import cc.kertaskerja.realisasi.domain.JenisLaporan;
 import cc.kertaskerja.realisasi_individu_service.renaksi.domain.RenaksiIndividu;
 import cc.kertaskerja.realisasi_individu_service.renaksi.domain.RenaksiService;
-import cc.kertaskerja.realisasi_individu_service.renaksi.domain.SasaranWithDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -18,10 +18,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("renaksi_individu")
@@ -34,13 +37,13 @@ public class RenaksiController {
     }
 
     @GetMapping("/nip/{nip}/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}")
-    @Operation(summary = "Cari sasaran renaksi berdasarkan NIP, kode OPD, tahun, dan bulan (dengan renaksi, indikator & target)")
+    @Operation(summary = "Cari realisasi renaksi individu berdasarkan NIP, kode OPD, tahun, dan bulan")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar sasaran dengan detail renaksi", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SasaranWithDetails.class)))),
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi renaksi individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenaksiIndividu.class)))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Flux<SasaranWithDetails> getSasaranByNipAndKodeOpdAndTahunAndBulan(
+    public Flux<RenaksiIndividu> getRealisasiByNipAndKodeOpdAndTahunAndBulan(
             @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
             @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun realisasi", example = "2026") @PathVariable String tahun,
@@ -48,21 +51,54 @@ public class RenaksiController {
         if (nip == null || nip.isBlank() || kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip, kodeOpd, tahun, dan bulan tidak boleh kosong");
         }
-        return renaksiService.getSasaranWithDetailsByNipAndKodeOpdAndTahunAndBulan(nip, kodeOpd, tahun, bulan);
+        return renaksiService.getAllByNipAndKodeOpdAndTahunAndBulan(nip, kodeOpd, tahun, bulan);
+    }
+
+    @GetMapping("/laporan/nip/{nip}/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
+    @Operation(summary = "Laporan realisasi renaksi individu per periode", description = "Mengambil total realisasi renaksi individu yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data laporan realisasi renaksi individu", content = @Content(schema = @Schema(implementation = LaporanRealisasiRenaksiIndividuResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Mono<LaporanRealisasiRenaksiIndividuResponse> getLaporanRealisasi(
+            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
+            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun laporan", example = "2026") @PathVariable String tahun,
+            @Parameter(description = "Jenis periode laporan", example = "TAHUNAN") @PathVariable JenisLaporan jenisLaporan,
+            @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN", example = "3") @RequestParam(required = false) String bulan) {
+        if (nip == null || nip.isBlank() || kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip, kodeOpd, dan tahun tidak boleh kosong");
+        }
+        return renaksiService.getLaporanRealisasi(nip, kodeOpd, tahun, jenisLaporan, bulan);
     }
 
     @PostMapping
-    @Operation(summary = "Buat realisasi target renaksi individu (upsert)", description = "Menyimpan realisasi target renaksi individu. Jika data dengan composite key yang sama sudah ada, akan diperbarui.")
+    @Operation(summary = "Simpan realisasi target renaksi individu (upsert)", description = "Menyimpan realisasi target renaksi individu. Jika data dengan composite key yang sama sudah ada, akan diperbarui.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Realisasi tersimpan", content = @Content(schema = @Schema(implementation = RenaksiIndividu.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Mono<RenaksiIndividu> createSasaran(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload sasaran dengan renaksi, indikator, dan target", required = true,
+    public Mono<RenaksiIndividu> submitRealisasi(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload realisasi renaksi individu", required = true,
                     content = @Content(schema = @Schema(implementation = RenaksiIndividuRequest.class)))
             @RequestBody @Valid RenaksiIndividuRequest request) {
-        return renaksiService.createSasaran(request);
+        return renaksiService.submitRealisasiTarget(request);
+    }
+
+    @PostMapping("/batch")
+    @Operation(summary = "Simpan batch realisasi renaksi individu", description = "Menyimpan beberapa data realisasi renaksi individu dalam satu request.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Batch berhasil disimpan", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenaksiIndividu.class)))),
+            @ApiResponse(responseCode = "400", description = "Payload batch tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<RenaksiIndividu> batchSubmitRealisasi(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Daftar payload realisasi renaksi individu", required = true,
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenaksiIndividuRequest.class))))
+            @RequestBody @Valid List<RenaksiIndividuRequest> requests) {
+        return renaksiService.batchSubmitRealisasiTarget(requests);
     }
 
     @PostMapping("/faktor-penunjang")
