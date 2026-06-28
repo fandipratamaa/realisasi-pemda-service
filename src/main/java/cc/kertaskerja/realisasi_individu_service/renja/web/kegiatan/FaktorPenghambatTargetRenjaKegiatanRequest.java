@@ -10,22 +10,18 @@ public record FaktorPenghambatTargetRenjaKegiatanRequest(
 
         @NotNull @NotEmpty
         @Schema(example = "5.01.5.05.0.00.01.0000")
-        @JsonProperty("kode_opd")
         String kodeOpd,
 
         @NotNull @NotEmpty
         @Schema(example = "5.01.02.001")
-        @JsonProperty("kode_kegiatan")
         String kodeKegiatan,
 
         @NotNull @NotEmpty
         @Schema(example = "IND-RENJA-PENETAPAN-5.01.02.001-5.01.5.05.0.00.01.0000-2026-001")
-        @JsonProperty("kode_indikator")
         String kodeIndikator,
 
         @NotNull @NotEmpty
         @Schema(example = "TGT-TRG-PENETAPAN-89456")
-        @JsonProperty("kode_target")
         String kodeTarget,
 
         @NotNull @NotEmpty
