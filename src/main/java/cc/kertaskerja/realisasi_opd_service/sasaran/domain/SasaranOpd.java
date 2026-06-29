@@ -75,7 +75,7 @@ public record SasaranOpd(
     public record CapaianResult(Double capaian, String keteranganCapaian) {}
 
     public static CapaianResult hitungCapaian(Double realisasi, Double target) {
-        if (realisasi == null || target == null || target == 0) {
+        if (realisasi == null || target == null || target == 0 || realisasi == 0) {
             return new CapaianResult(null, null);
         }
         double calculatedCapaian = realisasi / target * 100;

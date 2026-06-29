@@ -72,12 +72,18 @@ public record Tujuan(
 
     @JsonProperty("capaian")
     public String capaian() {
+        if (realisasi == null || target == null || target.equals("0") || realisasi == 0) {
+            return null;
+        }
         double calculatedCapaian = capaianTujuan();
         return formatCapaian(Math.min(calculatedCapaian, 100));
     }
 
     @JsonProperty("keteranganCapaian")
     public String keteranganCapaian() {
+        if (realisasi == null || target == null || target.equals("0") || realisasi == 0) {
+            return null;
+        }
         double calculatedCapaian = capaianTujuan();
         return calculatedCapaian > 100 ? "nilai capaian lebih dari 100% (" + formatCapaian(calculatedCapaian) + ")" : null;
     }

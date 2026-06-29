@@ -400,16 +400,17 @@ public class RenjaIndividuService {
         ));
     }
 
+    // hitung capaian ditaruh di service agar lebih simple karena di renja individu ada 3 domain
     static CapaianResult hitungCapaian(Double realisasi, Double target) {
-        if (realisasi == null || target == null || target == 0) {
-            return new CapaianResult(null, null);
+        if (target == null || target == 0 || realisasi == null || realisasi == 0) {
+            return new CapaianResult(0.0, null);
         }
         double calculated = realisasi / target * 100;
         String keterangan = null;
         if (calculated > 100) {
             keterangan = "nilai capaian lebih dari 100% (" + String.format("%.2f%%", calculated) + ")";
         }
-        return new CapaianResult(Math.min(calculated, 100), keterangan);
+        return new CapaianResult(calculated, keterangan);
     }
 
     private <T> Map<String, Double> buildLaporanData(

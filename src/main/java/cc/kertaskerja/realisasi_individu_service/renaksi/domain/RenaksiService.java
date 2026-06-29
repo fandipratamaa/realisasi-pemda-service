@@ -1,7 +1,6 @@
 package cc.kertaskerja.realisasi_individu_service.renaksi.domain;
 
 import cc.kertaskerja.realisasi.domain.JenisLaporan;
-import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import cc.kertaskerja.realisasi_individu_service.renaksi.web.FaktorPenghambatRenaksiRequest;
 import cc.kertaskerja.realisasi_individu_service.renaksi.web.FaktorPenunjangRenaksiRequest;
 import cc.kertaskerja.realisasi_individu_service.renaksi.web.LaporanRealisasiRenaksiIndividuResponse;

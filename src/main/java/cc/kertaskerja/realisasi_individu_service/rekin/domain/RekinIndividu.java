@@ -61,15 +61,15 @@ public record RekinIndividu(
     public record CapaianResult(Double capaian, String keteranganCapaian) {}
 
     public static CapaianResult hitungCapaian(Double realisasi, Double target) {
-        if (realisasi == null || target == null || target == 0) {
-            return new CapaianResult(null, null);
+        if (target == null || target == 0 || realisasi == null || realisasi == 0) {
+            return new CapaianResult(0.0, null);
         }
         double calculatedCapaian = realisasi / target * 100;
         String keteranganCapaian = null;
         if (calculatedCapaian > 100) {
             keteranganCapaian = "nilai capaian lebih dari 100% (" + String.format("%.2f%%", calculatedCapaian) + ")";
         }
-        return new CapaianResult(Math.min(calculatedCapaian, 100), keteranganCapaian);
+        return new CapaianResult(calculatedCapaian, keteranganCapaian);
     }
 
     public static RekinIndividu of(
