@@ -96,7 +96,7 @@ public class RenjaIndividuController {
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Mono<LaporanRealisasiRenjaProgramIndividuResponse> getLaporanRealisasiProgram(
+    public Flux<LaporanRealisasiRenjaProgramIndividuResponse> getLaporanRealisasiProgram(
             @Parameter(description = "NIP pegawai", example = "198012312005011001") @PathVariable String nip,
             @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun laporan", example = "2026") @PathVariable String tahun,
@@ -113,7 +113,7 @@ public class RenjaIndividuController {
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Mono<LaporanRealisasiRenjaKegiatanIndividuResponse> getLaporanRealisasiKegiatan(
+    public Flux<LaporanRealisasiRenjaKegiatanIndividuResponse> getLaporanRealisasiKegiatan(
             @Parameter(description = "NIP pegawai", example = "198012312005011001") @PathVariable String nip,
             @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun laporan", example = "2026") @PathVariable String tahun,
@@ -130,7 +130,7 @@ public class RenjaIndividuController {
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Mono<LaporanRealisasiRenjaSubKegiatanIndividuResponse> getLaporanRealisasiSubKegiatan(
+    public Flux<LaporanRealisasiRenjaSubKegiatanIndividuResponse> getLaporanRealisasiSubKegiatan(
             @Parameter(description = "NIP pegawai", example = "198012312005011001") @PathVariable String nip,
             @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun laporan", example = "2026") @PathVariable String tahun,

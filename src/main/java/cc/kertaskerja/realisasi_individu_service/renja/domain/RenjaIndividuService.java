@@ -134,43 +134,55 @@ public class RenjaIndividuService {
                 .flatMap(this::enrichSubKegiatanResponse);
     }
 
-    public Mono<LaporanRealisasiRenjaProgramIndividuResponse> getLaporanRealisasiProgram(
+    public Flux<LaporanRealisasiRenjaProgramIndividuResponse> getLaporanRealisasiProgram(
             String nip, String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan) {
         return programRepo.findAllByKodeOpdAndNipAndTahun(kodeOpd, nip, tahun)
                 .collectList()
-                .map(list -> new LaporanRealisasiRenjaProgramIndividuResponse(
-                        tahun,
-                        kodeOpd,
-                        nip,
-                        jenisLaporan,
-                        buildLaporanData(list, jenisLaporan, bulan, item -> item.realisasi() != null ? item.realisasi().doubleValue() : null)
-                ));
+                .flatMapMany(list -> {
+                    Map<String, java.util.List<RenjaProgramIndividu>> grouped = list.stream()
+                            .collect(java.util.stream.Collectors.groupingBy(t -> t.kodeIndikator() + "|" + t.kodeTarget()));
+                    return Flux.fromIterable(grouped.values()).map(groupList -> {
+                        RenjaProgramIndividu first = groupList.get(0);
+                        Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan, item -> item.realisasi() != null ? item.realisasi().doubleValue() : null);
+                        Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN || jenisLaporan == JenisLaporan.TAHUNAN) 
+                                ? listData.values().stream().mapToDouble(Double::doubleValue).sum() : null;
+                        return new LaporanRealisasiRenjaProgramIndividuResponse(tahun, kodeOpd, nip, first.indikator(), first.target() != null ? first.target().toString() : null, jenisLaporan, listData, totalRealisasi);
+                    });
+                });
     }
 
-    public Mono<LaporanRealisasiRenjaKegiatanIndividuResponse> getLaporanRealisasiKegiatan(
+    public Flux<LaporanRealisasiRenjaKegiatanIndividuResponse> getLaporanRealisasiKegiatan(
             String nip, String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan) {
         return kegiatanRepo.findAllByKodeOpdAndNipAndTahun(kodeOpd, nip, tahun)
                 .collectList()
-                .map(list -> new LaporanRealisasiRenjaKegiatanIndividuResponse(
-                        tahun,
-                        kodeOpd,
-                        nip,
-                        jenisLaporan,
-                        buildLaporanData(list, jenisLaporan, bulan, item -> item.realisasi() != null ? item.realisasi().doubleValue() : null)
-                ));
+                .flatMapMany(list -> {
+                    Map<String, java.util.List<RenjaKegiatanIndividu>> grouped = list.stream()
+                            .collect(java.util.stream.Collectors.groupingBy(t -> t.kodeIndikator() + "|" + t.kodeTarget()));
+                    return Flux.fromIterable(grouped.values()).map(groupList -> {
+                        RenjaKegiatanIndividu first = groupList.get(0);
+                        Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan, item -> item.realisasi() != null ? item.realisasi().doubleValue() : null);
+                        Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN || jenisLaporan == JenisLaporan.TAHUNAN) 
+                                ? listData.values().stream().mapToDouble(Double::doubleValue).sum() : null;
+                        return new LaporanRealisasiRenjaKegiatanIndividuResponse(tahun, kodeOpd, nip, first.indikator(), first.target() != null ? first.target().toString() : null, jenisLaporan, listData, totalRealisasi);
+                    });
+                });
     }
 
-    public Mono<LaporanRealisasiRenjaSubKegiatanIndividuResponse> getLaporanRealisasiSubKegiatan(
+    public Flux<LaporanRealisasiRenjaSubKegiatanIndividuResponse> getLaporanRealisasiSubKegiatan(
             String nip, String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan) {
         return subKegiatanRepo.findAllByKodeOpdAndNipAndTahun(kodeOpd, nip, tahun)
                 .collectList()
-                .map(list -> new LaporanRealisasiRenjaSubKegiatanIndividuResponse(
-                        tahun,
-                        kodeOpd,
-                        nip,
-                        jenisLaporan,
-                        buildLaporanData(list, jenisLaporan, bulan, item -> item.realisasiTarget() != null ? item.realisasiTarget().doubleValue() : null)
-                ));
+                .flatMapMany(list -> {
+                    Map<String, java.util.List<RenjaSubKegiatanIndividu>> grouped = list.stream()
+                            .collect(java.util.stream.Collectors.groupingBy(t -> t.kodeIndikator() + "|" + t.kodeTarget()));
+                    return Flux.fromIterable(grouped.values()).map(groupList -> {
+                        RenjaSubKegiatanIndividu first = groupList.get(0);
+                        Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan, item -> item.realisasiTarget() != null ? item.realisasiTarget().doubleValue() : null);
+                        Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN || jenisLaporan == JenisLaporan.TAHUNAN) 
+                                ? listData.values().stream().mapToDouble(Double::doubleValue).sum() : null;
+                        return new LaporanRealisasiRenjaSubKegiatanIndividuResponse(tahun, kodeOpd, nip, first.indikator(), first.targetRealisasi() != null ? first.targetRealisasi().toString() : null, jenisLaporan, listData, totalRealisasi);
+                    });
+                });
     }
 
     private Mono<RenjaProgramIndividu> upsertProgram(RenjaIndividuProgramRequest req) {

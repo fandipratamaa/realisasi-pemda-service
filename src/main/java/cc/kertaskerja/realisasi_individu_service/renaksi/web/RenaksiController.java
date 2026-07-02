@@ -61,7 +61,7 @@ public class RenaksiController {
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Mono<LaporanRealisasiRenaksiIndividuResponse> getLaporanRealisasi(
+    public Flux<LaporanRealisasiRenaksiIndividuResponse> getLaporanRealisasi(
             @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
             @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun laporan", example = "2026") @PathVariable String tahun,

@@ -181,45 +181,89 @@ public class RekinService {
 
     // --- Laporan ---
 
-    public Mono<LaporanRealisasiRekinIndividuResponse> getLaporanRealisasi(
+    public reactor.core.publisher.Flux<LaporanRealisasiRekinIndividuResponse> getLaporanRealisasi(
             String nip, String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan) {
-        return repository.findAllByKodeOpdAndNipAndTahun(kodeOpd, nip, tahun)
-                .collectList()
-                .map(list -> {
-                    Map<String, Double> listData = switch (jenisLaporan) {
-                        case BULANAN -> {
-                            if (bulan == null || bulan.isBlank()) {
-                                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter bulan wajib diisi untuk laporan BULANAN");
+        
+        Mono<cc.kertaskerja.integration.penetapan.rekin.PenetapanRekinIndividu.RekinIndividuData> penetapanMono = 
+                penetapanClient.fetchRekinIndividu(nip, kodeOpd, Integer.parseInt(tahun))
+                .onErrorResume(e -> Mono.empty());
+
+        return Mono.zip(repository.findAllByKodeOpdAndNipAndTahun(kodeOpd, nip, tahun).collectList(), penetapanMono.defaultIfEmpty(new cc.kertaskerja.integration.penetapan.rekin.PenetapanRekinIndividu.RekinIndividuData(null, null, null, null, List.of())))
+                .flatMapMany(tuple -> {
+                    List<RekinIndividu> list = tuple.getT1();
+                    cc.kertaskerja.integration.penetapan.rekin.PenetapanRekinIndividu.RekinIndividuData penetapanData = tuple.getT2();
+
+                    Map<String, List<RekinIndividu>> grouped = list.stream()
+                            .collect(Collectors.groupingBy(t -> t.kodeIndikatorPkRekin() + "|" + t.kodeTargetPkRekin()));
+
+                    return reactor.core.publisher.Flux.fromIterable(grouped.values()).map(groupList -> {
+                        RekinIndividu first = groupList.get(0);
+                        
+                        String indikatorName = first.kodeIndikatorPkRekin();
+                        String targetName = first.kodeTargetPkRekin();
+
+                        if (penetapanData.rekins() != null) {
+                            for (var r : penetapanData.rekins()) {
+                                if (r.indikatorPk() != null) {
+                                    for (var ind : r.indikatorPk()) {
+                                        if (ind.kodeIndikatorPk().equals(first.kodeIndikatorPkRekin())) {
+                                            indikatorName = ind.namaIndikatorPk();
+                                            if (ind.targetPk() != null) {
+                                                for (var tgt : ind.targetPk()) {
+                                                    if (tgt.kodeTargetPk().equals(first.kodeTargetPkRekin())) {
+                                                        targetName = tgt.target() != null ? String.valueOf(tgt.target()) : first.kodeTargetPkRekin();
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            break;
+                                        }
+                                    }
+                                }
                             }
-                            double total = list.stream()
-                                    .filter(t -> bulan.equals(t.bulan()))
-                                    .filter(t -> t.realisasi() != null)
-                                    .mapToDouble(t -> t.realisasi().doubleValue())
-                                    .sum();
-                            yield Map.of(bulan, total);
                         }
-                        case TRIWULAN -> {
-                            Map<String, Double> triwulanMap = new HashMap<>();
-                            for (int i = 1; i <= 4; i++) triwulanMap.put(String.valueOf(i), 0.0);
-                            for (RekinIndividu t : list) {
-                                if (t.realisasi() == null) continue;
-                                int noBulan = Integer.parseInt(t.bulan());
-                                String triwulan = String.valueOf((noBulan - 1) / 3 + 1);
-                                triwulanMap.merge(triwulan, t.realisasi().doubleValue(), Double::sum);
+
+                        Map<String, Double> listData = switch (jenisLaporan) {
+                            case BULANAN -> {
+                                if (bulan == null || bulan.isBlank()) {
+                                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter bulan wajib diisi untuk laporan BULANAN");
+                                }
+                                double total = groupList.stream()
+                                        .filter(t -> bulan.equals(t.bulan()))
+                                        .filter(t -> t.realisasi() != null)
+                                        .mapToDouble(t -> t.realisasi().doubleValue())
+                                        .sum();
+                                yield Map.of(bulan, total);
                             }
-                            yield triwulanMap;
-                        }
-                        case TAHUNAN -> {
-                            Map<String, Double> bulanMap = new HashMap<>();
-                            for (int i = 1; i <= 12; i++) bulanMap.put(String.valueOf(i), 0.0);
-                            for (RekinIndividu t : list) {
-                                if (t.realisasi() == null) continue;
-                                bulanMap.merge(t.bulan(), t.realisasi().doubleValue(), Double::sum);
+                            case TRIWULAN -> {
+                                Map<String, Double> triwulanMap = new HashMap<>();
+                                for (int i = 1; i <= 4; i++) triwulanMap.put(String.valueOf(i), 0.0);
+                                for (RekinIndividu t : groupList) {
+                                    if (t.realisasi() == null) continue;
+                                    int noBulan = Integer.parseInt(t.bulan());
+                                    String triwulan = String.valueOf((noBulan - 1) / 3 + 1);
+                                    triwulanMap.merge(triwulan, t.realisasi().doubleValue(), Double::sum);
+                                }
+                                yield triwulanMap;
                             }
-                            yield bulanMap;
+                            case TAHUNAN -> {
+                                Map<String, Double> bulanMap = new HashMap<>();
+                                for (int i = 1; i <= 12; i++) bulanMap.put(String.valueOf(i), 0.0);
+                                for (RekinIndividu t : groupList) {
+                                    if (t.realisasi() == null) continue;
+                                    bulanMap.merge(t.bulan(), t.realisasi().doubleValue(), Double::sum);
+                                }
+                                yield bulanMap;
+                            }
+                        };
+                        
+                        Double totalRealisasi = null;
+                        if (jenisLaporan == JenisLaporan.TRIWULAN || jenisLaporan == JenisLaporan.TAHUNAN) {
+                            totalRealisasi = listData.values().stream().mapToDouble(Double::doubleValue).sum();
                         }
-                    };
-                    return new LaporanRealisasiRekinIndividuResponse(tahun, kodeOpd, nip, jenisLaporan, listData);
+
+                        return new LaporanRealisasiRekinIndividuResponse(tahun, kodeOpd, nip, indikatorName, targetName, jenisLaporan, listData, totalRealisasi);
+                    });
                 });
     }
 

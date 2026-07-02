@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -57,7 +58,7 @@ public class RekinController {
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Mono<LaporanRealisasiRekinIndividuResponse> getLaporanRealisasi(
+    public Flux<LaporanRealisasiRekinIndividuResponse> getLaporanRealisasi(
             @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
             @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun laporan", example = "2026") @PathVariable String tahun,
