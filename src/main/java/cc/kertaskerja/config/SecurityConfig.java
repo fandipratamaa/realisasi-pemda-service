@@ -6,12 +6,14 @@ import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.savedrequest.NoOpServerRequestCache;
 import org.springframework.web.server.ServerWebExchange;
 import java.util.List;
 @EnableWebFluxSecurity
+@EnableReactiveMethodSecurity
 @Configuration
 public class SecurityConfig {
     private static final List<String> PEMDA_ENDPOINT_PREFIXES = List.of(

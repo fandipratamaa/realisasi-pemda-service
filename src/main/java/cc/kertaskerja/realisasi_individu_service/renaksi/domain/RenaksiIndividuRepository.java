@@ -9,7 +9,11 @@ public interface RenaksiIndividuRepository extends ReactiveCrudRepository<Renaks
 
     Flux<RenaksiIndividu> findAllByKodeOpdAndNipAndTahunAndBulan(String kodeOpd, String nip, String tahun, String bulan);
 
+    Flux<RenaksiIndividu> findAllByKodeOpdAndTahunAndBulan(String kodeOpd, String tahun, String bulan);
+
     Flux<RenaksiIndividu> findAllByKodeOpdAndNipAndTahun(String kodeOpd, String nip, String tahun);
+
+    Flux<RenaksiIndividu> findAllByKodeOpdAndTahun(String kodeOpd, String tahun);
 
     Mono<RenaksiIndividu> findFirstByKodeOpdAndNipAndKodeSasaranAndKodeRenaksiAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
             String kodeOpd, String nip, String kodeSasaran,

@@ -68,6 +68,10 @@ public class RenaksiService {
         return renaksiIndividuRepository.findAllByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
     }
 
+    public Flux<RenaksiIndividu> getAllByKodeOpdAndTahunAndBulan(String kodeOpd, String tahun, String bulan) {
+        return renaksiIndividuRepository.findAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
+    }
+
     public Flux<LaporanRealisasiRenaksiIndividuResponse> getLaporanRealisasi(
             String nip, String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan) {
         return renaksiIndividuRepository.findAllByKodeOpdAndNipAndTahun(kodeOpd, nip, tahun)
@@ -119,6 +123,61 @@ public class RenaksiService {
                         }
                         
                         return new LaporanRealisasiRenaksiIndividuResponse(tahun, kodeOpd, nip, first.indikator(), first.target() != null ? first.target().toString() : null, jenisLaporan, listData, totalRealisasi);
+                    });
+                });
+    }
+
+    public Flux<LaporanRealisasiRenaksiIndividuResponse> getLaporanRealisasiByOpd(
+            String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan) {
+        return renaksiIndividuRepository.findAllByKodeOpdAndTahun(kodeOpd, tahun)
+                .collectList()
+                .flatMapMany(list -> {
+                    Map<String, List<RenaksiIndividu>> grouped = list.stream()
+                            .collect(java.util.stream.Collectors.groupingBy(t -> t.nip() + "|" + t.kodeIndikator() + "|" + t.kodeTarget()));
+
+                    return Flux.fromIterable(grouped.values()).map(groupList -> {
+                        RenaksiIndividu first = groupList.get(0);
+                        
+                        Map<String, Double> listData = switch (jenisLaporan) {
+                            case BULANAN -> {
+                                if (bulan == null || bulan.isBlank()) {
+                                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter bulan wajib diisi untuk laporan BULANAN");
+                                }
+                                double total = groupList.stream()
+                                        .filter(t -> bulan.equals(t.bulan()))
+                                        .filter(t -> t.realisasi() != null)
+                                        .mapToDouble(t -> t.realisasi().doubleValue())
+                                        .sum();
+                                yield Map.of(bulan, total);
+                            }
+                            case TRIWULAN -> {
+                                Map<String, Double> triwulanMap = new HashMap<>();
+                                for (int i = 1; i <= 4; i++) triwulanMap.put(String.valueOf(i), 0.0);
+                                for (RenaksiIndividu t : groupList) {
+                                    if (t.realisasi() == null) continue;
+                                    int noBulan = Integer.parseInt(t.bulan());
+                                    String triwulan = String.valueOf((noBulan - 1) / 3 + 1);
+                                    triwulanMap.merge(triwulan, t.realisasi().doubleValue(), Double::sum);
+                                }
+                                yield triwulanMap;
+                            }
+                            case TAHUNAN -> {
+                                Map<String, Double> bulanMap = new HashMap<>();
+                                for (int i = 1; i <= 12; i++) bulanMap.put(String.valueOf(i), 0.0);
+                                for (RenaksiIndividu t : groupList) {
+                                    if (t.realisasi() == null) continue;
+                                    bulanMap.merge(t.bulan(), t.realisasi().doubleValue(), Double::sum);
+                                }
+                                yield bulanMap;
+                            }
+                        };
+                        
+                        Double totalRealisasi = null;
+                        if (jenisLaporan == JenisLaporan.TRIWULAN || jenisLaporan == JenisLaporan.TAHUNAN) {
+                            totalRealisasi = listData.values().stream().mapToDouble(Double::doubleValue).sum();
+                        }
+                        
+                        return new LaporanRealisasiRenaksiIndividuResponse(tahun, kodeOpd, first.nip(), first.indikator(), first.target() != null ? first.target().toString() : null, jenisLaporan, listData, totalRealisasi);
                     });
                 });
     }

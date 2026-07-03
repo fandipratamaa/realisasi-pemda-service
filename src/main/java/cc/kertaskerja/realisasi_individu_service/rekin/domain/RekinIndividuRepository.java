@@ -15,6 +15,8 @@ public interface RekinIndividuRepository extends ReactiveCrudRepository<RekinInd
 
     Flux<RekinIndividu> findAllByKodeOpdAndNipAndTahun(String kodeOpd, String nip, String tahun);
 
+    Flux<RekinIndividu> findAllByKodeOpdAndTahun(String kodeOpd, String tahun);
+
     Mono<RekinIndividu> findFirstByKodeOpdAndNipAndTahunAndBulanAndKodePkRekinAndKodeIndikatorPkRekinAndKodeTargetPkRekin(
             String kodeOpd, String nip, String tahun, String bulan,
             String kodePkRekin, String kodeIndikatorPkRekin, String kodeTargetPkRekin);

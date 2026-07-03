@@ -179,6 +179,10 @@ public class RekinService {
                 });
     }
 
+    public reactor.core.publisher.Flux<RekinIndividu> getAllByKodeOpdAndTahunAndBulan(String kodeOpd, String tahun, String bulan) {
+        return repository.findAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
+    }
+
     // --- Laporan ---
 
     public reactor.core.publisher.Flux<LaporanRealisasiRekinIndividuResponse> getLaporanRealisasi(
@@ -263,6 +267,64 @@ public class RekinService {
                         }
 
                         return new LaporanRealisasiRekinIndividuResponse(tahun, kodeOpd, nip, indikatorName, targetName, jenisLaporan, listData, totalRealisasi);
+                    });
+                });
+    }
+
+    public reactor.core.publisher.Flux<LaporanRealisasiRekinIndividuResponse> getLaporanRealisasiByOpd(
+            String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan) {
+        
+        return repository.findAllByKodeOpdAndTahun(kodeOpd, tahun).collectList()
+                .flatMapMany(list -> {
+                    Map<String, List<RekinIndividu>> grouped = list.stream()
+                            .collect(Collectors.groupingBy(t -> t.nip() + "|" + t.kodeIndikatorPkRekin() + "|" + t.kodeTargetPkRekin()));
+
+                    return reactor.core.publisher.Flux.fromIterable(grouped.values()).map(groupList -> {
+                        RekinIndividu first = groupList.get(0);
+                        
+                        String indikatorName = first.kodeIndikatorPkRekin();
+                        String targetName = first.kodeTargetPkRekin();
+
+                        Map<String, Double> listData = switch (jenisLaporan) {
+                            case BULANAN -> {
+                                if (bulan == null || bulan.isBlank()) {
+                                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter bulan wajib diisi untuk laporan BULANAN");
+                                }
+                                double total = groupList.stream()
+                                        .filter(t -> bulan.equals(t.bulan()))
+                                        .filter(t -> t.realisasi() != null)
+                                        .mapToDouble(t -> t.realisasi().doubleValue())
+                                        .sum();
+                                yield Map.of(bulan, total);
+                            }
+                            case TRIWULAN -> {
+                                Map<String, Double> triwulanMap = new HashMap<>();
+                                for (int i = 1; i <= 4; i++) triwulanMap.put(String.valueOf(i), 0.0);
+                                for (RekinIndividu t : groupList) {
+                                    if (t.realisasi() == null) continue;
+                                    int noBulan = Integer.parseInt(t.bulan());
+                                    String triwulan = String.valueOf((noBulan - 1) / 3 + 1);
+                                    triwulanMap.merge(triwulan, t.realisasi().doubleValue(), Double::sum);
+                                }
+                                yield triwulanMap;
+                            }
+                            case TAHUNAN -> {
+                                Map<String, Double> bulanMap = new HashMap<>();
+                                for (int i = 1; i <= 12; i++) bulanMap.put(String.valueOf(i), 0.0);
+                                for (RekinIndividu t : groupList) {
+                                    if (t.realisasi() == null) continue;
+                                    bulanMap.merge(t.bulan(), t.realisasi().doubleValue(), Double::sum);
+                                }
+                                yield bulanMap;
+                            }
+                        };
+                        
+                        Double totalRealisasi = null;
+                        if (jenisLaporan == JenisLaporan.TRIWULAN || jenisLaporan == JenisLaporan.TAHUNAN) {
+                            totalRealisasi = listData.values().stream().mapToDouble(Double::doubleValue).sum();
+                        }
+
+                        return new LaporanRealisasiRekinIndividuResponse(tahun, kodeOpd, first.nip(), indikatorName, targetName, jenisLaporan, listData, totalRealisasi);
                     });
                 });
     }

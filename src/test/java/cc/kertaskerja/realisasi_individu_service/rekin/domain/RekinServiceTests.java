@@ -13,6 +13,7 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -194,5 +195,28 @@ public class RekinServiceTests {
                         e instanceof org.springframework.web.server.ResponseStatusException
                                 && ((org.springframework.web.server.ResponseStatusException) e).getStatusCode().value() == 404)
                 .verify();
+    }
+
+    @Test
+    void whenGetAllByKodeOpdAndTahunAndBulan_thenReturnsList() {
+        String kodeOpd = "1.01.0.00.0.00.01.0000";
+        String tahun = "2026";
+        String bulan = "1";
+
+        RekinIndividu r1 = RekinIndividu.of(
+                kodeOpd, "198012312005011001", "2026", "1",
+                "REKIN-001", "IND-REKIN-001", "TAR-1", "SAS-001",
+                BigDecimal.valueOf(75.5), JenisRealisasi.NAIK, "", "");
+
+        when(repository.findAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan))
+                .thenReturn(Flux.just(r1));
+
+        var result = rekinService.getAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
+
+        StepVerifier.create(result)
+                .expectNext(r1)
+                .verifyComplete();
+
+        verify(repository, times(1)).findAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
     }
 }
