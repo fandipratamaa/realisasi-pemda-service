@@ -18,6 +18,12 @@ public record LaporanRealisasiRenaksiIndividuResponse(
         @Schema(description = "NIP pegawai", example = "198012312005011001")
         String nip,
 
+        @Schema(description = "Indikator laporan", example = "Indikator A")
+        String indikator,
+
+        @Schema(description = "Target laporan", example = "100")
+        String target,
+
         @JsonProperty("jenis_laporan")
         @Schema(description = "Jenis periode laporan", example = "TAHUNAN")
         JenisLaporan jenisLaporan,
@@ -25,6 +31,10 @@ public record LaporanRealisasiRenaksiIndividuResponse(
         @JsonProperty("list_data")
         @Schema(description = "Data realisasi per periode. Key = nomor periode (bulan/triwulan), Value = total realisasi",
                 example = "{\"1\": 120.0, \"2\": 95.0}")
-        Map<String, Double> listData
+        Map<String, Double> listData,
+
+        @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+        @Schema(description = "Total realisasi (hanya untuk TRIWULAN dan TAHUNAN)", example = "215.0")
+        Double totalRealisasi
 ) {
 }

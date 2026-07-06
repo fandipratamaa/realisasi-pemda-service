@@ -112,7 +112,7 @@ public class RenjaOpdService {
                 .flatMap(existing -> targetSubKegiatanRepo.save(existing.withFaktorPenghambat(req.faktorPenghambat())));
     }
 
-    public Mono<LaporanRealisasiRenjaOpdResponse> getLaporanRealisasi(String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan) {
+    public Flux<LaporanRealisasiRenjaOpdResponse> getLaporanRealisasi(String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan) {
         record PeriodeRealisasi(String bulan, BigDecimal realisasi) {}
 
         Flux<PeriodeRealisasi> programFlux = targetProgramRepo.findAllByKodeOpdAndTahun(kodeOpd, tahun)
@@ -124,7 +124,7 @@ public class RenjaOpdService {
 
         return Flux.merge(programFlux, kegiatanFlux, subkegiatanFlux)
                 .collectList()
-                .map(list -> {
+                .flatMapMany(list -> {
                     Map<String, Double> listData = switch (jenisLaporan) {
                         case BULANAN -> {
                             if (bulan == null || bulan.isBlank()) {
@@ -158,7 +158,13 @@ public class RenjaOpdService {
                             yield bulanMap;
                         }
                     };
-                    return new LaporanRealisasiRenjaOpdResponse(tahun, kodeOpd, jenisLaporan, listData);
+                    
+                    Double totalRealisasi = null;
+                    if (jenisLaporan == JenisLaporan.TRIWULAN || jenisLaporan == JenisLaporan.TAHUNAN) {
+                        totalRealisasi = listData.values().stream().mapToDouble(Double::doubleValue).sum();
+                    }
+                    
+                    return Flux.just(new LaporanRealisasiRenjaOpdResponse(tahun, kodeOpd, null, null, jenisLaporan, listData, totalRealisasi));
                 });
     }
 

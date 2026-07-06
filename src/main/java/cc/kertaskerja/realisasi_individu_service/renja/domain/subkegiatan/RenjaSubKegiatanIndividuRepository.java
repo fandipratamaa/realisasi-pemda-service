@@ -18,14 +18,12 @@ public interface RenjaSubKegiatanIndividuRepository extends ReactiveCrudReposito
             SELECT COALESCE(SUM(pagu), 0)
             FROM realisasi_target_renja_subkegiatan_individu
             WHERE kode_opd = :kodeOpd
-              AND nip = :nip
               AND tahun = :tahun
               AND bulan = :bulan
               AND kode_subkegiatan LIKE :kodeSubKegiatanPrefix
             """)
     Mono<java.math.BigDecimal> sumPaguByKodeSubKegiatanPrefix(
             String kodeOpd,
-            String nip,
             String tahun,
             String bulan,
             String kodeSubKegiatanPrefix);

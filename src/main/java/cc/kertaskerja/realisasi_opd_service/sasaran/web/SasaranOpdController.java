@@ -55,7 +55,7 @@ public class SasaranOpdController {
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Mono<LaporanRealisasiSasaranOpdResponse> getLaporanRealisasi(
+    public Flux<LaporanRealisasiSasaranOpdResponse> getLaporanRealisasi(
             @Parameter(description = "Kode OPD", example = "5.01.5.05.0.00.01.0000") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun laporan", example = "2026") @PathVariable String tahun,
             @Parameter(description = "Jenis periode laporan", example = "TAHUNAN") @PathVariable JenisLaporan jenisLaporan,

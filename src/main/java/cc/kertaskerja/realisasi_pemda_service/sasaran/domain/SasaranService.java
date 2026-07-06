@@ -164,45 +164,55 @@ public class SasaranService {
                 });
     }
 
-    public Mono<LaporanRealisasiSasaranResponse> getLaporanRealisasi(String tahun, JenisLaporan jenisLaporan, String bulan) {
+    public Flux<LaporanRealisasiSasaranResponse> getLaporanRealisasi(String tahun, JenisLaporan jenisLaporan, String bulan) {
         return sasaranRepository.findAllByTahun(tahun)
                 .collectList()
-                .map(list -> {
-                    Map<String, Double> listData = switch (jenisLaporan) {
-                        case BULANAN -> {
-                            if (bulan == null || bulan.isBlank()) {
-                                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter bulan wajib diisi untuk laporan BULANAN");
+                .flatMapMany(list -> {
+                    Map<String, List<Sasaran>> grouped = list.stream()
+                            .collect(java.util.stream.Collectors.groupingBy(s -> s.indikatorId() + "|" + s.targetId()));
+                    
+                    return Flux.fromIterable(grouped.values()).map(groupList -> {
+                        Sasaran first = groupList.get(0);
+                        Map<String, Double> listData = switch (jenisLaporan) {
+                            case BULANAN -> {
+                                if (bulan == null || bulan.isBlank()) {
+                                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter bulan wajib diisi untuk laporan BULANAN");
+                                }
+                                double total = groupList.stream()
+                                        .filter(s -> bulan.equals(s.bulan()))
+                                        .filter(s -> s.realisasi() != null)
+                                        .mapToDouble(Sasaran::realisasi)
+                                        .sum();
+                                yield Map.of(bulan, total);
                             }
-                            double total = list.stream()
-                                    .filter(s -> bulan.equals(s.bulan()))
-                                    .filter(s -> s.realisasi() != null)
-                                    .mapToDouble(Sasaran::realisasi)
-                                    .sum();
-                            yield Map.of(bulan, total);
-                        }
-                        case TRIWULAN -> {
-                            Map<String, Double> triwulanMap = new HashMap<>();
-                            for (int i = 1; i <= 4; i++) triwulanMap.put(String.valueOf(i), 0.0);
-                            for (Sasaran s : list) {
-                                if (s.realisasi() == null) continue;
-                                int noBulan = Integer.parseInt(s.bulan());
-                                String triwulan = String.valueOf((noBulan - 1) / 3 + 1);
-                                triwulanMap.merge(triwulan, s.realisasi(), Double::sum);
+                            case TRIWULAN -> {
+                                Map<String, Double> triwulanMap = new HashMap<>();
+                                for (int i = 1; i <= 4; i++) triwulanMap.put(String.valueOf(i), 0.0);
+                                for (Sasaran s : groupList) {
+                                    if (s.realisasi() == null) continue;
+                                    int noBulan = Integer.parseInt(s.bulan());
+                                    String triwulan = String.valueOf((noBulan - 1) / 3 + 1);
+                                    triwulanMap.merge(triwulan, s.realisasi(), Double::sum);
+                                }
+                                yield triwulanMap;
                             }
-                            yield triwulanMap;
-                        }
-                        case TAHUNAN -> {
-                            Map<String, Double> bulanMap = new HashMap<>();
-                            for (int i = 1; i <= 12; i++) bulanMap.put(String.valueOf(i), 0.0);
-                            for (Sasaran s : list) {
-                                if (s.realisasi() == null) continue;
-                                String key = s.bulan();
-                                bulanMap.merge(key, s.realisasi(), Double::sum);
+                            case TAHUNAN -> {
+                                Map<String, Double> bulanMap = new HashMap<>();
+                                for (int i = 1; i <= 12; i++) bulanMap.put(String.valueOf(i), 0.0);
+                                for (Sasaran s : groupList) {
+                                    if (s.realisasi() == null) continue;
+                                    String key = s.bulan();
+                                    bulanMap.merge(key, s.realisasi(), Double::sum);
+                                }
+                                yield bulanMap;
                             }
-                            yield bulanMap;
+                        };
+                        Double totalRealisasi = null;
+                        if (jenisLaporan == JenisLaporan.TRIWULAN || jenisLaporan == JenisLaporan.TAHUNAN) {
+                            totalRealisasi = listData.values().stream().mapToDouble(Double::doubleValue).sum();
                         }
-                    };
-                    return new LaporanRealisasiSasaranResponse(tahun, jenisLaporan, listData);
+                        return new LaporanRealisasiSasaranResponse(tahun, first.indikator(), first.target(), jenisLaporan, listData, totalRealisasi);
+                    });
                 });
     }
 

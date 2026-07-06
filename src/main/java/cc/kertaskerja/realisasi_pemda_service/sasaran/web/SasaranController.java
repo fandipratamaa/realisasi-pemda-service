@@ -48,7 +48,7 @@ public class SasaranController {
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Mono<LaporanRealisasiSasaranResponse> getLaporanRealisasi(
+    public Flux<LaporanRealisasiSasaranResponse> getLaporanRealisasi(
             @Parameter(description = "Tahun laporan", example = "2025") @PathVariable String tahun,
             @Parameter(description = "Jenis periode laporan", example = "TAHUNAN") @PathVariable JenisLaporan jenisLaporan,
             @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN", example = "3") @RequestParam(required = false) String bulan) {

@@ -28,6 +28,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -89,6 +90,54 @@ public class RenjaIndividuController {
         return renjaIndividuService.getSubKegiatanByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
     }
 
+    @GetMapping("/program/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}")
+    @Operation(summary = "Ambil realisasi renja individu - PROGRAM OPD", description = "Mengembalikan data realisasi renja individu tingkat PROGRAM yang cocok dengan kode_opd, tahun, dan bulan.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data realisasi renja program ditemukan", content = @Content(schema = @Schema(implementation = RenjaIndividuProgramResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
+    })
+    @PreAuthorize("hasAnyAuthority('super_admin', 'ROLE_SUPER_ADMIN', 'admin_opd', 'ROLE_ADMIN_OPD')")
+    public Flux<RenjaIndividuProgramResponse> getProgramByKodeOpdAndTahunAndBulan(
+            @PathVariable String kodeOpd,
+            @PathVariable String tahun,
+            @PathVariable String bulan) {
+        return renjaIndividuService.getProgramByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
+    }
+
+    @GetMapping("/kegiatan/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}")
+    @Operation(summary = "Ambil realisasi renja individu - KEGIATAN OPD", description = "Mengembalikan data realisasi renja individu tingkat KEGIATAN yang cocok dengan kode_opd, tahun, dan bulan.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data realisasi renja kegiatan ditemukan", content = @Content(schema = @Schema(implementation = RenjaIndividuKegiatanResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
+    })
+    @PreAuthorize("hasAnyAuthority('super_admin', 'ROLE_SUPER_ADMIN', 'admin_opd', 'ROLE_ADMIN_OPD')")
+    public Flux<RenjaIndividuKegiatanResponse> getKegiatanByKodeOpdAndTahunAndBulan(
+            @PathVariable String kodeOpd,
+            @PathVariable String tahun,
+            @PathVariable String bulan) {
+        return renjaIndividuService.getKegiatanByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
+    }
+
+    @GetMapping("/subkegiatan/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}")
+    @Operation(summary = "Ambil realisasi renja individu - SUBKEGIATAN OPD", description = "Mengembalikan data realisasi renja individu tingkat SUBKEGIATAN yang cocok dengan kode_opd, tahun, dan bulan.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data realisasi renja subkegiatan ditemukan", content = @Content(schema = @Schema(implementation = RenjaIndividuSubKegiatanResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
+    })
+    @PreAuthorize("hasAnyAuthority('super_admin', 'ROLE_SUPER_ADMIN', 'admin_opd', 'ROLE_ADMIN_OPD')")
+    public Flux<RenjaIndividuSubKegiatanResponse> getSubKegiatanByKodeOpdAndTahunAndBulan(
+            @PathVariable String kodeOpd,
+            @PathVariable String tahun,
+            @PathVariable String bulan) {
+        return renjaIndividuService.getSubKegiatanByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
+    }
+
     @GetMapping("/program/laporan/nip/{nip}/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
     @Operation(summary = "Laporan realisasi renja individu program per periode", description = "Mengambil total realisasi renja individu tingkat program yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN).")
     @ApiResponses(value = {
@@ -96,7 +145,7 @@ public class RenjaIndividuController {
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Mono<LaporanRealisasiRenjaProgramIndividuResponse> getLaporanRealisasiProgram(
+    public Flux<LaporanRealisasiRenjaProgramIndividuResponse> getLaporanRealisasiProgram(
             @Parameter(description = "NIP pegawai", example = "198012312005011001") @PathVariable String nip,
             @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun laporan", example = "2026") @PathVariable String tahun,
@@ -113,7 +162,7 @@ public class RenjaIndividuController {
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Mono<LaporanRealisasiRenjaKegiatanIndividuResponse> getLaporanRealisasiKegiatan(
+    public Flux<LaporanRealisasiRenjaKegiatanIndividuResponse> getLaporanRealisasiKegiatan(
             @Parameter(description = "NIP pegawai", example = "198012312005011001") @PathVariable String nip,
             @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun laporan", example = "2026") @PathVariable String tahun,
@@ -130,14 +179,65 @@ public class RenjaIndividuController {
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Mono<LaporanRealisasiRenjaSubKegiatanIndividuResponse> getLaporanRealisasiSubKegiatan(
-            @Parameter(description = "NIP pegawai", example = "198012312005011001") @PathVariable String nip,
-            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
-            @Parameter(description = "Tahun laporan", example = "2026") @PathVariable String tahun,
-            @Parameter(description = "Jenis periode laporan", example = "TAHUNAN") @PathVariable JenisLaporan jenisLaporan,
-            @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN", example = "3") @RequestParam(required = false) String bulan) {
+    public Flux<LaporanRealisasiRenjaSubKegiatanIndividuResponse> getLaporanRealisasiSubKegiatan(
+            @Parameter(description = "NIP pegawai") @PathVariable String nip,
+            @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun laporan") @PathVariable String tahun,
+            @Parameter(description = "Jenis periode laporan") @PathVariable JenisLaporan jenisLaporan,
+            @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN") @RequestParam(required = false) String bulan) {
         validateLaporanParams(nip, kodeOpd, tahun);
         return renjaIndividuService.getLaporanRealisasiSubKegiatan(nip, kodeOpd, tahun, jenisLaporan, bulan);
+    }
+
+    @GetMapping("/program/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
+    @Operation(summary = "Laporan realisasi renja individu program per periode (OPD)", description = "Mengambil total realisasi renja individu tingkat program yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN) untuk seluruh OPD.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data laporan realisasi renja individu program", content = @Content(schema = @Schema(implementation = LaporanRealisasiRenjaProgramIndividuResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
+    })
+    @PreAuthorize("hasAnyAuthority('super_admin', 'ROLE_SUPER_ADMIN', 'admin_opd', 'ROLE_ADMIN_OPD')")
+    public Flux<LaporanRealisasiRenjaProgramIndividuResponse> getLaporanRealisasiProgramByOpd(
+            @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun laporan") @PathVariable String tahun,
+            @Parameter(description = "Jenis periode laporan") @PathVariable JenisLaporan jenisLaporan,
+            @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN") @RequestParam(required = false) String bulan) {
+        return renjaIndividuService.getLaporanRealisasiProgramByOpd(kodeOpd, tahun, jenisLaporan, bulan);
+    }
+
+    @GetMapping("/kegiatan/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
+    @Operation(summary = "Laporan realisasi renja individu kegiatan per periode (OPD)", description = "Mengambil total realisasi renja individu tingkat kegiatan yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN) untuk seluruh OPD.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data laporan realisasi renja individu kegiatan", content = @Content(schema = @Schema(implementation = LaporanRealisasiRenjaKegiatanIndividuResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
+    })
+    @PreAuthorize("hasAnyAuthority('super_admin', 'ROLE_SUPER_ADMIN', 'admin_opd', 'ROLE_ADMIN_OPD')")
+    public Flux<LaporanRealisasiRenjaKegiatanIndividuResponse> getLaporanRealisasiKegiatanByOpd(
+            @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun laporan") @PathVariable String tahun,
+            @Parameter(description = "Jenis periode laporan") @PathVariable JenisLaporan jenisLaporan,
+            @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN") @RequestParam(required = false) String bulan) {
+        return renjaIndividuService.getLaporanRealisasiKegiatanByOpd(kodeOpd, tahun, jenisLaporan, bulan);
+    }
+
+    @GetMapping("/subkegiatan/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
+    @Operation(summary = "Laporan realisasi renja individu subkegiatan per periode (OPD)", description = "Mengambil total realisasi target renja individu tingkat subkegiatan yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN) untuk seluruh OPD.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data laporan realisasi renja individu subkegiatan", content = @Content(schema = @Schema(implementation = LaporanRealisasiRenjaSubKegiatanIndividuResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
+    })
+    @PreAuthorize("hasAnyAuthority('super_admin', 'ROLE_SUPER_ADMIN', 'admin_opd', 'ROLE_ADMIN_OPD')")
+    public Flux<LaporanRealisasiRenjaSubKegiatanIndividuResponse> getLaporanRealisasiSubKegiatanByOpd(
+            @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun laporan") @PathVariable String tahun,
+            @Parameter(description = "Jenis periode laporan") @PathVariable JenisLaporan jenisLaporan,
+            @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN") @RequestParam(required = false) String bulan) {
+        return renjaIndividuService.getLaporanRealisasiSubKegiatanByOpd(kodeOpd, tahun, jenisLaporan, bulan);
     }
 
     @PostMapping("/program")
