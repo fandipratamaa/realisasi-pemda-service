@@ -79,31 +79,33 @@ public record RenaksiIndividu(
                 null, null, null, null);
     }
 
+    public record CapaianResult(Double capaian, String keteranganCapaian) {}
+
+    public static CapaianResult hitungCapaian(Double realisasi, Double target) {
+        if (target == null || target == 0 || realisasi == null || realisasi == 0) {
+            return new CapaianResult(0.0, null);
+        }
+        double calculatedCapaian = realisasi / target * 100;
+        String keteranganCapaian = null;
+        if (calculatedCapaian > 100) {
+            keteranganCapaian = "nilai capaian lebih dari 100% (" + String.format("%.2f%%", calculatedCapaian) + ")";
+            // nilai default capaian ketika lebih dari 100% menjadi 100%
+            calculatedCapaian = 100.0;
+        }
+        return new CapaianResult(calculatedCapaian, keteranganCapaian);
+    }
+
     @JsonProperty("capaian")
-    public String capaian() {
-        double calculatedCapaian = capaianTarget();
-        return formatCapaian(Math.min(calculatedCapaian, 100));
+    public Double capaian() {
+        Double realisasiVal = realisasi != null ? realisasi.doubleValue() : null;
+        Double targetVal = target != null ? target.doubleValue() : null;
+        return hitungCapaian(realisasiVal, targetVal).capaian();
     }
 
     @JsonProperty("keteranganCapaian")
     public String keteranganCapaian() {
-        double calculatedCapaian = capaianTarget();
-        return calculatedCapaian > 100
-                ? "nilai capaian lebih dari 100% (" + formatCapaian(calculatedCapaian) + ")"
-                : null;
-    }
-
-    private String formatCapaian(double value) {
-        return String.format("%.2f%%", value);
-    }
-
-    public Double capaianTarget() {
-        if (target == null || target.compareTo(BigDecimal.ZERO) == 0 || realisasi == null
-                || realisasi.compareTo(BigDecimal.ZERO) == 0) {
-            return 0.0;
-        }
-        double realisasiVal = realisasi.doubleValue();
-        double targetVal = target.doubleValue();
-        return realisasiVal / targetVal * 100;
+        Double realisasiVal = realisasi != null ? realisasi.doubleValue() : null;
+        Double targetVal = target != null ? target.doubleValue() : null;
+        return hitungCapaian(realisasiVal, targetVal).keteranganCapaian();
     }
 }

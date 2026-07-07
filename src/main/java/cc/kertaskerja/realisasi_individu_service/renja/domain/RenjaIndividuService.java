@@ -492,6 +492,8 @@ public class RenjaIndividuService {
         String keterangan = null;
         if (calculated > 100) {
             keterangan = "nilai capaian lebih dari 100% (" + String.format("%.2f%%", calculated) + ")";
+            // nilai default capaian ketika lebih dari 100% menjadi 100%
+            calculated = 100.0;
         }
         return new CapaianResult(calculated, keterangan);
     }

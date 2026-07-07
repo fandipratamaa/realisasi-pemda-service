@@ -37,43 +37,33 @@ class RenaksiIndividuTest {
     }
 
     @Test
-    void testCapaianTarget_Normal_NaiK() {
+    void testCapaian_Normal_NaiK() {
         RenaksiIndividu r = createRenaksiIndividu(
                 BigDecimal.valueOf(100), BigDecimal.valueOf(50000000),
                 BigDecimal.valueOf(75), "2026", "1", "%",
                 JenisRealisasi.NAIK
         );
-        assertEquals(75.0, r.capaianTarget(), 0.001);
+        assertEquals(75.0, r.capaian(), 0.001);
     }
 
     @Test
-    void testCapaianTarget_FullRealisasi_NaiK() {
+    void testCapaian_FullRealisasi_NaiK() {
         RenaksiIndividu r = createRenaksiIndividu(
                 BigDecimal.valueOf(100), BigDecimal.valueOf(50000000),
                 BigDecimal.valueOf(100), "2026", "1", "%",
                 JenisRealisasi.NAIK
         );
-        assertEquals(100.0, r.capaianTarget(), 0.001);
+        assertEquals(100.0, r.capaian(), 0.001);
     }
 
     @Test
-    void testCapaianTarget_OverRealisasi_NaiK() {
+    void testCapaian_OverRealisasi_NaiK_CappedAt100() {
         RenaksiIndividu r = createRenaksiIndividu(
                 BigDecimal.valueOf(100), BigDecimal.valueOf(50000000),
                 BigDecimal.valueOf(120), "2026", "1", "%",
                 JenisRealisasi.NAIK
         );
-        assertEquals(120.0, r.capaianTarget(), 0.001);
-    }
-
-    @Test
-    void testCapaian_Normal_NaiK_CappedAt100() {
-        RenaksiIndividu r = createRenaksiIndividu(
-                BigDecimal.valueOf(100), BigDecimal.valueOf(50000000),
-                BigDecimal.valueOf(120), "2026", "1", "%",
-                JenisRealisasi.NAIK
-        );
-        assertEquals("100.00%", r.capaian());
+        assertEquals(100.0, r.capaian(), 0.001);
     }
 
     @Test
@@ -98,49 +88,47 @@ class RenaksiIndividuTest {
     }
 
     @Test
-    void testCapaianTarget_TargetIsZero_ShouldReturnZero() {
+    void testCapaian_TargetIsZero_ShouldReturnZero() {
         RenaksiIndividu r = createRenaksiIndividu(
                 BigDecimal.ZERO, BigDecimal.valueOf(50000000),
                 BigDecimal.valueOf(75), "2026", "1", "%",
                 JenisRealisasi.NAIK
         );
-        assertEquals(0.0, r.capaianTarget(), 0.001);
-        assertEquals("0.00%", r.capaian());
+        assertEquals(0.0, r.capaian(), 0.001);
     }
 
     @Test
-    void testCapaianTarget_TargetIsNull_ShouldReturnZero() {
+    void testCapaian_TargetIsNull_ShouldReturnZero() {
         RenaksiIndividu r = createRenaksiIndividu(
                 null, BigDecimal.valueOf(50000000),
                 BigDecimal.valueOf(75), "2026", "1", "%",
                 JenisRealisasi.NAIK
         );
-        assertEquals(0.0, r.capaianTarget(), 0.001);
+        assertEquals(0.0, r.capaian(), 0.001);
     }
 
     @Test
-    void testCapaianTarget_RealisasiIsZero_ShouldReturnZero() {
+    void testCapaian_RealisasiIsZero_ShouldReturnZero() {
         RenaksiIndividu r = createRenaksiIndividu(
                 BigDecimal.valueOf(100), BigDecimal.valueOf(50000000),
                 BigDecimal.ZERO, "2026", "1", "%",
                 JenisRealisasi.NAIK
         );
-        assertEquals(0.0, r.capaianTarget(), 0.001);
-        assertEquals("0.00%", r.capaian());
+        assertEquals(0.0, r.capaian(), 0.001);
     }
 
     @Test
-    void testCapaianTarget_RealisasiIsNull_ShouldReturnZero() {
+    void testCapaian_RealisasiIsNull_ShouldReturnZero() {
         RenaksiIndividu r = createRenaksiIndividu(
                 BigDecimal.valueOf(100), BigDecimal.valueOf(50000000),
                 null, "2026", "1", "%",
                 JenisRealisasi.NAIK
         );
-        assertEquals(0.0, r.capaianTarget(), 0.001);
+        assertEquals(0.0, r.capaian(), 0.001);
     }
 
     @Test
-    void testCapaianTarget_NotUsingPaguAnggaran() {
+    void testCapaian_NotUsingPaguAnggaran() {
         // Verify that paguAnggaran is NOT used in calculation
         // If paguAnggaran were used, capaian would be ~0.00015%
         // With target=100 and realisasi=50, capaian should be 50%
@@ -149,6 +137,6 @@ class RenaksiIndividuTest {
                 BigDecimal.valueOf(50), "2026", "1", "%",
                 JenisRealisasi.NAIK
         );
-        assertEquals(50.0, r.capaianTarget(), 0.001);
+        assertEquals(50.0, r.capaian(), 0.001);
     }
 }
