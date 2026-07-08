@@ -40,13 +40,13 @@ public class RenjaIndividuService {
     private final RenjaKegiatanIndividuRepository kegiatanRepo;
     private final RenjaSubKegiatanIndividuRepository subKegiatanRepo;
 
-    record CapaianResult(Double capaian, String keteranganCapaian) {}
+    record CapaianResult(Double capaian, String keteranganCapaian) {
+    }
 
     public RenjaIndividuService(
             RenjaProgramIndividuRepository programRepo,
             RenjaKegiatanIndividuRepository kegiatanRepo,
-            RenjaSubKegiatanIndividuRepository subKegiatanRepo
-    ) {
+            RenjaSubKegiatanIndividuRepository subKegiatanRepo) {
         this.programRepo = programRepo;
         this.kegiatanRepo = kegiatanRepo;
         this.subKegiatanRepo = subKegiatanRepo;
@@ -73,43 +73,51 @@ public class RenjaIndividuService {
 
     public Mono<RenjaProgramIndividu> updateFaktorPenunjangProgram(FaktorPenunjangTargetRenjaProgramRequest req) {
         return programRepo.findByKodeOpdAndKodeProgramAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
-                        req.kodeOpd(), req.kodeProgram(), req.kodeIndikator(), req.kodeTarget(), req.tahun(), req.bulan())
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target program individu tidak ditemukan")))
+                req.kodeOpd(), req.kodeProgram(), req.kodeIndikator(), req.kodeTarget(), req.tahun(), req.bulan())
+                .switchIfEmpty(Mono.error(
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Target program individu tidak ditemukan")))
                 .flatMap(existing -> programRepo.save(existing.withFaktorPenunjang(req.faktorPenunjang())));
     }
 
     public Mono<RenjaProgramIndividu> updateFaktorPenghambatProgram(FaktorPenghambatTargetRenjaProgramRequest req) {
         return programRepo.findByKodeOpdAndKodeProgramAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
-                        req.kodeOpd(), req.kodeProgram(), req.kodeIndikator(), req.kodeTarget(), req.tahun(), req.bulan())
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target program individu tidak ditemukan")))
+                req.kodeOpd(), req.kodeProgram(), req.kodeIndikator(), req.kodeTarget(), req.tahun(), req.bulan())
+                .switchIfEmpty(Mono.error(
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Target program individu tidak ditemukan")))
                 .flatMap(existing -> programRepo.save(existing.withFaktorPenghambat(req.faktorPenghambat())));
     }
 
     public Mono<RenjaKegiatanIndividu> updateFaktorPenunjangKegiatan(FaktorPenunjangTargetRenjaKegiatanRequest req) {
         return kegiatanRepo.findByKodeOpdAndKodeKegiatanAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
-                        req.kodeOpd(), req.kodeKegiatan(), req.kodeIndikator(), req.kodeTarget(), req.tahun(), req.bulan())
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target kegiatan individu tidak ditemukan")))
+                req.kodeOpd(), req.kodeKegiatan(), req.kodeIndikator(), req.kodeTarget(), req.tahun(), req.bulan())
+                .switchIfEmpty(Mono.error(
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Target kegiatan individu tidak ditemukan")))
                 .flatMap(existing -> kegiatanRepo.save(existing.withFaktorPenunjang(req.faktorPenunjang())));
     }
 
     public Mono<RenjaKegiatanIndividu> updateFaktorPenghambatKegiatan(FaktorPenghambatTargetRenjaKegiatanRequest req) {
         return kegiatanRepo.findByKodeOpdAndKodeKegiatanAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
-                        req.kodeOpd(), req.kodeKegiatan(), req.kodeIndikator(), req.kodeTarget(), req.tahun(), req.bulan())
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target kegiatan individu tidak ditemukan")))
+                req.kodeOpd(), req.kodeKegiatan(), req.kodeIndikator(), req.kodeTarget(), req.tahun(), req.bulan())
+                .switchIfEmpty(Mono.error(
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Target kegiatan individu tidak ditemukan")))
                 .flatMap(existing -> kegiatanRepo.save(existing.withFaktorPenghambat(req.faktorPenghambat())));
     }
 
-    public Mono<RenjaSubKegiatanIndividu> updateFaktorPenunjangSubKegiatan(FaktorPenunjangTargetRenjaSubKegiatanRequest req) {
+    public Mono<RenjaSubKegiatanIndividu> updateFaktorPenunjangSubKegiatan(
+            FaktorPenunjangTargetRenjaSubKegiatanRequest req) {
         return subKegiatanRepo.findByKodeOpdAndKodeSubKegiatanAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
-                        req.kodeOpd(), req.kodeSubKegiatan(), req.kodeIndikator(), req.kodeTarget(), req.tahun(), req.bulan())
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target subkegiatan individu tidak ditemukan")))
+                req.kodeOpd(), req.kodeSubKegiatan(), req.kodeIndikator(), req.kodeTarget(), req.tahun(), req.bulan())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Target subkegiatan individu tidak ditemukan")))
                 .flatMap(existing -> subKegiatanRepo.save(existing.withFaktorPenunjang(req.faktorPenunjang())));
     }
 
-    public Mono<RenjaSubKegiatanIndividu> updateFaktorPenghambatSubKegiatan(FaktorPenghambatTargetRenjaSubKegiatanRequest req) {
+    public Mono<RenjaSubKegiatanIndividu> updateFaktorPenghambatSubKegiatan(
+            FaktorPenghambatTargetRenjaSubKegiatanRequest req) {
         return subKegiatanRepo.findByKodeOpdAndKodeSubKegiatanAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
-                        req.kodeOpd(), req.kodeSubKegiatan(), req.kodeIndikator(), req.kodeTarget(), req.tahun(), req.bulan())
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target subkegiatan individu tidak ditemukan")))
+                req.kodeOpd(), req.kodeSubKegiatan(), req.kodeIndikator(), req.kodeTarget(), req.tahun(), req.bulan())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Target subkegiatan individu tidak ditemukan")))
                 .flatMap(existing -> subKegiatanRepo.save(existing.withFaktorPenghambat(req.faktorPenghambat())));
     }
 
@@ -161,13 +169,19 @@ public class RenjaIndividuService {
                 .collectList()
                 .flatMapMany(list -> {
                     Map<String, java.util.List<RenjaProgramIndividu>> grouped = list.stream()
-                            .collect(java.util.stream.Collectors.groupingBy(t -> t.kodeIndikator() + "|" + t.kodeTarget()));
+                            .collect(java.util.stream.Collectors
+                                    .groupingBy(t -> t.kodeIndikator() + "|" + t.kodeTarget()));
                     return Flux.fromIterable(grouped.values()).map(groupList -> {
                         RenjaProgramIndividu first = groupList.get(0);
-                        Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan, item -> item.realisasi() != null ? item.realisasi().doubleValue() : null);
-                        Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN || jenisLaporan == JenisLaporan.TAHUNAN) 
-                                ? listData.values().stream().mapToDouble(Double::doubleValue).sum() : null;
-                        return new LaporanRealisasiRenjaProgramIndividuResponse(tahun, kodeOpd, nip, first.indikator(), first.target() != null ? first.target().toString() : null, jenisLaporan, listData, totalRealisasi);
+                        Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan,
+                                item -> item.realisasi() != null ? item.realisasi().doubleValue() : null);
+                        Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN
+                                || jenisLaporan == JenisLaporan.TAHUNAN)
+                                        ? listData.values().stream().mapToDouble(Double::doubleValue).sum()
+                                        : null;
+                        return new LaporanRealisasiRenjaProgramIndividuResponse(tahun, kodeOpd, nip, first.indikator(),
+                                first.target() != null ? first.target().toString() : null, jenisLaporan, listData,
+                                totalRealisasi);
                     });
                 });
     }
@@ -178,13 +192,19 @@ public class RenjaIndividuService {
                 .collectList()
                 .flatMapMany(list -> {
                     Map<String, java.util.List<RenjaKegiatanIndividu>> grouped = list.stream()
-                            .collect(java.util.stream.Collectors.groupingBy(t -> t.kodeIndikator() + "|" + t.kodeTarget()));
+                            .collect(java.util.stream.Collectors
+                                    .groupingBy(t -> t.kodeIndikator() + "|" + t.kodeTarget()));
                     return Flux.fromIterable(grouped.values()).map(groupList -> {
                         RenjaKegiatanIndividu first = groupList.get(0);
-                        Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan, item -> item.realisasi() != null ? item.realisasi().doubleValue() : null);
-                        Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN || jenisLaporan == JenisLaporan.TAHUNAN) 
-                                ? listData.values().stream().mapToDouble(Double::doubleValue).sum() : null;
-                        return new LaporanRealisasiRenjaKegiatanIndividuResponse(tahun, kodeOpd, nip, first.indikator(), first.target() != null ? first.target().toString() : null, jenisLaporan, listData, totalRealisasi);
+                        Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan,
+                                item -> item.realisasi() != null ? item.realisasi().doubleValue() : null);
+                        Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN
+                                || jenisLaporan == JenisLaporan.TAHUNAN)
+                                        ? listData.values().stream().mapToDouble(Double::doubleValue).sum()
+                                        : null;
+                        return new LaporanRealisasiRenjaKegiatanIndividuResponse(tahun, kodeOpd, nip, first.indikator(),
+                                first.target() != null ? first.target().toString() : null, jenisLaporan, listData,
+                                totalRealisasi);
                     });
                 });
     }
@@ -195,13 +215,20 @@ public class RenjaIndividuService {
                 .collectList()
                 .flatMapMany(list -> {
                     Map<String, java.util.List<RenjaSubKegiatanIndividu>> grouped = list.stream()
-                            .collect(java.util.stream.Collectors.groupingBy(t -> t.kodeIndikator() + "|" + t.kodeTarget()));
+                            .collect(java.util.stream.Collectors
+                                    .groupingBy(t -> t.kodeIndikator() + "|" + t.kodeTarget()));
                     return Flux.fromIterable(grouped.values()).map(groupList -> {
                         RenjaSubKegiatanIndividu first = groupList.get(0);
-                        Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan, item -> item.realisasiTarget() != null ? item.realisasiTarget().doubleValue() : null);
-                        Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN || jenisLaporan == JenisLaporan.TAHUNAN) 
-                                ? listData.values().stream().mapToDouble(Double::doubleValue).sum() : null;
-                        return new LaporanRealisasiRenjaSubKegiatanIndividuResponse(tahun, kodeOpd, nip, first.indikator(), first.targetRealisasi() != null ? first.targetRealisasi().toString() : null, jenisLaporan, listData, totalRealisasi);
+                        Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan,
+                                item -> item.realisasiTarget() != null ? item.realisasiTarget().doubleValue() : null);
+                        Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN
+                                || jenisLaporan == JenisLaporan.TAHUNAN)
+                                        ? listData.values().stream().mapToDouble(Double::doubleValue).sum()
+                                        : null;
+                        return new LaporanRealisasiRenjaSubKegiatanIndividuResponse(tahun, kodeOpd, nip,
+                                first.indikator(),
+                                first.targetRealisasi() != null ? first.targetRealisasi().toString() : null,
+                                jenisLaporan, listData, totalRealisasi);
                     });
                 });
     }
@@ -212,13 +239,19 @@ public class RenjaIndividuService {
                 .collectList()
                 .flatMapMany(list -> {
                     Map<String, java.util.List<RenjaProgramIndividu>> grouped = list.stream()
-                            .collect(java.util.stream.Collectors.groupingBy(t -> t.nip() + "|" + t.kodeIndikator() + "|" + t.kodeTarget()));
+                            .collect(java.util.stream.Collectors
+                                    .groupingBy(t -> t.nip() + "|" + t.kodeIndikator() + "|" + t.kodeTarget()));
                     return Flux.fromIterable(grouped.values()).map(groupList -> {
                         RenjaProgramIndividu first = groupList.get(0);
-                        Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan, item -> item.realisasi() != null ? item.realisasi().doubleValue() : null);
-                        Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN || jenisLaporan == JenisLaporan.TAHUNAN) 
-                                ? listData.values().stream().mapToDouble(Double::doubleValue).sum() : null;
-                        return new LaporanRealisasiRenjaProgramIndividuResponse(tahun, kodeOpd, first.nip(), first.indikator(), first.target() != null ? first.target().toString() : null, jenisLaporan, listData, totalRealisasi);
+                        Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan,
+                                item -> item.realisasi() != null ? item.realisasi().doubleValue() : null);
+                        Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN
+                                || jenisLaporan == JenisLaporan.TAHUNAN)
+                                        ? listData.values().stream().mapToDouble(Double::doubleValue).sum()
+                                        : null;
+                        return new LaporanRealisasiRenjaProgramIndividuResponse(tahun, kodeOpd, first.nip(),
+                                first.indikator(), first.target() != null ? first.target().toString() : null,
+                                jenisLaporan, listData, totalRealisasi);
                     });
                 });
     }
@@ -229,13 +262,19 @@ public class RenjaIndividuService {
                 .collectList()
                 .flatMapMany(list -> {
                     Map<String, java.util.List<RenjaKegiatanIndividu>> grouped = list.stream()
-                            .collect(java.util.stream.Collectors.groupingBy(t -> t.nip() + "|" + t.kodeIndikator() + "|" + t.kodeTarget()));
+                            .collect(java.util.stream.Collectors
+                                    .groupingBy(t -> t.nip() + "|" + t.kodeIndikator() + "|" + t.kodeTarget()));
                     return Flux.fromIterable(grouped.values()).map(groupList -> {
                         RenjaKegiatanIndividu first = groupList.get(0);
-                        Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan, item -> item.realisasi() != null ? item.realisasi().doubleValue() : null);
-                        Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN || jenisLaporan == JenisLaporan.TAHUNAN) 
-                                ? listData.values().stream().mapToDouble(Double::doubleValue).sum() : null;
-                        return new LaporanRealisasiRenjaKegiatanIndividuResponse(tahun, kodeOpd, first.nip(), first.indikator(), first.target() != null ? first.target().toString() : null, jenisLaporan, listData, totalRealisasi);
+                        Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan,
+                                item -> item.realisasi() != null ? item.realisasi().doubleValue() : null);
+                        Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN
+                                || jenisLaporan == JenisLaporan.TAHUNAN)
+                                        ? listData.values().stream().mapToDouble(Double::doubleValue).sum()
+                                        : null;
+                        return new LaporanRealisasiRenjaKegiatanIndividuResponse(tahun, kodeOpd, first.nip(),
+                                first.indikator(), first.target() != null ? first.target().toString() : null,
+                                jenisLaporan, listData, totalRealisasi);
                     });
                 });
     }
@@ -246,13 +285,20 @@ public class RenjaIndividuService {
                 .collectList()
                 .flatMapMany(list -> {
                     Map<String, java.util.List<RenjaSubKegiatanIndividu>> grouped = list.stream()
-                            .collect(java.util.stream.Collectors.groupingBy(t -> t.nip() + "|" + t.kodeIndikator() + "|" + t.kodeTarget()));
+                            .collect(java.util.stream.Collectors
+                                    .groupingBy(t -> t.nip() + "|" + t.kodeIndikator() + "|" + t.kodeTarget()));
                     return Flux.fromIterable(grouped.values()).map(groupList -> {
                         RenjaSubKegiatanIndividu first = groupList.get(0);
-                        Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan, item -> item.realisasiTarget() != null ? item.realisasiTarget().doubleValue() : null);
-                        Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN || jenisLaporan == JenisLaporan.TAHUNAN) 
-                                ? listData.values().stream().mapToDouble(Double::doubleValue).sum() : null;
-                        return new LaporanRealisasiRenjaSubKegiatanIndividuResponse(tahun, kodeOpd, first.nip(), first.indikator(), first.targetRealisasi() != null ? first.targetRealisasi().toString() : null, jenisLaporan, listData, totalRealisasi);
+                        Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan,
+                                item -> item.realisasiTarget() != null ? item.realisasiTarget().doubleValue() : null);
+                        Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN
+                                || jenisLaporan == JenisLaporan.TAHUNAN)
+                                        ? listData.values().stream().mapToDouble(Double::doubleValue).sum()
+                                        : null;
+                        return new LaporanRealisasiRenjaSubKegiatanIndividuResponse(tahun, kodeOpd, first.nip(),
+                                first.indikator(),
+                                first.targetRealisasi() != null ? first.targetRealisasi().toString() : null,
+                                jenisLaporan, listData, totalRealisasi);
                     });
                 });
     }
@@ -261,17 +307,16 @@ public class RenjaIndividuService {
         String kodePagu = req.kodePagu() != null ? req.kodePagu() : "";
         String jenisRealisasi = req.jenisRealisasi() != null ? req.jenisRealisasi() : "NAIK";
         return programRepo.findByKodeOpdAndKodeProgramAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
-                        req.kodeOpd(), req.kodeProgram(), req.kodeIndikator(), req.kodeTarget(), req.tahun(), req.bulan())
+                req.kodeOpd(), req.kodeProgram(), req.kodeIndikator(), req.kodeTarget(), req.tahun(), req.bulan())
                 .flatMap(existing -> programRepo.save(new RenjaProgramIndividu(
                         existing.id(), existing.kodeOpd(), existing.nip(),
                         existing.tahun(), existing.bulan(),
-                        existing.kodeProgram(),  "Realisasi Program " + existing.kodeProgram(),
+                        existing.kodeProgram(), "Realisasi Program " + existing.kodeProgram(),
                         existing.kodeIndikator(), "Realisasi indikator " + existing.kodeIndikator(),
                         existing.kodeTarget(), existing.kodePagu(), existing.pagu(),
                         BigDecimal.valueOf(req.target()), BigDecimal.valueOf(req.realisasi()), jenisRealisasi,
                         existing.faktorPenunjang(), existing.faktorPenghambat(),
-                        existing.createdDate(), null, existing.createdBy(), null
-                )))
+                        existing.createdDate(), null, existing.createdBy(), null)))
                 .switchIfEmpty(Mono.defer(() -> programRepo.save(new RenjaProgramIndividu(
                         null, req.kodeOpd(), req.nip(),
                         req.tahun(), req.bulan(),
@@ -280,15 +325,14 @@ public class RenjaIndividuService {
                         req.kodeTarget(), kodePagu, null,
                         BigDecimal.valueOf(req.target()), BigDecimal.valueOf(req.realisasi()), jenisRealisasi,
                         "", "",
-                        null, null, null, null
-                ))));
+                        null, null, null, null))));
     }
 
     private Mono<RenjaKegiatanIndividu> upsertKegiatan(RenjaIndividuKegiatanRequest req) {
         String kodePagu = req.kodePagu() != null ? req.kodePagu() : "";
         String jenisRealisasi = req.jenisRealisasi() != null ? req.jenisRealisasi() : "NAIK";
         return kegiatanRepo.findByKodeOpdAndKodeKegiatanAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
-                        req.kodeOpd(), req.kodeKegiatan(), req.kodeIndikator(), req.kodeTarget(), req.tahun(), req.bulan())
+                req.kodeOpd(), req.kodeKegiatan(), req.kodeIndikator(), req.kodeTarget(), req.tahun(), req.bulan())
                 .flatMap(existing -> kegiatanRepo.save(new RenjaKegiatanIndividu(
                         existing.id(), existing.kodeOpd(), existing.nip(),
                         existing.tahun(), existing.bulan(),
@@ -297,8 +341,7 @@ public class RenjaIndividuService {
                         existing.kodeTarget(), existing.kodePagu(), existing.pagu(),
                         BigDecimal.valueOf(req.target()), BigDecimal.valueOf(req.realisasi()), jenisRealisasi,
                         existing.faktorPenunjang(), existing.faktorPenghambat(),
-                        existing.createdDate(), null, existing.createdBy(), null
-                )))
+                        existing.createdDate(), null, existing.createdBy(), null)))
                 .switchIfEmpty(Mono.defer(() -> kegiatanRepo.save(new RenjaKegiatanIndividu(
                         null, req.kodeOpd(), req.nip(),
                         req.tahun(), req.bulan(),
@@ -307,8 +350,7 @@ public class RenjaIndividuService {
                         req.kodeTarget(), kodePagu, null,
                         BigDecimal.valueOf(req.target()), BigDecimal.valueOf(req.realisasi()), jenisRealisasi,
                         "", "",
-                        null, null, null, null
-                ))));
+                        null, null, null, null))));
     }
 
     private Mono<RenjaSubKegiatanIndividu> upsertSubKegiatan(RenjaIndividuSubKegiatanRequest req) {
@@ -316,7 +358,7 @@ public class RenjaIndividuService {
         String jenisRealisasi = req.jenisRealisasi() != null ? req.jenisRealisasi() : "NAIK";
         BigDecimal pagu = BigDecimal.valueOf(req.pagu());
         return subKegiatanRepo.findByKodeOpdAndKodeSubKegiatanAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
-                        req.kodeOpd(), req.kodeSubKegiatan(), req.kodeIndikator(), req.kodeTarget(), req.tahun(), req.bulan())
+                req.kodeOpd(), req.kodeSubKegiatan(), req.kodeIndikator(), req.kodeTarget(), req.tahun(), req.bulan())
                 .flatMap(existing -> subKegiatanRepo.save(new RenjaSubKegiatanIndividu(
                         existing.id(), existing.kodeOpd(), existing.nip(),
                         existing.tahun(), existing.bulan(),
@@ -327,8 +369,7 @@ public class RenjaIndividuService {
                         BigDecimal.valueOf(req.realisasiTarget()), BigDecimal.valueOf(req.realisasiPagu()),
                         jenisRealisasi,
                         existing.faktorPenunjang(), existing.faktorPenghambat(),
-                        existing.createdDate(), null, existing.createdBy(), null
-                )))
+                        existing.createdDate(), null, existing.createdBy(), null)))
                 .switchIfEmpty(Mono.defer(() -> subKegiatanRepo.save(new RenjaSubKegiatanIndividu(
                         null, req.kodeOpd(), req.nip(),
                         req.tahun(), req.bulan(),
@@ -339,8 +380,7 @@ public class RenjaIndividuService {
                         BigDecimal.valueOf(req.realisasiTarget()), BigDecimal.valueOf(req.realisasiPagu()),
                         jenisRealisasi,
                         "", "",
-                        null, null, null, null
-                ))));
+                        null, null, null, null))));
     }
 
     private Mono<RenjaIndividuProgramResponse> enrichProgramResponse(RenjaProgramIndividu saved) {
@@ -350,15 +390,15 @@ public class RenjaIndividuService {
         return sumPaguForPrefix(saved.kodeOpd(), saved.tahun(), saved.bulan(), saved.kodeProgram())
                 .map(pagu -> new RenjaIndividuProgramResponse(
                         saved.id(), saved.kodeOpd(), saved.tahun(), saved.bulan(), saved.nip(),
-                        saved.kodeProgram(), "Realisasi program " + saved.kodeProgram(),  saved.kodeIndikator(), "Realisasi indikator " + saved.kodeIndikator(), saved.kodeTarget(),
+                        saved.kodeProgram(), "Realisasi program " + saved.kodeProgram(), saved.kodeIndikator(),
+                        "Realisasi indikator " + saved.kodeIndikator(), saved.kodeTarget(),
                         saved.kodePagu(), pagu != null ? pagu.doubleValue() : null,
                         saved.target() != null ? saved.target().doubleValue() : null,
                         saved.realisasi() != null ? saved.realisasi().doubleValue() : null,
                         saved.jenisRealisasi(),
                         capaianResult.capaian(), capaianResult.keteranganCapaian(),
                         saved.faktorPenunjang(), saved.faktorPenghambat(),
-                        saved.createdBy(), saved.lastModifiedBy()
-                ));
+                        saved.createdBy(), saved.lastModifiedBy()));
     }
 
     private Mono<RenjaIndividuKegiatanResponse> enrichKegiatanResponse(RenjaKegiatanIndividu saved) {
@@ -368,15 +408,15 @@ public class RenjaIndividuService {
         return sumPaguForPrefix(saved.kodeOpd(), saved.tahun(), saved.bulan(), saved.kodeKegiatan())
                 .map(pagu -> new RenjaIndividuKegiatanResponse(
                         saved.id(), saved.kodeOpd(), saved.tahun(), saved.bulan(), saved.nip(),
-                        saved.kodeKegiatan(), "Realisasi Kegiatan " + saved.kodeKegiatan(),  saved.kodeIndikator(), "Realisasi indikator " +saved.kodeIndikator(), saved.kodeTarget(),
+                        saved.kodeKegiatan(), "Realisasi Kegiatan " + saved.kodeKegiatan(), saved.kodeIndikator(),
+                        "Realisasi indikator " + saved.kodeIndikator(), saved.kodeTarget(),
                         saved.kodePagu(), pagu != null ? pagu.doubleValue() : null,
                         saved.target() != null ? saved.target().doubleValue() : null,
                         saved.realisasi() != null ? saved.realisasi().doubleValue() : null,
                         saved.jenisRealisasi(),
                         capaianResult.capaian(), capaianResult.keteranganCapaian(),
                         saved.faktorPenunjang(), saved.faktorPenghambat(),
-                        saved.createdBy(), saved.lastModifiedBy()
-                ));
+                        saved.createdBy(), saved.lastModifiedBy()));
     }
 
     private Mono<BigDecimal> sumPaguForPrefix(String kodeOpd, String tahun, String bulan, String kodePrefix) {
@@ -387,8 +427,7 @@ public class RenjaIndividuService {
                 kodeOpd,
                 tahun,
                 bulan,
-                kodePrefix + ".%"
-        );
+                kodePrefix + "%");
     }
 
     private Mono<RenjaSubKegiatanIndividu> syncParentPaguFromSubKegiatan(RenjaSubKegiatanIndividu saved) {
@@ -408,7 +447,7 @@ public class RenjaIndividuService {
     private Mono<Void> syncKegiatanPagu(RenjaSubKegiatanIndividu saved, String kodeKegiatan) {
         return sumPaguForPrefix(saved.kodeOpd(), saved.tahun(), saved.bulan(), kodeKegiatan)
                 .flatMap(totalPagu -> kegiatanRepo.findAllByKodeOpdAndTahunAndBulan(
-                                saved.kodeOpd(), saved.tahun(), saved.bulan())
+                        saved.kodeOpd(), saved.tahun(), saved.bulan())
                         .filter(kegiatan -> kodeKegiatan.equals(kegiatan.kodeKegiatan()))
                         .flatMap(kegiatan -> kegiatanRepo.save(new RenjaKegiatanIndividu(
                                 kegiatan.id(), kegiatan.kodeOpd(), kegiatan.nip(),
@@ -418,15 +457,14 @@ public class RenjaIndividuService {
                                 kegiatan.kodeTarget(), kegiatan.kodePagu(), totalPagu,
                                 kegiatan.target(), kegiatan.realisasi(), kegiatan.jenisRealisasi(),
                                 kegiatan.faktorPenunjang(), kegiatan.faktorPenghambat(),
-                                kegiatan.createdDate(), null, kegiatan.createdBy(), null
-                        )))
+                                kegiatan.createdDate(), null, kegiatan.createdBy(), null)))
                         .then());
     }
 
     private Mono<Void> syncProgramPagu(RenjaSubKegiatanIndividu saved, String kodeProgram) {
         return sumPaguForPrefix(saved.kodeOpd(), saved.tahun(), saved.bulan(), kodeProgram)
                 .flatMap(totalPagu -> programRepo.findAllByKodeOpdAndTahunAndBulan(
-                                saved.kodeOpd(), saved.tahun(), saved.bulan())
+                        saved.kodeOpd(), saved.tahun(), saved.bulan())
                         .filter(program -> kodeProgram.equals(program.kodeProgram()))
                         .flatMap(program -> programRepo.save(new RenjaProgramIndividu(
                                 program.id(), program.kodeOpd(), program.nip(),
@@ -436,8 +474,7 @@ public class RenjaIndividuService {
                                 program.kodeTarget(), program.kodePagu(), totalPagu,
                                 program.target(), program.realisasi(), program.jenisRealisasi(),
                                 program.faktorPenunjang(), program.faktorPenghambat(),
-                                program.createdDate(), null, program.createdBy(), null
-                        )))
+                                program.createdDate(), null, program.createdBy(), null)))
                         .then());
     }
 
@@ -470,7 +507,8 @@ public class RenjaIndividuService {
                 saved.pagu() != null ? saved.pagu().doubleValue() : null);
         return Mono.just(new RenjaIndividuSubKegiatanResponse(
                 saved.id(), saved.kodeOpd(), saved.tahun(), saved.bulan(), saved.nip(),
-                saved.kodeSubKegiatan(), "Realisasi Subkegiatan " + saved.kodeSubKegiatan(), saved.kodeIndikator(), "Realisasi indikator " + saved.kodeIndikator(), saved.kodeTarget(),
+                saved.kodeSubKegiatan(), "Realisasi Subkegiatan " + saved.kodeSubKegiatan(), saved.kodeIndikator(),
+                "Realisasi indikator " + saved.kodeIndikator(), saved.kodeTarget(),
                 saved.kodePagu(), saved.pagu() != null ? saved.pagu().doubleValue() : null,
                 saved.targetRealisasi() != null ? saved.targetRealisasi().doubleValue() : null,
                 saved.realisasiTarget() != null ? saved.realisasiTarget().doubleValue() : null,
@@ -479,11 +517,11 @@ public class RenjaIndividuService {
                 capaianFisik.capaian(), capaianFisik.keteranganCapaian(),
                 capaianPagu.capaian(), capaianPagu.keteranganCapaian(),
                 saved.faktorPenunjang(), saved.faktorPenghambat(),
-                saved.createdBy(), saved.lastModifiedBy()
-        ));
+                saved.createdBy(), saved.lastModifiedBy()));
     }
 
-    // hitung capaian ditaruh di service agar lebih simple karena di renja individu ada 3 domain
+    // hitung capaian ditaruh di service agar lebih simple karena di renja individu
+    // ada 3 domain
     static CapaianResult hitungCapaian(Double realisasi, Double target) {
         if (target == null || target == 0 || realisasi == null || realisasi == 0) {
             return new CapaianResult(0.0, null);
@@ -506,7 +544,8 @@ public class RenjaIndividuService {
         return switch (jenisLaporan) {
             case BULANAN -> {
                 if (bulan == null || bulan.isBlank()) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter bulan wajib diisi untuk laporan BULANAN");
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Parameter bulan wajib diisi untuk laporan BULANAN");
                 }
                 double total = list.stream()
                         .filter(item -> bulan.equals(extractBulan(item)))
