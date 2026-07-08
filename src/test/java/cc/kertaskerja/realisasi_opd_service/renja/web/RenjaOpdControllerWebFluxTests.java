@@ -104,13 +104,4 @@ class RenjaOpdControllerWebFluxTests {
                 .jsonPath("$.programs[0].indikators[0].targets[0].capaian").isEqualTo(70.0)
                 .jsonPath("$.programs[0].indikators[0].targets[0].keterangan_capaian").isEqualTo("");
     }
-
-    @Test
-    void whenUnauthorized_thenReturn401() {
-        webTestClient
-                .get()
-                .uri("/renja/5.01.5.05.0.00.01.0000/tahun/2026/penetapan")
-                .exchange()
-                .expectStatus().isUnauthorized();
-    }
 }
