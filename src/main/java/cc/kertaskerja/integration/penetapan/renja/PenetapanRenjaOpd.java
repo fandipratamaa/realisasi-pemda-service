@@ -12,7 +12,13 @@ public class PenetapanRenjaOpd {
             List<ProgramPenetapanData> programs,
             List<KegiatanPenetapanData> kegiatans,
             List<SubkegiatanPenetapanData> subkegiatans
-    ) {}
+    ) {
+        public PenetapanRenjaOpdRoot {
+            if (programs == null) programs = List.of();
+            if (kegiatans == null) kegiatans = List.of();
+            if (subkegiatans == null) subkegiatans = List.of();
+        }
+    }
 
     public record ProgramPenetapanData(
             Long id,
@@ -21,7 +27,11 @@ public class PenetapanRenjaOpd {
             @JsonProperty("is_locked") Boolean isLocked,
             List<IndikatorPenetapanData> indikators,
             @JsonProperty("pagu_anggaran") Double paguAnggaran
-    ) {}
+    ) {
+        public ProgramPenetapanData {
+            if (indikators == null) indikators = List.of();
+        }
+    }
 
     public record KegiatanPenetapanData(
             Long id,
@@ -30,7 +40,11 @@ public class PenetapanRenjaOpd {
             @JsonProperty("is_locked") Boolean isLocked,
             List<IndikatorPenetapanData> indikators,
             @JsonProperty("pagu_anggaran") Double paguAnggaran
-    ) {}
+    ) {
+        public KegiatanPenetapanData {
+            if (indikators == null) indikators = List.of();
+        }
+    }
 
     public record SubkegiatanPenetapanData(
             Long id,
@@ -39,14 +53,22 @@ public class PenetapanRenjaOpd {
             @JsonProperty("is_locked") Boolean isLocked,
             List<IndikatorPenetapanData> indikators,
             @JsonProperty("pagu_anggaran") Double paguAnggaran
-    ) {}
+    ) {
+        public SubkegiatanPenetapanData {
+            if (indikators == null) indikators = List.of();
+        }
+    }
 
     public record IndikatorPenetapanData(
             Long id,
             @JsonProperty("kode_indikator") String kodeIndikator,
             String indikator,
             List<TargetPenetapanData> targets
-    ) {}
+    ) {
+        public IndikatorPenetapanData {
+            if (targets == null) targets = List.of();
+        }
+    }
 
     public record TargetPenetapanData(
             Long id,

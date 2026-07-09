@@ -11,7 +11,11 @@ public class PenetapanTujuanOpd {
             Integer versi,
             @JsonProperty("is_locked") Boolean isLocked,
             @JsonProperty("tujuan_opds") List<TujuanPenetapanData> tujuanOpds
-    ) {}
+    ) {
+        public PenetapanTujuanOpdRoot {
+            if (tujuanOpds == null) tujuanOpds = List.of();
+        }
+    }
 
     public record TujuanPenetapanData(
             Long id,
@@ -23,7 +27,11 @@ public class PenetapanTujuanOpd {
             Integer versi,
             @JsonProperty("is_locked") Boolean isLocked,
             List<IndikatorPenetapanData> indikators
-    ) {}
+    ) {
+        public TujuanPenetapanData {
+            if (indikators == null) indikators = List.of();
+        }
+    }
 
     public record IndikatorPenetapanData(
             Long id,
@@ -34,7 +42,11 @@ public class PenetapanTujuanOpd {
             @JsonProperty("definisi_operasional") String definisiOperasional,
             @JsonProperty("tahun_aktif") Integer tahunAktif,
             List<TargetPenetapanData> targets
-    ) {}
+    ) {
+        public IndikatorPenetapanData {
+            if (targets == null) targets = List.of();
+        }
+    }
 
     public record TargetPenetapanData(
             Long id,

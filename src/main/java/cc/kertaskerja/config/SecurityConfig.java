@@ -4,14 +4,29 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.savedrequest.NoOpServerRequestCache;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverterAdapter;
+import reactor.core.publisher.Mono;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
 @Configuration
@@ -60,7 +75,6 @@ public class SecurityConfig {
         return http
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers(
-                                "/**",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**")
@@ -69,12 +83,68 @@ public class SecurityConfig {
                                 .map(auth -> new AuthorizationDecision(isAuthorized(auth, context.getExchange())))
                                 .defaultIfEmpty(new AuthorizationDecision(false))))
                 .oauth2ResourceServer(oauth2 ->
-                        oauth2.jwt(Customizer.withDefaults()))
+                        oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))
                 .requestCache(requestCacheSpec ->
                         requestCacheSpec.requestCache(NoOpServerRequestCache.getInstance()))
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .build();
     }
+
+    // convert / ekstrak role agar nilainya sesuai dan selalu (super_admin, admin_opd, level_1, level_2, level_3, level_4) 
+    private Converter<Jwt, Mono<AbstractAuthenticationToken>> jwtAuthenticationConverter() {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            JwtGrantedAuthoritiesConverter defaultAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+            Collection<GrantedAuthority> defaultAuthorities = defaultAuthoritiesConverter.convert(jwt);
+            Set<GrantedAuthority> authorities = new HashSet<>(defaultAuthorities != null ? defaultAuthorities : Collections.emptySet());
+
+            if (defaultAuthorities != null) {
+                for (GrantedAuthority auth : defaultAuthorities) {
+                    if (auth.getAuthority().startsWith("SCOPE_")) {
+                        authorities.add(new SimpleGrantedAuthority(auth.getAuthority().substring(6)));
+                    }
+                }
+            }
+
+            Object realmAccessObj = jwt.getClaim("realm_access");
+            if (realmAccessObj instanceof Map) {
+                Map<?, ?> realmAccess = (Map<?, ?>) realmAccessObj;
+                Object rolesObj = realmAccess.get("roles");
+                if (rolesObj instanceof Collection) {
+                    for (Object role : (Collection<?>) rolesObj) {
+                        authorities.add(new SimpleGrantedAuthority(String.valueOf(role)));
+                    }
+                }
+            }
+
+            Object resourceAccessObj = jwt.getClaim("resource_access");
+            if (resourceAccessObj instanceof Map) {
+                Map<?, ?> resourceAccess = (Map<?, ?>) resourceAccessObj;
+                for (Object clientObj : resourceAccess.values()) {
+                    if (clientObj instanceof Map) {
+                        Map<?, ?> clientAccess = (Map<?, ?>) clientObj;
+                        Object rolesObj = clientAccess.get("roles");
+                        if (rolesObj instanceof Collection) {
+                            for (Object role : (Collection<?>) rolesObj) {
+                                authorities.add(new SimpleGrantedAuthority(String.valueOf(role)));
+                            }
+                        }
+                    }
+                }
+            }
+
+            Object rootRolesObj = jwt.getClaim("roles");
+            if (rootRolesObj instanceof Collection) {
+                for (Object role : (Collection<?>) rootRolesObj) {
+                    authorities.add(new SimpleGrantedAuthority(String.valueOf(role)));
+                }
+            }
+
+            return authorities;
+        });
+        return new ReactiveJwtAuthenticationConverterAdapter(converter);
+    }
+
     private boolean isAuthorized(Authentication authentication, ServerWebExchange exchange) {
         if (!authentication.isAuthenticated()) {
             return false;

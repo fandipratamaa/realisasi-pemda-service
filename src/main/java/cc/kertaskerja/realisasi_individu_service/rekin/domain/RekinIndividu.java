@@ -68,6 +68,8 @@ public record RekinIndividu(
         String keteranganCapaian = null;
         if (calculatedCapaian > 100) {
             keteranganCapaian = "nilai capaian lebih dari 100% (" + String.format("%.2f%%", calculatedCapaian) + ")";
+            // nilai default capaian ketika lebih dari 100% menjadi 100%
+            calculatedCapaian = 100.0;
         }
         return new CapaianResult(calculatedCapaian, keteranganCapaian);
     }

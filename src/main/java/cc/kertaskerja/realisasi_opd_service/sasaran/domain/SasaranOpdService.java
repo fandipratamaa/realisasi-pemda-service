@@ -280,7 +280,10 @@ public class SasaranOpdService {
             return new PenetapanInfo(kodeOpd, tahun);
         }
         var first = list.getFirst();
-        return new PenetapanInfo(first.kodeOpd(), first.tahunAktif());
+        return new PenetapanInfo(
+            first.kodeOpd() != null ? first.kodeOpd() : kodeOpd,
+            first.tahunAktif() != null ? first.tahunAktif() : tahun
+        );
     }
 
     private Mono<PenetapanSasaranOpdListResponse> buildResponseWithBulan(
