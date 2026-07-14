@@ -40,16 +40,17 @@ public class IkuController {
         return ikuService.getAllIku();
     }
 
-    @GetMapping("/by-tahun/{tahun}")
-    @Operation(summary = "Cari realisasi IKU per tahun", description = "Mengambil realisasi IKU berdasarkan tahun.")
+    @GetMapping("/by-tahun/{tahun}/by-bulan/{bulan}")
+    @Operation(summary = "Cari realisasi IKU per tahun dan bulan", description = "Mengambil realisasi IKU berdasarkan tahun dan bulan.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar realisasi IKU", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Iku.class)))),
-            @ApiResponse(responseCode = "400", description = "Parameter tahun tidak valid", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Parameter tahun atau bulan tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Flux<Iku> getAllRealisasiIkuByTahun(
-            @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun) {
-        return ikuService.getAllIkuByTahun(tahun);
+    public Flux<Iku> getAllRealisasiIkuByTahunAndBulan(
+            @Parameter(description = "Tahun realisasi") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi") @PathVariable String bulan) {
+        return ikuService.getAllIkuByTahunAndBulan(tahun, bulan);
     }
 
     @PostMapping("/faktor-penunjang")

@@ -16,14 +16,18 @@ public record Iku(
         String faktorPenunjang,
         String faktorPenghambat,
         JenisRealisasi jenisRealisasi,
-        JenisIku jenisIku
+        JenisIku jenisIku,
+        String rumusPerhitungan,
+        String sumberData,
+        String bulan
 ) {
-    public static Iku of(String indikatorId, String indikator, String targetId, String target, Double realisasi, String satuan, String capaian, String tahun, String faktorPenunjang, String faktorPenghambat, JenisRealisasi jenisRealisasi, JenisIku jenisIku) {
+    public static Iku of(String indikatorId, String indikator, String targetId, String target, Double realisasi, String satuan, String capaian, String tahun, String faktorPenunjang, String faktorPenghambat, JenisRealisasi jenisRealisasi, JenisIku jenisIku, String rumusPerhitungan, String sumberData, String bulan) {
         return new Iku(
                 "IKU-" + jenisIku + "-" + indikatorId,
                 indikatorId, indikator, targetId,
                 target, realisasi, satuan, capaian, tahun,
                 faktorPenunjang, faktorPenghambat,
-                jenisRealisasi, jenisIku);
+                jenisRealisasi, jenisIku,
+                rumusPerhitungan, sumberData, bulan);
     }
 }
