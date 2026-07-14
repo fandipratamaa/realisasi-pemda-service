@@ -66,5 +66,8 @@ public record TujuanRequest(
 
         @NotNull(message = "Pilih jenis NAIK atau TURUN")
         @Schema(description = "Jenis perhitungan capaian", example = "NAIK", allowableValues = {"NAIK", "TURUN"})
-        JenisRealisasi jenisRealisasi
+        JenisRealisasi jenisRealisasi,
+
+        @Schema(description = "URL bukti pendukung realisasi", example = "https://example.com/bukti.pdf")
+        String buktiPendukung
 ) {}

@@ -38,7 +38,7 @@ class RenjaOpdControllerWebFluxTests {
                                 List.of(new RenjaOpdPenetapanResponse.TargetPenetapan(
                                         1L, "TGT-TRG-PENETAPAN-001", 2026, null,
                                         100.0, null, "%", null, null,
-                                        null, null
+                                        null, null, null
                                 ))
                         )),
                         null
@@ -80,7 +80,7 @@ class RenjaOpdControllerWebFluxTests {
                                 List.of(new RenjaOpdPenetapanResponse.TargetPenetapan(
                                         1L, "TGT-TRG-PENETAPAN-001", 2026, 1,
                                         100.0, 70.0, "%", 70.0, "",
-                                        null, null
+                                        null, null, null
                                 ))
                         )),
                         null

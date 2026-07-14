@@ -12,6 +12,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -111,5 +113,16 @@ public class TujuanController {
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatRequest.class)))
             @RequestBody @Valid FaktorPenghambatRequest req) {
         return tujuanService.updateFaktorPenghambat(req);
+    }
+
+    @PostMapping(value = "/{id}/bukti-pendukung", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Upload dan perbarui bukti pendukung", description = "Mengunggah file dan langsung memperbarui field bukti_pendukung pada record Tujuan yang sudah ada.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = Tujuan.class))),
+            @ApiResponse(responseCode = "404", description = "Tujuan tidak ditemukan", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+    })
+    public Mono<Tujuan> uploadBuktiPendukung(@PathVariable Long id, @RequestPart("file") FilePart file) {
+        return tujuanService.uploadBuktiPendukung(id, file);
     }
 }

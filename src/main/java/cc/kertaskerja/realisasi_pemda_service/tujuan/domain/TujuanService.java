@@ -7,11 +7,17 @@ import cc.kertaskerja.realisasi_pemda_service.tujuan.web.FaktorPenunjangRequest;
 import cc.kertaskerja.realisasi_pemda_service.tujuan.web.LaporanRealisasiTujuanResponse;
 import cc.kertaskerja.realisasi_pemda_service.tujuan.web.TujuanRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +25,9 @@ import java.util.Map;
 @Service
 public class TujuanService {
     private final TujuanRepository tujuanRepository;
+
+    @Value("${file.upload-dir:uploads}")
+    private String uploadDir;
 
     public TujuanService(TujuanRepository tujuanRepository) {
         this.tujuanRepository = tujuanRepository;
@@ -33,7 +42,7 @@ public class TujuanService {
                                 req.tujuanId(), req.indikatorId(), req.targetId(),
                                 req.target(), req.realisasi(), req.satuan(),
                                 req.tahun(), req.bulan(), req.visiMisi(),
-                                req.rumusPerhitungan(), req.sumberData(), req.jenisRealisasi());
+                                req.rumusPerhitungan(), req.sumberData(), req.jenisRealisasi(), req.buktiPendukung());
                         return tujuanRepository.save(baru);
                     }));
         }
@@ -46,7 +55,7 @@ public class TujuanService {
                             req.tujuanId(), req.indikatorId(), req.targetId(),
                             req.target(), req.realisasi(), req.satuan(),
                             req.tahun(), req.bulan(), req.visiMisi(),
-                            req.rumusPerhitungan(), req.sumberData(), req.jenisRealisasi());
+                            req.rumusPerhitungan(), req.sumberData(), req.jenisRealisasi(), req.buktiPendukung());
                     return tujuanRepository.save(baru);
                 }));
     }
@@ -71,6 +80,7 @@ public class TujuanService {
                 existing.faktorPenghambat(),
                 req.jenisRealisasi(),
                 TujuanStatus.UNCHECKED,
+                req.buktiPendukung(),
                 existing.createdBy(),
                 existing.createdDate(),
                 existing.lastModifiedDate(),
@@ -103,6 +113,7 @@ public class TujuanService {
                                             existing.faktorPenghambat(),
                                             req.jenisRealisasi(),
                                             TujuanStatus.UNCHECKED,
+                                            req.buktiPendukung(),
                                             existing.createdBy(),
                                             existing.createdDate(),
                                             existing.lastModifiedDate(),
@@ -123,7 +134,8 @@ public class TujuanService {
                                             req.visiMisi(),
                                             req.rumusPerhitungan(),
                                         req.sumberData(),
-                                        req.jenisRealisasi()
+                                        req.jenisRealisasi(),
+                                        req.buktiPendukung()
                                     );
                                     return tujuanRepository.save(baru);
                                 }));
@@ -141,7 +153,8 @@ public class TujuanService {
                                 req.visiMisi(),
                                 req.rumusPerhitungan(),
                                 req.sumberData(),
-                                req.jenisRealisasi()
+                                req.jenisRealisasi(),
+                                req.buktiPendukung()
                         );
                         return tujuanRepository.save(baru);
                     }
@@ -149,7 +162,7 @@ public class TujuanService {
         );
     }
 
-    public static Tujuan buildUncheckedRealisasiTujuan(String tujuanId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, String visiMisi, String rumusPerhitungan, String sumberData, JenisRealisasi jenisRealisasi) {
+    public static Tujuan buildUncheckedRealisasiTujuan(String tujuanId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, String visiMisi, String rumusPerhitungan, String sumberData, JenisRealisasi jenisRealisasi, String buktiPendukung) {
         return Tujuan.of(tujuanId,
                 "Realisasi Tujuan " + tujuanId,
                 indikatorId,
@@ -158,7 +171,8 @@ public class TujuanService {
                 "",
                 "",
                 jenisRealisasi,
-                TujuanStatus.UNCHECKED);
+                TujuanStatus.UNCHECKED,
+                buktiPendukung);
     }
 
     public Flux<Tujuan> getRealisasiTujuanByTahunAndBulan(String tahun, String bulan) {
@@ -241,6 +255,7 @@ public class TujuanService {
                             existing.faktorPenghambat(),
                             existing.jenisRealisasi(),
                             TujuanStatus.UNCHECKED,
+                            existing.buktiPendukung(),
                             existing.createdBy(),
                             existing.createdDate(),
                             existing.lastModifiedDate(),
@@ -274,6 +289,7 @@ public class TujuanService {
                             req.faktorPenghambat(),
                             existing.jenisRealisasi(),
                             TujuanStatus.UNCHECKED,
+                            existing.buktiPendukung(),
                             existing.createdBy(),
                             existing.createdDate(),
                             existing.lastModifiedDate(),
@@ -281,5 +297,53 @@ public class TujuanService {
                     );
                     return tujuanRepository.save(updated);
                 });
+    }
+
+    public Mono<Tujuan> uploadBuktiPendukung(Long id, FilePart file) {
+        return tujuanRepository.findById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Tujuan tidak ditemukan")))
+                .flatMap(existing -> uploadFile(file).flatMap(filePath -> {
+                    Tujuan updated = new Tujuan(
+                            existing.id(),
+                            existing.tujuanId(),
+                            existing.tujuan(),
+                            existing.indikatorId(),
+                            existing.indikator(),
+                            existing.targetId(),
+                            existing.target(),
+                            existing.realisasi(),
+                            existing.satuan(),
+                            existing.tahun(),
+                            existing.bulan(),
+                            existing.visiMisi(),
+                            existing.rumusPerhitungan(),
+                            existing.sumberData(),
+                            existing.faktorPenunjang(),
+                            existing.faktorPenghambat(),
+                            existing.jenisRealisasi(),
+                            TujuanStatus.UNCHECKED,
+                            filePath,
+                            existing.createdBy(),
+                            existing.createdDate(),
+                            existing.lastModifiedDate(),
+                            existing.lastModifiedBy()
+                    );
+                    return tujuanRepository.save(updated);
+                }));
+    }
+
+    private Mono<String> uploadFile(FilePart file) {
+        Path basePath = Paths.get(uploadDir).toAbsolutePath().normalize();
+        try {
+            Files.createDirectories(basePath);
+        } catch (IOException e) {
+            return Mono.error(new RuntimeException("Gagal membuat direktori upload", e));
+        }
+
+        String filename = System.currentTimeMillis() + "_" + file.filename();
+        Path targetPath = basePath.resolve(filename);
+
+        return file.transferTo(targetPath)
+                .thenReturn("/uploads/" + filename);
     }
 }

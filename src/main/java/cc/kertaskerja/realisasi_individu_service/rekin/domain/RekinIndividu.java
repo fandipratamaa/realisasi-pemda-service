@@ -45,6 +45,9 @@ public record RekinIndividu(
         @Column("faktor_penghambat")
         String faktorPenghambat,
 
+        @Column("bukti_pendukung")
+        String buktiPendukung,
+
         @CreatedBy
         @Column("created_by")
         String createdBy,
@@ -86,13 +89,14 @@ public record RekinIndividu(
             BigDecimal realisasi,
             JenisRealisasi jenisRealisasi,
             String faktorPenunjang,
-            String faktorPenghambat
+            String faktorPenghambat,
+            String buktiPendukung
     ) {
         return new RekinIndividu(
                 null, kodeOpd, nip, tahun, bulan,
                 kodePkRekin, kodeIndikatorPkRekin, kodeTargetPkRekin,
                 kodeSasaranOpd,
-                realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat,
+                realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat, buktiPendukung,
                 null, null, null, null
         );
     }

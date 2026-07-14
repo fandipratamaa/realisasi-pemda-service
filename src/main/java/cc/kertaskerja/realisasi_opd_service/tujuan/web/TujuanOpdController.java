@@ -14,12 +14,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -123,5 +126,17 @@ public class TujuanOpdController {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = TujuanOpdRequest.class))))
             @RequestBody @Valid List<TujuanOpdRequest> tujuanOpdRequests) {
         return tujuanOpdService.batchSubmitRealisasiTujuanOpd(tujuanOpdRequests);
+    }
+
+    @PostMapping(value = "/{id}/bukti-pendukung", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Upload dan perbarui bukti pendukung", description = "Mengunggah file dan langsung memperbarui field bukti_pendukung pada record Tujuan OPD yang sudah ada. Role `level_1`, `level_2`, `level_3`, dan `level_4` tidak diizinkan mengakses endpoint ini.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = TujuanOpd.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Data tidak ditemukan", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+    })
+    public Mono<TujuanOpd> uploadBuktiPendukung(@PathVariable Long id, @RequestPart("file") FilePart file) {
+        return tujuanOpdService.uploadBuktiPendukung(id, file);
     }
 }

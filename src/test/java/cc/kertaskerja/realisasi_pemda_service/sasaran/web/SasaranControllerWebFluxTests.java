@@ -124,7 +124,7 @@ public class SasaranControllerWebFluxTests {
                 "TAR-1", "100.0", 100.0, "%", "2025", "01",
                 "(realisasi/target)*100", "BPS",
                 "Kerjasama antar daerah", "Keterbatasan anggaran",
-                JenisRealisasi.NAIK, SasaranStatus.UNCHECKED);
+                JenisRealisasi.NAIK, SasaranStatus.UNCHECKED, "file.pdf");
 
         when(sasaranService.updateFaktorPenunjang(any(FaktorPenunjangSasaranRequest.class)))
                 .thenReturn(Mono.just(updated));
@@ -157,7 +157,7 @@ public class SasaranControllerWebFluxTests {
                 "TAR-1", "100.0", 100.0, "%", "2025", "01",
                 "(realisasi/target)*100", "BPS",
                 "Kerjasama antar daerah", "Keterbatasan anggaran",
-                JenisRealisasi.NAIK, SasaranStatus.UNCHECKED);
+                JenisRealisasi.NAIK, SasaranStatus.UNCHECKED, "file.pdf");
 
         when(sasaranService.updateFaktorPenghambat(any(FaktorPenghambatSasaranRequest.class)))
                 .thenReturn(Mono.just(updated));

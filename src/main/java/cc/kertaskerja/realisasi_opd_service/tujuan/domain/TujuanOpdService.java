@@ -14,11 +14,18 @@ import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import cc.kertaskerja.realisasi_opd_service.tujuan.web.LaporanRealisasiTujuanOpdResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -32,6 +39,9 @@ public class TujuanOpdService {
     private static final Logger log = LoggerFactory.getLogger(TujuanOpdService.class);
     private final TujuanOpdRepository tujuanOpdRepository;
     private final PenetapanTujuanOpdClient penetapanClient;
+
+    @Value("${file.upload-dir:uploads}")
+    private String uploadDir;
 
     public TujuanOpdService(
             TujuanOpdRepository tujuanOpdRepository,
@@ -178,6 +188,7 @@ public class TujuanOpdService {
                                 BigDecimal.valueOf(req.realisasi()),
                                 jenisRealisasi,
                                 existing.faktorPenunjang(), existing.faktorPenghambat(),
+                                existing.buktiPendukung(),
                                 existing.createdBy(), existing.createdDate(), null, null)))
                 .switchIfEmpty(Mono.defer(() -> tujuanOpdRepository.save(
                         TujuanOpd.of(
@@ -196,7 +207,7 @@ public class TujuanOpdService {
                 entity.faktorPenunjang(), entity.faktorPenghambat(),
                 null, null, null, null, null, null, null, null, null,
                 entity.jenisRealisasi(),
-                entity.createdBy(), entity.lastModifiedBy());
+                entity.createdBy(), entity.lastModifiedBy(), entity.buktiPendukung());
     }
 
     private Mono<TujuanOpdResponse> applyPenetapan(Mono<TujuanOpdResponse> responseMono, String kodeOpd, String tahun) {
@@ -234,7 +245,7 @@ public class TujuanOpdService {
                     response.realisasi(), response.faktorPenunjang(), response.faktorPenghambat(),
                     penetapan.tujuanOpd(), null, null, null, null, null, null, null, null,
                     response.jenisRealisasi(),
-                    response.createdBy(), response.lastModifiedBy());
+                    response.createdBy(), response.lastModifiedBy(), response.buktiPendukung());
         }
 
         var matchedTarget = matchedIndikator.get().targets().stream()
@@ -257,7 +268,7 @@ public class TujuanOpdService {
                 target, satuan,
                 capaianResult.capaian(), capaianResult.keteranganCapaian(),
                 response.jenisRealisasi(),
-                response.createdBy(), response.lastModifiedBy()
+                response.createdBy(), response.lastModifiedBy(), response.buktiPendukung()
         );
     }
 
@@ -364,11 +375,12 @@ public class TujuanOpdService {
                 : null;
         String faktorPenunjang = matched != null ? matched.faktorPenunjang() : null;
         String faktorPenghambat = matched != null ? matched.faktorPenghambat() : null;
+        String buktiPendukung = matched != null ? matched.buktiPendukung() : null;
         var capaianResult = TujuanOpd.hitungCapaian(realisasiValue, t.target());
         return new TujuanOpdPenetapanResponse.TargetPenetapan(
                 t.kodeTarget(), t.satuan(), t.target(),
                 realisasiValue, capaianResult.capaian(), capaianResult.keteranganCapaian(),
-                faktorPenunjang, faktorPenghambat
+                faktorPenunjang, faktorPenghambat, buktiPendukung
         );
     }
 
@@ -387,5 +399,46 @@ public class TujuanOpdService {
 
     private Integer parseInteger(String value) {
         return value == null ? null : Integer.parseInt(value);
+    }
+
+    public Mono<TujuanOpd> uploadBuktiPendukung(Long id, FilePart file) {
+        return tujuanOpdRepository.findById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Tujuan OPD tidak ditemukan")))
+                .flatMap(existing -> uploadFile(file).flatMap(filePath -> {
+                    TujuanOpd updated = new TujuanOpd(
+                            existing.id(),
+                            existing.kodeOpd(),
+                            existing.tahun(),
+                            existing.bulan(),
+                            existing.kodeTujuanOpd(),
+                            existing.kodeIndikator(),
+                            existing.kodeTarget(),
+                            existing.realisasi(),
+                            existing.jenisRealisasi(),
+                            existing.faktorPenunjang(),
+                            existing.faktorPenghambat(),
+                            filePath,
+                            existing.createdBy(),
+                            existing.createdDate(),
+                            existing.lastModifiedDate(),
+                            existing.lastModifiedBy()
+                    );
+                    return tujuanOpdRepository.save(updated);
+                }));
+    }
+
+    private Mono<String> uploadFile(FilePart file) {
+        Path basePath = Paths.get(uploadDir).toAbsolutePath().normalize();
+        try {
+            Files.createDirectories(basePath);
+        } catch (IOException e) {
+            return Mono.error(new RuntimeException("Gagal membuat direktori upload", e));
+        }
+
+        String filename = System.currentTimeMillis() + "_" + file.filename();
+        Path targetPath = basePath.resolve(filename);
+
+        return file.transferTo(targetPath)
+                .thenReturn("/uploads/" + filename);
     }
 }

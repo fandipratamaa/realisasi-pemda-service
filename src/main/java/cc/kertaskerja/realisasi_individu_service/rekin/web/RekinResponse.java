@@ -40,6 +40,9 @@ public record RekinResponse(
         @JsonProperty("faktor_penghambat")
         String faktorPenghambat,
 
+        @JsonProperty("bukti_pendukung")
+        String buktiPendukung,
+
         @JsonProperty("created_by")
         String createdBy,
 
@@ -52,21 +55,23 @@ public record RekinResponse(
         @JsonProperty("last_modified_date")
         Instant lastModifiedDate,
 
+        Double target,
+
         Double capaian,
 
         @JsonProperty("keterangan_capaian")
         String keteranganCapaian
 ) {
-    public static RekinResponse from(RekinIndividu entity, Double capaian, String keteranganCapaian) {
+    public static RekinResponse from(RekinIndividu entity, Double target, Double capaian, String keteranganCapaian) {
         return new RekinResponse(
                 entity.id(), entity.kodeOpd(), entity.nip(), entity.tahun(), entity.bulan(),
                 entity.kodePkRekin(), entity.kodeIndikatorPkRekin(), entity.kodeTargetPkRekin(),
                 entity.kodeSasaranOpd(),
                 entity.realisasi(), entity.jenisRealisasi(),
-                entity.faktorPenunjang(), entity.faktorPenghambat(),
+                entity.faktorPenunjang(), entity.faktorPenghambat(), entity.buktiPendukung(),
                 entity.createdBy(), entity.lastModifiedBy(),
                 entity.createdDate(), entity.lastModifiedDate(),
-                capaian, keteranganCapaian
+                target, capaian, keteranganCapaian
         );
     }
 }

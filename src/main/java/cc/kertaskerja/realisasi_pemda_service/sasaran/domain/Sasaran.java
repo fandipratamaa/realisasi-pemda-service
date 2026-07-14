@@ -37,6 +37,8 @@ public record Sasaran(
         String faktorPenghambat,
         JenisRealisasi jenisRealisasi,
         SasaranStatus status,
+        @Column("bukti_pendukung")
+        String buktiPendukung,
 
         @CreatedBy
         @Column("created_by")
@@ -63,12 +65,13 @@ public record Sasaran(
             String faktorPenunjang,
             String faktorPenghambat,
             JenisRealisasi jenisRealisasi,
-            SasaranStatus status
+            SasaranStatus status,
+            String buktiPendukung
     ) {
         return new Sasaran(null,
                 sasaranId, sasaran, indikatorId, indikator,
                 targetId, target,
-                realisasi, satuan, tahun, bulan, rumusPerhitungan, sumberData, faktorPenunjang, faktorPenghambat, jenisRealisasi, status,
+                realisasi, satuan, tahun, bulan, rumusPerhitungan, sumberData, faktorPenunjang, faktorPenghambat, jenisRealisasi, status, buktiPendukung,
                 null, null, null, null);
     }
 

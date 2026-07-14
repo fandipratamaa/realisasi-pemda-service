@@ -39,6 +39,7 @@ public record PenetapanRekinIndividuResponse(
             @JsonProperty("keterangan_capaian") String keteranganCapaian,
             @JsonProperty("faktor_penunjang") String faktorPenunjang,
             @JsonProperty("faktor_penghambat") String faktorPenghambat,
+            @JsonProperty("bukti_pendukung") String buktiPendukung,
             @JsonProperty("jenis_realisasi") String jenisRealisasi
     ) {}
 }

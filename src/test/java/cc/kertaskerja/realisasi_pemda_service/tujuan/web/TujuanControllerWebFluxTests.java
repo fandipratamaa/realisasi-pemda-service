@@ -41,16 +41,16 @@ public class TujuanControllerWebFluxTests {
 
     @Test
     void whenBatchSubmit_thenReturnsSavedTujuans() throws Exception {
-        TujuanRequest r1 = new TujuanRequest(null, "T1", "I1", "TAR-1", "100.0", 50.0, "unit1", "2025", "01", "Visi Misi 1", "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK);
-        TujuanRequest r2 = new TujuanRequest(null, "T2", "I2", "TAR-2", "200.0", 75.0, "unit2", "2026", "01", "Visi Misi 2", "(realisasi/target)*100", "Bappeda", JenisRealisasi.TURUN);
+        TujuanRequest r1 = new TujuanRequest(null, "T1", "I1", "TAR-1", "100.0", 50.0, "unit1", "2025", "01", "Visi Misi 1", "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK, "file.pdf");
+        TujuanRequest r2 = new TujuanRequest(null, "T2", "I2", "TAR-2", "200.0", 75.0, "unit2", "2026", "01", "Visi Misi 2", "(realisasi/target)*100", "Bappeda", JenisRealisasi.TURUN, "file.pdf");
 
         Tujuan t1 = TujuanService.buildUncheckedRealisasiTujuan(
                 r1.tujuanId(), r1.indikatorId(), r1.targetId(), r1.target(), r1.realisasi(),
-                r1.satuan(), r1.tahun(), r1.bulan(), r1.visiMisi(), r1.rumusPerhitungan(), r1.sumberData(), r1.jenisRealisasi()
+                r1.satuan(), r1.tahun(), r1.bulan(), r1.visiMisi(), r1.rumusPerhitungan(), r1.sumberData(), r1.jenisRealisasi(), r2.buktiPendukung()
         );
         Tujuan t2Baru = TujuanService.buildUncheckedRealisasiTujuan(
                 r2.tujuanId(), r2.indikatorId(), r2.targetId(), r2.target(), r2.realisasi(),
-                r2.satuan(), r2.tahun(), r2.bulan(), r2.visiMisi(), r2.rumusPerhitungan(), r2.sumberData(), r2.jenisRealisasi()
+                r2.satuan(), r2.tahun(), r2.bulan(), r2.visiMisi(), r2.rumusPerhitungan(), r2.sumberData(), r2.jenisRealisasi(), r2.buktiPendukung()
         );
 
         when(tujuanService.batchSubmitRealisasiTujuan(anyList()))
@@ -84,7 +84,7 @@ public class TujuanControllerWebFluxTests {
         Tujuan updated = Tujuan.of("TUJ-123", "Realisasi Tujuan TUJ-123",
                 "IND-TUJ-123", "Realisasi Indikator IND-TUJ-123",
                 "TAR-1", "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
-                "BPS", "Kerjasama antar daerah", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED);
+                "BPS", "Kerjasama antar daerah", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED, "file.pdf");
 
         when(tujuanService.updateFaktorPenunjang(any(FaktorPenunjangRequest.class)))
                 .thenReturn(Mono.just(updated));
@@ -114,7 +114,7 @@ public class TujuanControllerWebFluxTests {
         Tujuan updated = Tujuan.of("TUJ-123", "Realisasi Tujuan TUJ-123",
                 "IND-TUJ-123", "Realisasi Indikator IND-TUJ-123",
                 "TAR-1", "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
-                "BPS", "", "Keterbatasan anggaran", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED);
+                "BPS", "", "Keterbatasan anggaran", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED, "file.pdf");
 
         when(tujuanService.updateFaktorPenghambat(any(FaktorPenghambatRequest.class)))
                 .thenReturn(Mono.just(updated));

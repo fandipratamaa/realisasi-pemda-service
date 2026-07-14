@@ -48,6 +48,8 @@ public record RenaksiIndividu(
         @Column("faktor_penunjang") String faktorPenunjang,
         @Column("faktor_penghambat") String faktorPenghambat,
 
+        @Column("bukti_pendukung") String buktiPendukung,
+
         @CreatedBy @Column("created_by") String createdBy,
         @LastModifiedBy @Column("last_modified_by") String lastModifiedBy,
         @CreatedDate @Column("created_date") Instant createdDate,
@@ -71,11 +73,12 @@ public record RenaksiIndividu(
             RenaksiStatus status,
             JenisRealisasi jenisRealisasi,
             String faktorPenunjang,
-            String faktorPenghambat) {
+            String faktorPenghambat,
+            String buktiPendukung) {
         return new RenaksiIndividu(null, kodeOpd, nip, kodeSasaran, sasaran, kodeRenaksi, renaksi,
                 kodeIndikator, indikator, kodeTarget, target, paguAnggaran, realisasi,
                 tahun, bulan, satuan, status, jenisRealisasi,
-                faktorPenunjang, faktorPenghambat,
+                faktorPenunjang, faktorPenghambat, buktiPendukung,
                 null, null, null, null);
     }
 

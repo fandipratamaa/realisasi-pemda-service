@@ -7,11 +7,18 @@ import cc.kertaskerja.realisasi_pemda_service.sasaran.web.FaktorPenunjangSasaran
 import cc.kertaskerja.realisasi_pemda_service.sasaran.web.LaporanRealisasiSasaranResponse;
 import cc.kertaskerja.realisasi_pemda_service.sasaran.web.SasaranRequest;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +27,9 @@ import java.util.Map;
 @Service
 public class SasaranService {
     private final SasaranRepository sasaranRepository;
+
+    @Value("${file.upload-dir:uploads}")
+    private String uploadDir;
 
     public SasaranService(SasaranRepository sasaranRepository) {
         this.sasaranRepository = sasaranRepository;
@@ -75,6 +85,7 @@ public class SasaranService {
                 existing.faktorPenghambat(),
                 req.jenisRealisasi(),
                 SasaranStatus.UNCHECKED,
+                existing.buktiPendukung(),
                 existing.createdBy(),
                 existing.createdDate(),
                 existing.lastModifiedDate(),
@@ -94,7 +105,8 @@ public class SasaranService {
                 "",
                 "",
                 jenisRealisasi,
-                SasaranStatus.UNCHECKED);
+                SasaranStatus.UNCHECKED,
+                null);
     }
 
     public Flux<Sasaran> batchSubmitRealisasiSasaran(@Valid List<SasaranRequest> sasaranRequests) {
@@ -121,6 +133,7 @@ public class SasaranService {
                                             existing.faktorPenghambat(),
                                             req.jenisRealisasi(),
                                             SasaranStatus.UNCHECKED,
+                                            existing.buktiPendukung(),
                                             existing.createdBy(),
                                             existing.createdDate(),
                                             existing.lastModifiedDate(),
@@ -239,6 +252,7 @@ public class SasaranService {
                             existing.faktorPenghambat(),
                             existing.jenisRealisasi(),
                             SasaranStatus.UNCHECKED,
+                            existing.buktiPendukung(),
                             existing.createdBy(),
                             existing.createdDate(),
                             existing.lastModifiedDate(),
@@ -271,6 +285,7 @@ public class SasaranService {
                             req.faktorPenghambat(),
                             existing.jenisRealisasi(),
                             SasaranStatus.UNCHECKED,
+                            existing.buktiPendukung(),
                             existing.createdBy(),
                             existing.createdDate(),
                             existing.lastModifiedDate(),
@@ -278,5 +293,52 @@ public class SasaranService {
                     );
                     return sasaranRepository.save(updated);
                 });
+    }
+
+    public Mono<Sasaran> uploadBuktiPendukung(Long id, FilePart file) {
+        return sasaranRepository.findById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Sasaran tidak ditemukan")))
+                .flatMap(existing -> uploadFile(file).flatMap(filePath -> {
+                    Sasaran updated = new Sasaran(
+                            existing.id(),
+                            existing.sasaranId(),
+                            existing.sasaran(),
+                            existing.indikatorId(),
+                            existing.indikator(),
+                            existing.targetId(),
+                            existing.target(),
+                            existing.realisasi(),
+                            existing.satuan(),
+                            existing.tahun(),
+                            existing.bulan(),
+                            existing.rumusPerhitungan(),
+                            existing.sumberData(),
+                            existing.faktorPenunjang(),
+                            existing.faktorPenghambat(),
+                            existing.jenisRealisasi(),
+                            SasaranStatus.UNCHECKED,
+                            filePath,
+                            existing.createdBy(),
+                            existing.createdDate(),
+                            existing.lastModifiedDate(),
+                            existing.lastModifiedBy()
+                    );
+                    return sasaranRepository.save(updated);
+                }));
+    }
+
+    private Mono<String> uploadFile(FilePart file) {
+        Path basePath = Paths.get(uploadDir).toAbsolutePath().normalize();
+        try {
+            Files.createDirectories(basePath);
+        } catch (IOException e) {
+            return Mono.error(new RuntimeException("Gagal membuat direktori upload", e));
+        }
+
+        String filename = System.currentTimeMillis() + "_" + file.filename();
+        Path targetPath = basePath.resolve(filename);
+
+        return file.transferTo(targetPath)
+                .thenReturn("/uploads/" + filename);
     }
 }

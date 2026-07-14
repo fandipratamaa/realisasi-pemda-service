@@ -5,30 +5,31 @@ import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
 import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.web.reactive.config.ResourceHandlerRegistry;
+import org.springframework.web.reactive.config.WebFluxConfigurer;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
-public class WebClientConfig {
+public class WebClientConfig implements WebFluxConfigurer {
 
-    @Bean("penetapanWebClient")
-    WebClient penetapanWebClient(PenetapanProperties properties) {
-        var httpClient = HttpClient.create()
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS,
-                        (int) properties.connectTimeout().toMillis())
-                .doOnConnected(conn -> conn
-                        .addHandlerLast(new ReadTimeoutHandler(
-                                properties.readTimeout().toMillis(), TimeUnit.MILLISECONDS))
-                        .addHandlerLast(new WriteTimeoutHandler(
-                                properties.readTimeout().toMillis(), TimeUnit.MILLISECONDS)));
+    @Value("${file.upload-dir:uploads}")
+    private String uploadDir;
 
-        return WebClient.builder()
-                .baseUrl(properties.baseUrl())
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .build();
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        Path uploadDirectory = Paths.get(uploadDir).toAbsolutePath().normalize();
+        String resourceLocation = uploadDirectory.toUri().toString();
+
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations(resourceLocation);
     }
+
 }

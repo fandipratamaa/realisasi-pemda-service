@@ -2,12 +2,6 @@ package cc.kertaskerja.realisasi_opd_service.renja.domain;
 
 import cc.kertaskerja.integration.penetapan.PenetapanRenjaOpdClient;
 import cc.kertaskerja.integration.penetapan.renja.PenetapanRenjaOpd;
-import cc.kertaskerja.realisasi_opd_service.renja.domain.RenjaKegiatanOpd;
-import cc.kertaskerja.realisasi_opd_service.renja.domain.RenjaKegiatanOpdRepository;
-import cc.kertaskerja.realisasi_opd_service.renja.domain.RenjaProgramOpd;
-import cc.kertaskerja.realisasi_opd_service.renja.domain.RenjaProgramOpdRepository;
-import cc.kertaskerja.realisasi_opd_service.renja.domain.RenjaSubKegiatanOpd;
-import cc.kertaskerja.realisasi_opd_service.renja.domain.RenjaSubKegiatanOpdRepository;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -99,19 +93,19 @@ class RenjaOpdServiceTest {
         when(targetProgramRepo.findAllByTahunAndBulan("2026", "1"))
                 .thenReturn(Flux.just(
                         new RenjaProgramOpd(1L, "5.01.5.05.0.00.01.0000", "2026", "1",
-                                "5.01.02", "IND-001", "TGT-001", "", BigDecimal.valueOf(70), "", "", "",
+                                "5.01.02", "IND-001", "TGT-001", "", BigDecimal.valueOf(70), "", "", "", "",
                                 Instant.now(), Instant.now(), null, null)
                 ));
         when(targetKegiatanRepo.findAllByTahunAndBulan("2026", "1"))
                 .thenReturn(Flux.just(
                         new RenjaKegiatanOpd(2L, "5.01.5.05.0.00.01.0000", "2026", "1",
-                                "5.01.02.2.01", "IND-002", "TGT-002", "", BigDecimal.valueOf(70), "", "", "",
+                                "5.01.02.2.01", "IND-002", "TGT-002", "", BigDecimal.valueOf(70), "", "", "", "",
                                 Instant.now(), Instant.now(), null, null)
                 ));
         when(targetSubKegiatanRepo.findAllByTahunAndBulan("2026", "1"))
                 .thenReturn(Flux.just(
                         new RenjaSubKegiatanOpd(3L, "5.01.5.05.0.00.01.0000", "2026", "1",
-                                "5.01.02.2.01.0005", "IND-003", "TGT-003", "", BigDecimal.valueOf(70), "", "", "",
+                                "5.01.02.2.01.0005", "IND-003", "TGT-003", "", BigDecimal.valueOf(70), "", "", "", "",
                                 Instant.now(), Instant.now(), null, null)
                 ));
 

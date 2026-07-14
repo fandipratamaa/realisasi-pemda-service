@@ -2,12 +2,6 @@ package cc.kertaskerja.realisasi_opd_service.renja.domain;
 
 import cc.kertaskerja.integration.penetapan.PenetapanRenjaOpdClient;
 import cc.kertaskerja.integration.penetapan.renja.PenetapanRenjaOpd;
-import cc.kertaskerja.realisasi_opd_service.renja.domain.RenjaKegiatanOpd;
-import cc.kertaskerja.realisasi_opd_service.renja.domain.RenjaKegiatanOpdRepository;
-import cc.kertaskerja.realisasi_opd_service.renja.domain.RenjaProgramOpd;
-import cc.kertaskerja.realisasi_opd_service.renja.domain.RenjaProgramOpdRepository;
-import cc.kertaskerja.realisasi_opd_service.renja.domain.RenjaSubKegiatanOpd;
-import cc.kertaskerja.realisasi_opd_service.renja.domain.RenjaSubKegiatanOpdRepository;
 import cc.kertaskerja.realisasi.domain.JenisLaporan;
 import cc.kertaskerja.realisasi_opd_service.renja.web.LaporanRealisasiRenjaOpdResponse;
 import cc.kertaskerja.realisasi_opd_service.renja.web.RenjaOpdPenetapanResponse;
@@ -17,11 +11,18 @@ import cc.kertaskerja.realisasi_opd_service.renja.web.program.FaktorPenghambatTa
 import cc.kertaskerja.realisasi_opd_service.renja.web.program.FaktorPenunjangTargetRenjaProgramOpdRequest;
 import cc.kertaskerja.realisasi_opd_service.renja.web.subkegiatan.FaktorPenghambatTargetRenjaSubKegiatanOpdRequest;
 import cc.kertaskerja.realisasi_opd_service.renja.web.subkegiatan.FaktorPenunjangTargetRenjaSubKegiatanOpdRequest;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -36,7 +37,10 @@ public class RenjaOpdService {
     private final RenjaKegiatanOpdRepository targetKegiatanRepo;
     private final RenjaSubKegiatanOpdRepository targetSubKegiatanRepo;
 
-    record RealisasiData(Double realisasi, String faktorPenunjang, String faktorPenghambat) {}
+    @Value("${file.upload-dir:uploads}")
+    private String uploadDir;
+
+    record RealisasiData(Double realisasi, String faktorPenunjang, String faktorPenghambat, String buktiPendukung) {}
 
     record CapaianResult(Double capaian, String keteranganCapaian) {}
 
@@ -182,19 +186,19 @@ public class RenjaOpdService {
                 .collectMap(RenjaProgramOpd::kodeTarget,
                         t -> new RealisasiData(
                                 t.realisasi() != null ? t.realisasi().doubleValue() : null,
-                                t.faktorPenunjang(), t.faktorPenghambat()));
+                                t.faktorPenunjang(), t.faktorPenghambat(), t.buktiPendukung()));
 
         Mono<Map<String, RealisasiData>> kegiatanRealisasiMap = targetKegiatanRepo.findAllByTahunAndBulan(tahunStr, bulan)
                 .collectMap(RenjaKegiatanOpd::kodeTarget,
                         t -> new RealisasiData(
                                 t.realisasi() != null ? t.realisasi().doubleValue() : null,
-                                t.faktorPenunjang(), t.faktorPenghambat()));
+                                t.faktorPenunjang(), t.faktorPenghambat(), t.buktiPendukung()));
 
         Mono<Map<String, RealisasiData>> subKegiatanRealisasiMap = targetSubKegiatanRepo.findAllByTahunAndBulan(tahunStr, bulan)
                 .collectMap(RenjaSubKegiatanOpd::kodeTarget,
                         t -> new RealisasiData(
                                 t.realisasi() != null ? t.realisasi().doubleValue() : null,
-                                t.faktorPenunjang(), t.faktorPenghambat()));
+                                t.faktorPenunjang(), t.faktorPenghambat(), t.buktiPendukung()));
 
         return Mono.zip(programRealisasiMap, kegiatanRealisasiMap, subKegiatanRealisasiMap)
                 .map(tuple -> {
@@ -261,7 +265,7 @@ public class RenjaOpdService {
                                 .map(t -> new RenjaOpdPenetapanResponse.TargetPenetapan(
                                         t.id(), t.kodeTarget(), t.tahun(), null,
                                         t.target(), null, t.satuan(), null, null,
-                                        null, null
+                                        null, null, null
                                 ))
                                 .toList()
                 ))
@@ -283,7 +287,7 @@ public class RenjaOpdService {
                                 .map(t -> new RenjaOpdPenetapanResponse.TargetPenetapan(
                                         t.id(), t.kodeTarget(), t.tahun(), null,
                                         t.target(), null, t.satuan(), null, null,
-                                        null, null
+                                        null, null, null
                                 ))
                                 .toList()
                 ))
@@ -305,7 +309,7 @@ public class RenjaOpdService {
                                 .map(t -> new RenjaOpdPenetapanResponse.TargetPenetapan(
                                         t.id(), t.kodeTarget(), t.tahun(), null,
                                         t.target(), null, t.satuan(), null, null,
-                                        null, null
+                                        null, null, null
                                 ))
                                 .toList()
                 ))
@@ -337,7 +341,8 @@ public class RenjaOpdService {
                                         t.target(), realisasi, t.satuan(),
                                         capaianResult.capaian(), capaianResult.keteranganCapaian(),
                                         data != null ? data.faktorPenunjang() : null,
-                                        data != null ? data.faktorPenghambat() : null
+                                        data != null ? data.faktorPenghambat() : null,
+                                        data != null ? data.buktiPendukung() : null
                                 );
                             })
                             .toList();
@@ -373,7 +378,8 @@ public class RenjaOpdService {
                                         t.target(), realisasi, t.satuan(),
                                         capaianResult.capaian(), capaianResult.keteranganCapaian(),
                                         data != null ? data.faktorPenunjang() : null,
-                                        data != null ? data.faktorPenghambat() : null
+                                        data != null ? data.faktorPenghambat() : null,
+                                        data != null ? data.buktiPendukung() : null
                                 );
                             })
                             .toList();
@@ -409,7 +415,8 @@ public class RenjaOpdService {
                                         t.target(), realisasi, t.satuan(),
                                         capaianResult.capaian(), capaianResult.keteranganCapaian(),
                                         data != null ? data.faktorPenunjang() : null,
-                                        data != null ? data.faktorPenghambat() : null
+                                        data != null ? data.faktorPenghambat() : null,
+                                        data != null ? data.buktiPendukung() : null
                                 );
                             })
                             .toList();
@@ -451,5 +458,62 @@ public class RenjaOpdService {
 
     private Integer parseInteger(String value) {
         return value == null ? null : Integer.parseInt(value);
+    }
+
+    public Mono<RenjaProgramOpd> uploadBuktiPendukungProgram(Long id, FilePart file) {
+        return targetProgramRepo.findById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target program OPD tidak ditemukan")))
+                .flatMap(existing -> uploadFile(file).flatMap(filePath -> {
+                    RenjaProgramOpd updated = new RenjaProgramOpd(
+                            existing.id(), existing.kodeOpd(), existing.tahun(), existing.bulan(),
+                            existing.kodeProgram(), existing.kodeIndikator(), existing.kodeTarget(), existing.kodePagu(),
+                            existing.realisasi(), existing.jenisRealisasi(), existing.faktorPenunjang(), existing.faktorPenghambat(),
+                            filePath, existing.createdDate(), existing.lastModifiedDate(), existing.createdBy(), existing.lastModifiedBy()
+                    );
+                    return targetProgramRepo.save(updated);
+                }));
+    }
+
+    public Mono<RenjaKegiatanOpd> uploadBuktiPendukungKegiatan(Long id, FilePart file) {
+        return targetKegiatanRepo.findById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target kegiatan OPD tidak ditemukan")))
+                .flatMap(existing -> uploadFile(file).flatMap(filePath -> {
+                    RenjaKegiatanOpd updated = new RenjaKegiatanOpd(
+                            existing.id(), existing.kodeOpd(), existing.tahun(), existing.bulan(),
+                            existing.kodeKegiatan(), existing.kodeIndikator(), existing.kodeTarget(), existing.kodePagu(),
+                            existing.realisasi(), existing.jenisRealisasi(), existing.faktorPenunjang(), existing.faktorPenghambat(),
+                            filePath, existing.createdDate(), existing.lastModifiedDate(), existing.createdBy(), existing.lastModifiedBy()
+                    );
+                    return targetKegiatanRepo.save(updated);
+                }));
+    }
+
+    public Mono<RenjaSubKegiatanOpd> uploadBuktiPendukungSubKegiatan(Long id, FilePart file) {
+        return targetSubKegiatanRepo.findById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target subkegiatan OPD tidak ditemukan")))
+                .flatMap(existing -> uploadFile(file).flatMap(filePath -> {
+                    RenjaSubKegiatanOpd updated = new RenjaSubKegiatanOpd(
+                            existing.id(), existing.kodeOpd(), existing.tahun(), existing.bulan(),
+                            existing.kodeSubkegiatan(), existing.kodeIndikator(), existing.kodeTarget(), existing.kodePagu(),
+                            existing.realisasi(), existing.jenisRealisasi(), existing.faktorPenunjang(), existing.faktorPenghambat(),
+                            filePath, existing.createdDate(), existing.lastModifiedDate(), existing.createdBy(), existing.lastModifiedBy()
+                    );
+                    return targetSubKegiatanRepo.save(updated);
+                }));
+    }
+
+    private Mono<String> uploadFile(FilePart file) {
+        Path basePath = Paths.get(uploadDir).toAbsolutePath().normalize();
+        try {
+            Files.createDirectories(basePath);
+        } catch (IOException e) {
+            return Mono.error(new RuntimeException("Gagal membuat direktori upload", e));
+        }
+
+        String filename = System.currentTimeMillis() + "_" + file.filename();
+        Path targetPath = basePath.resolve(filename);
+
+        return file.transferTo(targetPath)
+                .thenReturn("/uploads/" + filename);
     }
 }

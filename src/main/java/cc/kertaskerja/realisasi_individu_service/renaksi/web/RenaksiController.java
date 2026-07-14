@@ -20,8 +20,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.MediaType;
+import org.springframework.http.codec.multipart.FilePart;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -45,10 +48,10 @@ public class RenaksiController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     public Flux<RenaksiIndividu> getRealisasiByNipAndKodeOpdAndTahunAndBulan(
-            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
-            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
-            @Parameter(description = "Tahun realisasi", example = "2026") @PathVariable String tahun,
-            @Parameter(description = "Bulan realisasi", example = "01") @PathVariable String bulan) {
+            @Parameter(description = "NIP pelaksana") @PathVariable String nip,
+            @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun realisasi") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi") @PathVariable String bulan) {
         if (nip == null || nip.isBlank() || kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip, kodeOpd, tahun, dan bulan tidak boleh kosong");
         }
@@ -169,5 +172,17 @@ public class RenaksiController {
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatRenaksiRequest.class)))
             @RequestBody @Valid FaktorPenghambatRenaksiRequest request) {
         return renaksiService.updateFaktorPenghambat(request);
+    }
+
+    @PostMapping(value = "/{id}/bukti-pendukung", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Upload dan perbarui bukti pendukung", description = "Mengunggah file dan langsung memperbarui field bukti_pendukung pada record Renaksi Individu yang sudah ada.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = RenaksiIndividu.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Data tidak ditemukan", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+    })
+    public Mono<RenaksiIndividu> uploadBuktiPendukung(@PathVariable Long id, @RequestPart("file") FilePart file) {
+        return renaksiService.uploadBuktiPendukung(id, file);
     }
 }

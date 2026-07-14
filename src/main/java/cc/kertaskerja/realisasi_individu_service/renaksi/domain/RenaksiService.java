@@ -10,6 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.codec.multipart.FilePart;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +22,9 @@ import java.util.Map;
 @Service
 public class RenaksiService {
     private final RenaksiIndividuRepository renaksiIndividuRepository;
+
+    @Value("${file.upload-dir:uploads}")
+    private String uploadDir;
 
     public RenaksiService(RenaksiIndividuRepository renaksiIndividuRepository) {
         this.renaksiIndividuRepository = renaksiIndividuRepository;
@@ -200,7 +207,7 @@ public class RenaksiService {
                             existing.paguAnggaran(), existing.realisasi(),
                             existing.tahun(), existing.bulan(), existing.satuan(), existing.status(),
                             existing.jenisRealisasi(),
-                            req.faktorPenunjang(), existing.faktorPenghambat(),
+                            req.faktorPenunjang(), existing.faktorPenghambat(), existing.buktiPendukung(),
                             existing.createdBy(), existing.lastModifiedBy(),
                             existing.createdDate(), existing.lastModifiedDate()
                     );
@@ -226,7 +233,7 @@ public class RenaksiService {
                             existing.paguAnggaran(), existing.realisasi(),
                             existing.tahun(), existing.bulan(), existing.satuan(), existing.status(),
                             existing.jenisRealisasi(),
-                            existing.faktorPenunjang(), req.faktorPenghambat(),
+                            existing.faktorPenunjang(), req.faktorPenghambat(), existing.buktiPendukung(),
                             existing.createdBy(), existing.lastModifiedBy(),
                             existing.createdDate(), existing.lastModifiedDate()
                     );
@@ -245,7 +252,7 @@ public class RenaksiService {
                 req.paguAnggaran(), req.realisasi(),
                 req.tahun(), req.bulan(), req.satuan(), RenaksiStatus.UNCHECKED,
                 req.jenisRealisasi(),
-                existing.faktorPenunjang(), existing.faktorPenghambat(),
+                existing.faktorPenunjang(), existing.faktorPenghambat(), existing.buktiPendukung(),
                 existing.createdBy(), existing.lastModifiedBy(),
                 existing.createdDate(), existing.lastModifiedDate()
         );
@@ -260,7 +267,34 @@ public class RenaksiService {
                 req.kodeTarget(), req.target(),
                 req.paguAnggaran(), req.realisasi(),
                 req.tahun(), req.bulan(), req.satuan(), RenaksiStatus.UNCHECKED,
-                req.jenisRealisasi(), "", ""
+                req.jenisRealisasi(), "", "", null
         );
+    }
+
+    public Mono<RenaksiIndividu> uploadBuktiPendukung(Long id, FilePart file) {
+        return renaksiIndividuRepository.findById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Data tidak ditemukan")))
+                .flatMap(existing -> {
+                    String filename = System.currentTimeMillis() + "_" + file.filename();
+                    Path targetPath = Paths.get(uploadDir).resolve(filename).normalize();
+                    return file.transferTo(targetPath).then(Mono.defer(() -> {
+                        String fileUrl = "/api/files/" + filename;
+                        RenaksiIndividu updated = new RenaksiIndividu(
+                                existing.id(),
+                                existing.kodeOpd(), existing.nip(),
+                                existing.kodeSasaran(), existing.sasaran(),
+                                existing.kodeRenaksi(), existing.renaksi(),
+                                existing.kodeIndikator(), existing.indikator(),
+                                existing.kodeTarget(), existing.target(),
+                                existing.paguAnggaran(), existing.realisasi(),
+                                existing.tahun(), existing.bulan(), existing.satuan(), existing.status(),
+                                existing.jenisRealisasi(),
+                                existing.faktorPenunjang(), existing.faktorPenghambat(), fileUrl,
+                                existing.createdBy(), existing.lastModifiedBy(),
+                                existing.createdDate(), existing.lastModifiedDate()
+                        );
+                        return renaksiIndividuRepository.save(updated);
+                    }));
+                });
     }
 }

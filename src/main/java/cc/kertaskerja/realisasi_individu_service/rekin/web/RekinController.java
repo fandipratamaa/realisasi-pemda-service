@@ -20,8 +20,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.MediaType;
+import org.springframework.http.codec.multipart.FilePart;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -33,6 +36,28 @@ public class RekinController {
 
     public RekinController(RekinService rekinService) {
         this.rekinService = rekinService;
+    }
+
+    @GetMapping("/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}/levelRole/{levelRole}/nip/{nip}")
+    @Operation(summary = "Mencari rekin individu berdasarkan filter", description = "Endpoint untuk fitur pencarian rekin individu di frontend. Memvalidasi NIP ke service pegawai lalu mengambil data penetapan.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Berhasil mengambil data", content = @Content(schema = @Schema(implementation = PenetapanRekinIndividuResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Pegawai tidak ditemukan", content = @Content)
+    })
+    @PreAuthorize("hasAnyAuthority('super_admin', 'ROLE_SUPER_ADMIN', 'admin_opd', 'ROLE_ADMIN_OPD')")
+    public Mono<PenetapanRekinIndividuResponse> searchRekin(
+            @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun") @PathVariable String tahun,
+            @Parameter(description = "Bulan") @PathVariable String bulan,
+            @Parameter(description = "Level Role (LEVEL_1, dll)") @PathVariable String levelRole,
+            @Parameter(description = "NIP Pegawai") @PathVariable String nip) {
+        if (kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd, tahun, dan bulan tidak boleh kosong");
+        }
+        return rekinService.searchRekin(kodeOpd, tahun, bulan, levelRole, nip);
     }
 
     @GetMapping("/nip/{nip}/kodeOpd/{kodeOpd}/tahun/{tahun}/penetapan")
@@ -95,13 +120,13 @@ public class RekinController {
     @GetMapping("/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}")
     @Operation(summary = "Cari realisasi rekin individu berdasarkan kode OPD, tahun, dan bulan")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realisasi rekin individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RekinIndividu.class)))),
+            @ApiResponse(responseCode = "200", description = "Daftar realisasi rekin individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RekinResponse.class)))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
     })
     @PreAuthorize("hasAnyAuthority('super_admin', 'ROLE_SUPER_ADMIN', 'admin_opd', 'ROLE_ADMIN_OPD')")
-    public Flux<RekinIndividu> getRekinByKodeOpdAndTahunAndBulan(
+    public Flux<RekinResponse> getRekinByKodeOpdAndTahunAndBulan(
             @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun") @PathVariable String tahun,
             @Parameter(description = "Bulan") @PathVariable String bulan) {
@@ -153,5 +178,17 @@ public class RekinController {
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatRekinRequest.class)))
             @RequestBody @Valid FaktorPenghambatRekinRequest request) {
         return rekinService.updateFaktorPenghambat(request);
+    }
+
+    @PostMapping(value = "/{id}/bukti-pendukung", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Upload dan perbarui bukti pendukung", description = "Mengunggah file dan langsung memperbarui field bukti_pendukung pada record Rekin Individu yang sudah ada. Role `level_1`, `level_2`, `level_3`, dan `level_4` tidak diizinkan mengakses endpoint ini.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = RekinIndividu.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Data tidak ditemukan", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+    })
+    public Mono<RekinIndividu> uploadBuktiPendukung(@PathVariable Long id, @RequestPart("file") FilePart file) {
+        return rekinService.uploadBuktiPendukung(id, file);
     }
 }

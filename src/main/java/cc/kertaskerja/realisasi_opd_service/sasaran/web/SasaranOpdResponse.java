@@ -60,6 +60,9 @@ public record SasaranOpdResponse(
         String createdBy,
 
         @JsonProperty("last_modified_by")
-        String lastModifiedBy
+        String lastModifiedBy,
+
+        @JsonProperty("bukti_pendukung")
+        String buktiPendukung
 ) {
 }
