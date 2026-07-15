@@ -3,6 +3,7 @@ package cc.kertaskerja.integration.kepegawaian;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -15,8 +16,9 @@ public class PegawaiClient {
     private static final Logger log = LoggerFactory.getLogger(PegawaiClient.class);
     private final WebClient webClient;
 
-    public PegawaiClient(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("https://kepegawaian-service-mahulu-test.zeabur.app").build();
+    public PegawaiClient(WebClient.Builder webClientBuilder,
+                         @Value("${integration.kepegawaian.base-url}") String baseUrl) {
+        this.webClient = webClientBuilder.baseUrl(baseUrl).build();
     }
 
     public record PegawaiData(

@@ -35,7 +35,19 @@ logging:
 
 integration:
   penetapan:
-    base-url: https://penetapan-service-staging.zeabur.app
+    base-url: ${PENETAPAN_SERVICE_URL}
+    read-through-enabled: true
+    connect-timeout: 5s
+    read-timeout: 10s
+
+  upload:
+    base-url: ${UPLOAD_SERVICE_URL}
+    read-through-enabled: true
+    connect-timeout: 5s
+    read-timeout: 10s
+
+  kepegawaian:
+    base-url: ${KEPEGAWAIAN_SERVICE_URL}
     read-through-enabled: true
     connect-timeout: 5s
     read-timeout: 10s
