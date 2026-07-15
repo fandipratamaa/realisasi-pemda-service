@@ -39,3 +39,8 @@ integration:
     read-through-enabled: true
     connect-timeout: 5s
     read-timeout: 10s
+
+  upload:
+    base-url: https://upload-service-staging.zeabur.app
+    connect-timeout: 5s
+    read-timeout: 10s
