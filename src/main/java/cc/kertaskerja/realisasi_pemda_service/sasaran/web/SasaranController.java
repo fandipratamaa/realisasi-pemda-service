@@ -18,8 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("sasarans")
 @Tag(name = "Pemda - Sasaran", description = "Endpoint realisasi sasaran tingkat pemda")
@@ -38,8 +36,8 @@ public class SasaranController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     public Flux<Sasaran> getAllRealisasiSasaranByTahunAndBulan(
-            @Parameter(description = "Tahun realisasi", example = "2025") @PathVariable String tahun,
-            @Parameter(description = "Bulan realisasi", example = "Januari") @PathVariable String bulan) {
+            @Parameter(description = "Tahun realisasi") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi") @PathVariable String bulan) {
         return sasaranService.getAllRealisasiSasaranByTahunAndBulan(tahun, bulan);
     }
 
@@ -57,32 +55,25 @@ public class SasaranController {
         return sasaranService.getLaporanRealisasi(tahun, jenisLaporan, bulan);
     }
 
-    @PostMapping
-    @Operation(summary = "Simpan realisasi sasaran", description = "Menyimpan satu data realisasi sasaran.")
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Simpan realisasi sasaran", description = "Menyimpan satu data realisasi sasaran via JSON.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data realisasi sasaran tersimpan", content = @Content(schema = @Schema(implementation = Sasaran.class))),
             @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-public Mono<Sasaran> submitRealisasiSasaran(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload realisasi sasaran", required = true,
-                    content = @Content(schema = @Schema(implementation = SasaranRequest.class)))
+    public Mono<Sasaran> submitRealisasiSasaran(
             @RequestBody @Valid SasaranRequest sasaranRequest) {
         return sasaranService.submitRealisasiSasaran(sasaranRequest);
     }
 
-    @PostMapping("/batch")
-    @Operation(summary = "Simpan batch realisasi sasaran", description = "Menyimpan beberapa data realisasi sasaran dalam satu request.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Batch berhasil disimpan", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Sasaran.class)))),
-            @ApiResponse(responseCode = "400", description = "Payload batch tidak valid", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<Sasaran> batchSubmitRealisasiSasaran(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Daftar payload realisasi sasaran", required = true,
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = SasaranRequest.class))))
-            @RequestBody @Valid List<SasaranRequest> sasaranRequest) {
-        return sasaranService.batchSubmitRealisasiSasaran(sasaranRequest);
+    @PostMapping(value = "/upload/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Upload file bukti pendukung", description = "Mengunggah file dan mengembalikan string URL.")
+    public Mono<java.util.Map<String, String>> uploadFile(
+            @Parameter(description = "File yang akan diupload", content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE))
+            @RequestPart("file") FilePart file) {
+        return sasaranService.uploadFile(file)
+                .map(url -> java.util.Map.of("url", url));
     }
 
     @PostMapping("/faktor-penunjang")
@@ -113,16 +104,5 @@ public Mono<Sasaran> submitRealisasiSasaran(
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatSasaranRequest.class)))
             @RequestBody @Valid FaktorPenghambatSasaranRequest req) {
         return sasaranService.updateFaktorPenghambat(req);
-    }
-
-    @PostMapping(value = "/{id}/bukti-pendukung", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Upload dan perbarui bukti pendukung", description = "Mengunggah file dan langsung memperbarui field bukti_pendukung pada record Sasaran yang sudah ada.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = Sasaran.class))),
-            @ApiResponse(responseCode = "404", description = "Sasaran tidak ditemukan", content = @Content),
-            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-    })
-    public Mono<Sasaran> uploadBuktiPendukung(@PathVariable Long id, @RequestPart("file") FilePart file) {
-        return sasaranService.uploadBuktiPendukung(id, file);
     }
 }

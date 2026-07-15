@@ -22,6 +22,8 @@ import cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan.FaktorPen
 import cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan.LaporanRealisasiRenjaSubKegiatanIndividuResponse;
 import cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan.RenjaIndividuSubKegiatanRequest;
 import cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan.RenjaIndividuSubKegiatanResponse;
+import cc.kertaskerja.integration.upload.UploadClient;
+import cc.kertaskerja.integration.kepegawaian.PegawaiClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.codec.multipart.FilePart;
@@ -31,11 +33,7 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -48,6 +46,8 @@ public class RenjaIndividuService {
     private final RenjaProgramIndividuRepository programRepo;
     private final RenjaKegiatanIndividuRepository kegiatanRepo;
     private final RenjaSubKegiatanIndividuRepository subKegiatanRepo;
+    private final UploadClient uploadClient;
+    private final PegawaiClient pegawaiClient;
 
     record CapaianResult(Double capaian, String keteranganCapaian) {
     }
@@ -55,10 +55,14 @@ public class RenjaIndividuService {
     public RenjaIndividuService(
             RenjaProgramIndividuRepository programRepo,
             RenjaKegiatanIndividuRepository kegiatanRepo,
-            RenjaSubKegiatanIndividuRepository subKegiatanRepo) {
+            RenjaSubKegiatanIndividuRepository subKegiatanRepo,
+            UploadClient uploadClient,
+            PegawaiClient pegawaiClient) {
         this.programRepo = programRepo;
         this.kegiatanRepo = kegiatanRepo;
         this.subKegiatanRepo = subKegiatanRepo;
+        this.uploadClient = uploadClient;
+        this.pegawaiClient = pegawaiClient;
     }
 
     @Transactional
@@ -151,25 +155,64 @@ public class RenjaIndividuService {
                 .flatMap(this::enrichSubKegiatanResponse);
     }
 
-    public Flux<RenjaIndividuProgramResponse> getProgramByKodeOpdAndTahunAndBulan(
-            String kodeOpd, String tahun, String bulan) {
-        return programRepo
-                .findAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan)
-                .flatMap(this::enrichProgramResponse);
+    public Flux<RenjaIndividuProgramResponse> searchProgram(
+            String kodeOpd, String tahun, String bulan, String levelRole, String nip) {
+        java.util.List<String> validRoles = java.util.List.of("LEVEL_1", "LEVEL_2", "LEVEL_3", "LEVEL_4");
+        if (!validRoles.contains(levelRole.toUpperCase())) {
+            return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
+        }
+
+        return pegawaiClient.fetchAllPegawai()
+                .flatMapMany(pegawais -> {
+                    boolean nipExists = pegawais.stream()
+                            .anyMatch(p -> nip.equals(p.nip()));
+                    
+                    if (!nipExists) {
+                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
+                    }
+                    
+                    return getProgramByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
+                });
     }
 
-    public Flux<RenjaIndividuKegiatanResponse> getKegiatanByKodeOpdAndTahunAndBulan(
-            String kodeOpd, String tahun, String bulan) {
-        return kegiatanRepo
-                .findAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan)
-                .flatMap(this::enrichKegiatanResponse);
+    public Flux<RenjaIndividuKegiatanResponse> searchKegiatan(
+            String kodeOpd, String tahun, String bulan, String levelRole, String nip) {
+        java.util.List<String> validRoles = java.util.List.of("LEVEL_1", "LEVEL_2", "LEVEL_3", "LEVEL_4");
+        if (!validRoles.contains(levelRole.toUpperCase())) {
+            return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
+        }
+
+        return pegawaiClient.fetchAllPegawai()
+                .flatMapMany(pegawais -> {
+                    boolean nipExists = pegawais.stream()
+                            .anyMatch(p -> nip.equals(p.nip()));
+                    
+                    if (!nipExists) {
+                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
+                    }
+                    
+                    return getKegiatanByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
+                });
     }
 
-    public Flux<RenjaIndividuSubKegiatanResponse> getSubKegiatanByKodeOpdAndTahunAndBulan(
-            String kodeOpd, String tahun, String bulan) {
-        return subKegiatanRepo
-                .findAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan)
-                .flatMap(this::enrichSubKegiatanResponse);
+    public Flux<RenjaIndividuSubKegiatanResponse> searchSubKegiatan(
+            String kodeOpd, String tahun, String bulan, String levelRole, String nip) {
+        java.util.List<String> validRoles = java.util.List.of("LEVEL_1", "LEVEL_2", "LEVEL_3", "LEVEL_4");
+        if (!validRoles.contains(levelRole.toUpperCase())) {
+            return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
+        }
+
+        return pegawaiClient.fetchAllPegawai()
+                .flatMapMany(pegawais -> {
+                    boolean nipExists = pegawais.stream()
+                            .anyMatch(p -> nip.equals(p.nip()));
+                    
+                    if (!nipExists) {
+                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
+                    }
+                    
+                    return getSubKegiatanByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
+                });
     }
 
     public Flux<LaporanRealisasiRenjaProgramIndividuResponse> getLaporanRealisasiProgram(
@@ -324,7 +367,9 @@ public class RenjaIndividuService {
                         existing.kodeIndikator(), "Realisasi indikator " + existing.kodeIndikator(),
                         existing.kodeTarget(), existing.kodePagu(), existing.pagu(),
                         BigDecimal.valueOf(req.target()), BigDecimal.valueOf(req.realisasi()), jenisRealisasi,
-                        existing.faktorPenunjang(), existing.faktorPenghambat(), existing.buktiPendukung(),
+                        existing.faktorPenunjang(), existing.faktorPenghambat(),
+                        req.buktiPendukung() != null && !req.buktiPendukung().isBlank() ? req.buktiPendukung() : existing.buktiPendukung(),
+                        req.keteranganBuktiPendukung() != null ? req.keteranganBuktiPendukung() : existing.keteranganBuktiPendukung(),
                         existing.createdDate(), null, existing.createdBy(), null)))
                 .switchIfEmpty(Mono.defer(() -> programRepo.save(new RenjaProgramIndividu(
                         null, req.kodeOpd(), req.nip(),
@@ -333,7 +378,7 @@ public class RenjaIndividuService {
                         req.kodeIndikator(), "Realisasi Subkegiatan " + req.kodeIndikator(),
                         req.kodeTarget(), kodePagu, null,
                         BigDecimal.valueOf(req.target()), BigDecimal.valueOf(req.realisasi()), jenisRealisasi,
-                        "", "", null,
+                        "", "", req.buktiPendukung(), req.keteranganBuktiPendukung(),
                         null, null, null, null))));
     }
 
@@ -349,7 +394,9 @@ public class RenjaIndividuService {
                         existing.kodeIndikator(), "Realisasi indikator " + existing.kodeIndikator(),
                         existing.kodeTarget(), existing.kodePagu(), existing.pagu(),
                         BigDecimal.valueOf(req.target()), BigDecimal.valueOf(req.realisasi()), jenisRealisasi,
-                        existing.faktorPenunjang(), existing.faktorPenghambat(), existing.buktiPendukung(),
+                        existing.faktorPenunjang(), existing.faktorPenghambat(),
+                        req.buktiPendukung() != null && !req.buktiPendukung().isBlank() ? req.buktiPendukung() : existing.buktiPendukung(),
+                        req.keteranganBuktiPendukung() != null ? req.keteranganBuktiPendukung() : existing.keteranganBuktiPendukung(),
                         existing.createdDate(), null, existing.createdBy(), null)))
                 .switchIfEmpty(Mono.defer(() -> kegiatanRepo.save(new RenjaKegiatanIndividu(
                         null, req.kodeOpd(), req.nip(),
@@ -358,7 +405,7 @@ public class RenjaIndividuService {
                         req.kodeIndikator(), "Realisasi indikator " + req.kodeIndikator(),
                         req.kodeTarget(), kodePagu, null,
                         BigDecimal.valueOf(req.target()), BigDecimal.valueOf(req.realisasi()), jenisRealisasi,
-                        "", "", null,
+                        "", "", req.buktiPendukung(), req.keteranganBuktiPendukung(),
                         null, null, null, null))));
     }
 
@@ -377,7 +424,9 @@ public class RenjaIndividuService {
                         BigDecimal.valueOf(req.targetRealisasi()),
                         BigDecimal.valueOf(req.realisasiTarget()), BigDecimal.valueOf(req.realisasiPagu()),
                         jenisRealisasi,
-                        existing.faktorPenunjang(), existing.faktorPenghambat(), existing.buktiPendukung(),
+                        existing.faktorPenunjang(), existing.faktorPenghambat(),
+                        req.buktiPendukung() != null && !req.buktiPendukung().isBlank() ? req.buktiPendukung() : existing.buktiPendukung(),
+                        req.keteranganBuktiPendukung() != null ? req.keteranganBuktiPendukung() : existing.keteranganBuktiPendukung(),
                         existing.createdDate(), null, existing.createdBy(), null)))
                 .switchIfEmpty(Mono.defer(() -> subKegiatanRepo.save(new RenjaSubKegiatanIndividu(
                         null, req.kodeOpd(), req.nip(),
@@ -388,7 +437,7 @@ public class RenjaIndividuService {
                         BigDecimal.valueOf(req.targetRealisasi()),
                         BigDecimal.valueOf(req.realisasiTarget()), BigDecimal.valueOf(req.realisasiPagu()),
                         jenisRealisasi,
-                        "", "", null,
+                        "", "", req.buktiPendukung(), req.keteranganBuktiPendukung(),
                         null, null, null, null))));
     }
 
@@ -465,7 +514,7 @@ public class RenjaIndividuService {
                                 kegiatan.kodeIndikator(), kegiatan.indikator(),
                                 kegiatan.kodeTarget(), kegiatan.kodePagu(), totalPagu,
                                 kegiatan.target(), kegiatan.realisasi(), kegiatan.jenisRealisasi(),
-                                kegiatan.faktorPenunjang(), kegiatan.faktorPenghambat(), kegiatan.buktiPendukung(),
+                                kegiatan.faktorPenunjang(), kegiatan.faktorPenghambat(), kegiatan.buktiPendukung(), kegiatan.keteranganBuktiPendukung(),
                                 kegiatan.createdDate(), null, kegiatan.createdBy(), null)))
                         .then());
     }
@@ -482,7 +531,7 @@ public class RenjaIndividuService {
                                 program.kodeIndikator(), program.indikator(),
                                 program.kodeTarget(), program.kodePagu(), totalPagu,
                                 program.target(), program.realisasi(), program.jenisRealisasi(),
-                                program.faktorPenunjang(), program.faktorPenghambat(), program.buktiPendukung(),
+                                program.faktorPenunjang(), program.faktorPenghambat(), program.buktiPendukung(), program.keteranganBuktiPendukung(),
                                 program.createdDate(), null, program.createdBy(), null)))
                         .then());
     }
@@ -610,60 +659,8 @@ public class RenjaIndividuService {
         throw new IllegalArgumentException("Tipe data laporan tidak didukung");
     }
 
-    public Mono<RenjaProgramIndividu> uploadBuktiPendukungProgram(Long id, FilePart file) {
-        return programRepo.findById(id)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target program individu tidak ditemukan")))
-                .flatMap(existing -> uploadFile(file).flatMap(filePath -> {
-                    RenjaProgramIndividu updated = new RenjaProgramIndividu(
-                            existing.id(), existing.kodeOpd(), existing.nip(), existing.tahun(), existing.bulan(),
-                            existing.kodeProgram(), existing.program(), existing.kodeIndikator(), existing.indikator(), existing.kodeTarget(), existing.kodePagu(),
-                            existing.pagu(), existing.target(), existing.realisasi(), existing.jenisRealisasi(), existing.faktorPenunjang(), existing.faktorPenghambat(),
-                            filePath, existing.createdDate(), existing.lastModifiedDate(), existing.createdBy(), existing.lastModifiedBy()
-                    );
-                    return programRepo.save(updated);
-                }));
-    }
-
-    public Mono<RenjaKegiatanIndividu> uploadBuktiPendukungKegiatan(Long id, FilePart file) {
-        return kegiatanRepo.findById(id)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target kegiatan individu tidak ditemukan")))
-                .flatMap(existing -> uploadFile(file).flatMap(filePath -> {
-                    RenjaKegiatanIndividu updated = new RenjaKegiatanIndividu(
-                            existing.id(), existing.kodeOpd(), existing.nip(), existing.tahun(), existing.bulan(),
-                            existing.kodeKegiatan(), existing.kegiatan(), existing.kodeIndikator(), existing.indikator(), existing.kodeTarget(), existing.kodePagu(),
-                            existing.pagu(), existing.target(), existing.realisasi(), existing.jenisRealisasi(), existing.faktorPenunjang(), existing.faktorPenghambat(),
-                            filePath, existing.createdDate(), existing.lastModifiedDate(), existing.createdBy(), existing.lastModifiedBy()
-                    );
-                    return kegiatanRepo.save(updated);
-                }));
-    }
-
-    public Mono<RenjaSubKegiatanIndividu> uploadBuktiPendukungSubKegiatan(Long id, FilePart file) {
-        return subKegiatanRepo.findById(id)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target subkegiatan individu tidak ditemukan")))
-                .flatMap(existing -> uploadFile(file).flatMap(filePath -> {
-                    RenjaSubKegiatanIndividu updated = new RenjaSubKegiatanIndividu(
-                            existing.id(), existing.kodeOpd(), existing.nip(), existing.tahun(), existing.bulan(),
-                            existing.kodeSubKegiatan(), existing.subkegiatan(), existing.kodeIndikator(), existing.indikator(), existing.kodeTarget(), existing.kodePagu(),
-                            existing.pagu(), existing.targetRealisasi(), existing.realisasiTarget(), existing.realisasiPagu(), existing.jenisRealisasi(), existing.faktorPenunjang(), existing.faktorPenghambat(),
-                            filePath, existing.createdDate(), existing.lastModifiedDate(), existing.createdBy(), existing.lastModifiedBy()
-                    );
-                    return subKegiatanRepo.save(updated);
-                }));
-    }
-
-    private Mono<String> uploadFile(FilePart file) {
-        Path basePath = Paths.get(uploadDir).toAbsolutePath().normalize();
-        try {
-            Files.createDirectories(basePath);
-        } catch (IOException e) {
-            return Mono.error(new RuntimeException("Gagal membuat direktori upload", e));
-        }
-
-        String filename = System.currentTimeMillis() + "_" + file.filename();
-        Path targetPath = basePath.resolve(filename);
-
-        return file.transferTo(targetPath)
-                .thenReturn("/uploads/" + filename);
+    public Mono<String> uploadFile(FilePart file) {
+        return uploadClient.uploadFile(file)
+                .map(UploadClient.UploadMetadata::url);
     }
 }

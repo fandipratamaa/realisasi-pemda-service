@@ -58,6 +58,9 @@ public record RenjaSubKegiatanIndividu(
         @Column("bukti_pendukung")
         String buktiPendukung,
 
+        @Column("keterangan_bukti_pendukung")
+        String keteranganBuktiPendukung,
+
         @CreatedDate Instant createdDate,
         @LastModifiedDate Instant lastModifiedDate,
         @CreatedBy String createdBy,
@@ -66,7 +69,7 @@ public record RenjaSubKegiatanIndividu(
     public RenjaSubKegiatanIndividu withFaktorPenunjang(String faktorPenunjang) {
         return new RenjaSubKegiatanIndividu(
                 id, kodeOpd, nip, tahun, bulan, kodeSubKegiatan, subkegiatan, kodeIndikator, indikator, kodeTarget, kodePagu,
-                pagu, targetRealisasi, realisasiTarget, realisasiPagu, jenisRealisasi, faktorPenunjang, faktorPenghambat, buktiPendukung,
+                pagu, targetRealisasi, realisasiTarget, realisasiPagu, jenisRealisasi, faktorPenunjang, faktorPenghambat, buktiPendukung, keteranganBuktiPendukung,
                 createdDate, lastModifiedDate, createdBy, lastModifiedBy
         );
     }
@@ -74,7 +77,7 @@ public record RenjaSubKegiatanIndividu(
     public RenjaSubKegiatanIndividu withFaktorPenghambat(String faktorPenghambat) {
         return new RenjaSubKegiatanIndividu(
                 id, kodeOpd, nip, tahun, bulan, kodeSubKegiatan, subkegiatan, kodeIndikator, indikator, kodeTarget, kodePagu,
-                pagu, targetRealisasi, realisasiTarget, realisasiPagu, jenisRealisasi, faktorPenunjang, faktorPenghambat, buktiPendukung,
+                pagu, targetRealisasi, realisasiTarget, realisasiPagu, jenisRealisasi, faktorPenunjang, faktorPenghambat, buktiPendukung, keteranganBuktiPendukung,
                 createdDate, lastModifiedDate, createdBy, lastModifiedBy
         );
     }

@@ -60,7 +60,10 @@ public record RekinResponse(
         Double capaian,
 
         @JsonProperty("keterangan_capaian")
-        String keteranganCapaian
+        String keteranganCapaian,
+
+        @JsonProperty("keterangan_bukti_pendukung")
+        String keteranganBuktiPendukung
 ) {
     public static RekinResponse from(RekinIndividu entity, Double target, Double capaian, String keteranganCapaian) {
         return new RekinResponse(
@@ -71,7 +74,7 @@ public record RekinResponse(
                 entity.faktorPenunjang(), entity.faktorPenghambat(), entity.buktiPendukung(),
                 entity.createdBy(), entity.lastModifiedBy(),
                 entity.createdDate(), entity.lastModifiedDate(),
-                target, capaian, keteranganCapaian
+                target, capaian, keteranganCapaian, entity.keteranganBuktiPendukung()
         );
     }
 }

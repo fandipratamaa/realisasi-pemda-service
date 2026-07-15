@@ -185,14 +185,18 @@ public class SasaranOpdService {
                                 BigDecimal.valueOf(req.realisasi()),
                                 jenisRealisasi,
                                 existing.faktorPenunjang(), existing.faktorPenghambat(),
-                                existing.buktiPendukung(),
+                                req.buktiPendukung() != null ? req.buktiPendukung() : existing.buktiPendukung(),
+                                req.keteranganBuktiPendukung() != null ? req.keteranganBuktiPendukung() : existing.keteranganBuktiPendukung(),
                                 existing.createdBy(), existing.createdDate(), null, null)))
                 .switchIfEmpty(Mono.defer(() -> sasaranOpdRepository.save(
-                        SasaranOpd.of(
-                                req.kodeOpd(), req.tahun(), req.bulan(),
+                        new SasaranOpd(
+                                null, req.kodeOpd(), req.tahun(), req.bulan(),
                                 req.kodeSasaranOpd(), req.kodeIndikator(), req.kodeTarget(),
                                 BigDecimal.valueOf(req.realisasi()),
-                                jenisRealisasi))));
+                                jenisRealisasi,
+                                "", "",
+                                req.buktiPendukung(), req.keteranganBuktiPendukung(),
+                                null, null, null, null))));
     }
 
     private SasaranOpdResponse toResponse(SasaranOpd entity) {
@@ -204,7 +208,7 @@ public class SasaranOpdService {
                 entity.faktorPenunjang(), entity.faktorPenghambat(),
                 null, null, null, null, null, null, null, null, null,
                 entity.jenisRealisasi(),
-                entity.createdBy(), entity.lastModifiedBy(), entity.buktiPendukung());
+                entity.createdBy(), entity.lastModifiedBy(), entity.buktiPendukung(), entity.keteranganBuktiPendukung());
     }
 
     private Mono<SasaranOpdResponse> applyPenetapan(Mono<SasaranOpdResponse> responseMono, String kodeOpd, String tahun) {
@@ -242,7 +246,7 @@ public class SasaranOpdService {
                     response.realisasi(), response.faktorPenunjang(), response.faktorPenghambat(),
                     penetapan.sasaranOpd(), null, null, null, null, null, null, null, null,
                     response.jenisRealisasi(),
-                    response.createdBy(), response.lastModifiedBy(), response.buktiPendukung());
+                    response.createdBy(), response.lastModifiedBy(), response.buktiPendukung(), response.keteranganBuktiPendukung());
         }
 
         var matchedTarget = matchedIndikator.get().targets().stream()
@@ -265,7 +269,7 @@ public class SasaranOpdService {
                 target, satuan,
                 capaianResult.capaian(), capaianResult.keteranganCapaian(),
                 response.jenisRealisasi(),
-                response.createdBy(), response.lastModifiedBy(), response.buktiPendukung()
+                response.createdBy(), response.lastModifiedBy(), response.buktiPendukung(), response.keteranganBuktiPendukung()
         );
     }
 
@@ -401,7 +405,7 @@ public class SasaranOpdService {
     public Mono<SasaranOpd> uploadBuktiPendukung(Long id, FilePart file) {
         return sasaranOpdRepository.findById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Sasaran OPD tidak ditemukan")))
-                .flatMap(existing -> uploadFile(file).flatMap(filePath -> {
+                .flatMap(existing -> uploadFileBase(file).flatMap(filePath -> {
                     SasaranOpd updated = new SasaranOpd(
                             existing.id(),
                             existing.kodeOpd(),
@@ -415,6 +419,7 @@ public class SasaranOpdService {
                             existing.faktorPenunjang(),
                             existing.faktorPenghambat(),
                             filePath,
+                            existing.keteranganBuktiPendukung(),
                             existing.createdBy(),
                             existing.createdDate(),
                             existing.lastModifiedDate(),
@@ -424,7 +429,7 @@ public class SasaranOpdService {
                 }));
     }
 
-    private Mono<String> uploadFile(FilePart file) {
+    public Mono<String> uploadFileBase(FilePart file) {
         Path basePath = Paths.get(uploadDir).toAbsolutePath().normalize();
         try {
             Files.createDirectories(basePath);

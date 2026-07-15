@@ -63,6 +63,9 @@ public record TujuanOpdResponse(
         String lastModifiedBy,
 
         @JsonProperty("bukti_pendukung")
-        String buktiPendukung
+        String buktiPendukung,
+
+        @JsonProperty("keterangan_bukti_pendukung")
+        String keteranganBuktiPendukung
 ) {
 }

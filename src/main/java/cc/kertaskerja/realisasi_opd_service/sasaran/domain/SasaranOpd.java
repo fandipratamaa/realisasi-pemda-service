@@ -46,6 +46,9 @@ public record SasaranOpd(
         @Column("bukti_pendukung")
         String buktiPendukung,
 
+        @Column("keterangan_bukti_pendukung")
+        String keteranganBuktiPendukung,
+
         @CreatedBy
         @Column("created_by")
         String createdBy,
@@ -71,7 +74,7 @@ public record SasaranOpd(
             JenisRealisasi jenisRealisasi
     ) {
         return new SasaranOpd(null, kodeOpd, tahun, bulan, kodeSasaranOpd, kodeIndikator, kodeTarget,
-                realisasi, jenisRealisasi, "", "", null,
+                realisasi, jenisRealisasi, "", "", null, null,
                 null, null, null, null);
     }
 
@@ -91,13 +94,13 @@ public record SasaranOpd(
 
     public SasaranOpd withFaktorPenunjang(String faktorPenunjang) {
         return new SasaranOpd(id, kodeOpd, tahun, bulan, kodeSasaranOpd, kodeIndikator, kodeTarget,
-                realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat, buktiPendukung,
+                realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat, buktiPendukung, keteranganBuktiPendukung,
                 createdBy, createdDate, lastModifiedDate, lastModifiedBy);
     }
 
     public SasaranOpd withFaktorPenghambat(String faktorPenghambat) {
         return new SasaranOpd(id, kodeOpd, tahun, bulan, kodeSasaranOpd, kodeIndikator, kodeTarget,
-                realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat, buktiPendukung,
+                realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat, buktiPendukung, keteranganBuktiPendukung,
                 createdBy, createdDate, lastModifiedDate, lastModifiedBy);
     }
 }

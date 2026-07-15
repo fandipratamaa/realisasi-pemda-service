@@ -44,6 +44,12 @@ public record TujuanOpdRequest(
         @NotEmpty(message = "Kode opd tidak boleh kosong")
         @NotNull(message = "Kode opd tidak boleh kosong")
         @Schema(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000")
-        String kodeOpd
+        String kodeOpd,
+
+        @Schema(description = "URL bukti pendukung realisasi", example = "https://example.com/bukti.pdf")
+        String buktiPendukung,
+
+        @Schema(description = "Keterangan dari bukti pendukung", example = "Dokumen pendukung berupa laporan tahunan BPS")
+        String keteranganBuktiPendukung
 ) {
 }

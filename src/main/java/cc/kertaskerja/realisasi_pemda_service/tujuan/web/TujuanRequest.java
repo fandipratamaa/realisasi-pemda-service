@@ -69,5 +69,8 @@ public record TujuanRequest(
         JenisRealisasi jenisRealisasi,
 
         @Schema(description = "URL bukti pendukung realisasi", example = "https://example.com/bukti.pdf")
-        String buktiPendukung
+        String buktiPendukung,
+
+        @Schema(description = "Keterangan dari bukti pendukung", example = "Dokumen pendukung berupa laporan tahunan BPS")
+        String keteranganBuktiPendukung
 ) {}

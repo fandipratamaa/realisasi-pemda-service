@@ -1,0 +1,14 @@
+ALTER TABLE realisasi_target_tujuan_pemda ADD COLUMN keterangan_bukti_pendukung TEXT;
+ALTER TABLE realisasi_target_sasaran_pemda ADD COLUMN keterangan_bukti_pendukung TEXT;
+
+ALTER TABLE realisasi_target_tujuan_opd ADD COLUMN keterangan_bukti_pendukung TEXT;
+ALTER TABLE realisasi_target_sasaran_opd ADD COLUMN keterangan_bukti_pendukung TEXT;
+ALTER TABLE realisasi_target_renja_program_opd ADD COLUMN keterangan_bukti_pendukung TEXT;
+ALTER TABLE realisasi_target_renja_kegiatan_opd ADD COLUMN keterangan_bukti_pendukung TEXT;
+ALTER TABLE realisasi_target_renja_subkegiatan_opd ADD COLUMN keterangan_bukti_pendukung TEXT;
+
+ALTER TABLE realisasi_target_rekin_individu ADD COLUMN keterangan_bukti_pendukung TEXT;
+ALTER TABLE realisasi_target_renja_program_individu ADD COLUMN keterangan_bukti_pendukung TEXT;
+ALTER TABLE realisasi_target_renja_kegiatan_individu ADD COLUMN keterangan_bukti_pendukung TEXT;
+ALTER TABLE realisasi_target_renja_subkegiatan_individu ADD COLUMN keterangan_bukti_pendukung TEXT;
+ALTER TABLE realisasi_target_renaksi_individu ADD COLUMN keterangan_bukti_pendukung TEXT;

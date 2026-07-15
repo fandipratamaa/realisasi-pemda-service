@@ -11,6 +11,7 @@ import cc.kertaskerja.realisasi_individu_service.rekin.web.PenetapanRekinIndivid
 import cc.kertaskerja.realisasi_individu_service.rekin.web.RekinRequest;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.RekinResponse;
 import cc.kertaskerja.integration.kepegawaian.PegawaiClient;
+import cc.kertaskerja.integration.upload.UploadClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -25,8 +26,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.codec.multipart.FilePart;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Service
 public class RekinService {
@@ -34,6 +33,7 @@ public class RekinService {
     private final RekinIndividuRepository repository;
     private final PenetapanRekinIndividuClient penetapanClient;
     private final PegawaiClient pegawaiClient;
+    private final UploadClient uploadClient;
 
     @Value("${file.upload-dir:uploads}")
     private String uploadDir;
@@ -41,11 +41,13 @@ public class RekinService {
     public RekinService(
             RekinIndividuRepository repository,
             PenetapanRekinIndividuClient penetapanClient,
-            PegawaiClient pegawaiClient
+            PegawaiClient pegawaiClient,
+            UploadClient uploadClient
     ) {
         this.repository = repository;
         this.penetapanClient = penetapanClient;
         this.pegawaiClient = pegawaiClient;
+        this.uploadClient = uploadClient;
     }
 
     public Mono<RekinResponse> createRekin(RekinRequest req) {
@@ -56,6 +58,7 @@ public class RekinService {
 
     private Mono<RekinIndividu> upsert(RekinRequest req) {
         JenisRealisasi jenisRealisasi = req.jenisRealisasi() != null ? req.jenisRealisasi() : JenisRealisasi.NAIK;
+        String bukti = req.buktiPendukung() != null ? req.buktiPendukung() : "";
         return repository
                 .findFirstByKodeOpdAndNipAndTahunAndBulanAndKodePkRekinAndKodeIndikatorPkRekinAndKodeTargetPkRekin(
                         req.kodeOpd(), req.nip(), req.tahun(), req.bulan(),
@@ -67,7 +70,9 @@ public class RekinService {
                             existing.kodePkRekin(), existing.kodeIndikatorPkRekin(), existing.kodeTargetPkRekin(),
                             req.kodeSasaranOpd(),
                             req.realisasi(), jenisRealisasi,
-                            existing.faktorPenunjang(), existing.faktorPenghambat(), existing.buktiPendukung(),
+                            existing.faktorPenunjang(), existing.faktorPenghambat(),
+                            bukti != null && !bukti.isBlank() ? bukti : existing.buktiPendukung(),
+                            req.keteranganBuktiPendukung() != null ? req.keteranganBuktiPendukung() : existing.keteranganBuktiPendukung(),
                             existing.createdBy(), existing.lastModifiedBy(),
                             existing.createdDate(), existing.lastModifiedDate()
                     );
@@ -79,7 +84,7 @@ public class RekinService {
                             req.kodePkRekin(), req.kodeIndikatorPKrekin(), req.kodeTargetPKrekin(),
                             req.kodeSasaranOpd(),
                             req.realisasi(), jenisRealisasi,
-                            "", "", "");
+                            "", "", bukti, req.keteranganBuktiPendukung());
                     return repository.save(newEntity);
                 }));
     }
@@ -142,7 +147,7 @@ public class RekinService {
                 response.faktorPenunjang(), response.faktorPenghambat(), response.buktiPendukung(),
                 response.createdBy(), response.lastModifiedBy(),
                 response.createdDate(), response.lastModifiedDate(),
-                matchingTarget.target(), capaianResult.capaian(), capaianResult.keteranganCapaian()
+                matchingTarget.target(), capaianResult.capaian(), capaianResult.keteranganCapaian(), response.keteranganBuktiPendukung()
         );
     }
 
@@ -160,7 +165,7 @@ public class RekinService {
                             existing.kodeSasaranOpd(),
                             existing.realisasi(), existing.jenisRealisasi(),
                             req.faktorPenunjang(),
-                            existing.faktorPenghambat(), existing.buktiPendukung(),
+                            existing.faktorPenghambat(), existing.buktiPendukung(), existing.keteranganBuktiPendukung(),
                             existing.createdBy(), existing.lastModifiedBy(),
                             existing.createdDate(), existing.lastModifiedDate()
                     );
@@ -182,7 +187,7 @@ public class RekinService {
                             existing.kodeSasaranOpd(),
                             existing.realisasi(), existing.jenisRealisasi(),
                             existing.faktorPenunjang(),
-                            req.faktorPenghambat(), existing.buktiPendukung(),
+                            req.faktorPenghambat(), existing.buktiPendukung(), existing.keteranganBuktiPendukung(),
                             existing.createdBy(), existing.lastModifiedBy(),
                             existing.createdDate(), existing.lastModifiedDate()
                     );
@@ -384,7 +389,11 @@ public class RekinService {
                 });
     }
 
-    //  --- Pegawai Integration ---
+    // --- Pegawai Integration ---
+    public Mono<List<cc.kertaskerja.integration.kepegawaian.PegawaiClient.PegawaiData>> getAllPegawai() {
+        return pegawaiClient.fetchAllPegawai();
+    }
+
     public Mono<PenetapanRekinIndividuResponse> searchRekin(String kodeOpd, String tahun, String bulan, String levelRole, String nip) {
         List<String> validRoles = List.of("LEVEL_1", "LEVEL_2", "LEVEL_3", "LEVEL_4");
         if (!validRoles.contains(levelRole.toUpperCase())) {
@@ -441,7 +450,7 @@ public class RekinService {
         List<PenetapanRekinIndividuResponse.TargetPenetapanResponse> targets = indikator.targetPk().stream()
                 .map(t -> new PenetapanRekinIndividuResponse.TargetPenetapanResponse(
                         t.id(), t.kodeTargetPk(), t.tahun(), t.target(), t.satuan(),
-                        null, null, null, null, null, null, null
+                        null, null, null, null, null, null, null, null
                 ))
                 .toList();
         return new PenetapanRekinIndividuResponse.IndikatorPenetapanResponse(
@@ -519,11 +528,12 @@ public class RekinService {
         String faktorPenunjang = local != null ? local.faktorPenunjang() : null;
         String faktorPenghambat = local != null ? local.faktorPenghambat() : null;
         String buktiPendukung = local != null ? local.buktiPendukung() : null;
+        String keteranganBuktiPendukung = local != null ? local.keteranganBuktiPendukung() : null;
         String jenisRealisasi = "NAIK";
         return new PenetapanRekinIndividuResponse.TargetPenetapanResponse(
                 target.id(), target.kodeTargetPk(), target.tahun(), target.target(), target.satuan(),
                 realisasiValue, capaianResult.capaian(), capaianResult.keteranganCapaian(),
-                faktorPenunjang, faktorPenghambat, buktiPendukung, jenisRealisasi
+                faktorPenunjang, faktorPenghambat, buktiPendukung, keteranganBuktiPendukung, jenisRealisasi
         );
     }
 
@@ -531,24 +541,8 @@ public class RekinService {
         return value == null ? null : Integer.parseInt(value);
     }
 
-    public Mono<RekinIndividu> uploadBuktiPendukung(Long id, FilePart file) {
-        return repository.findById(id)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Data tidak ditemukan")))
-                .flatMap(existing -> {
-                    String filename = System.currentTimeMillis() + "_" + file.filename();
-                    Path targetPath = Paths.get(uploadDir).resolve(filename).normalize();
-                    return file.transferTo(targetPath).then(Mono.defer(() -> {
-                        String fileUrl = "/api/files/" + filename;
-                        RekinIndividu updated = new RekinIndividu(
-                                existing.id(), existing.kodeOpd(), existing.nip(), existing.tahun(), existing.bulan(),
-                                existing.kodePkRekin(), existing.kodeIndikatorPkRekin(), existing.kodeTargetPkRekin(),
-                                existing.kodeSasaranOpd(), existing.realisasi(), existing.jenisRealisasi(),
-                                existing.faktorPenunjang(), existing.faktorPenghambat(), fileUrl,
-                                existing.createdBy(), existing.lastModifiedBy(),
-                                existing.createdDate(), existing.lastModifiedDate()
-                        );
-                        return repository.save(updated);
-                    }));
-                });
+    public Mono<String> uploadFile(FilePart file) {
+        return uploadClient.uploadFile(file)
+                .map(UploadClient.UploadMetadata::url);
     }
 }

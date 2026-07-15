@@ -5,27 +5,21 @@ import cc.kertaskerja.realisasi_opd_service.sasaran.domain.SasaranOpd;
 import cc.kertaskerja.realisasi_opd_service.sasaran.domain.SasaranOpdService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.http.MediaType;
-import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("sasaran_opd")
@@ -66,21 +60,6 @@ public class SasaranOpdController {
         return sasaranOpdService.getLaporanRealisasi(kodeOpd, tahun, jenisLaporan, bulan);
     }
 
-    @PostMapping
-    @Operation(summary = "Simpan realisasi sasaran OPD", description = "Menyimpan satu data realisasi sasaran OPD. Role `level_1`, `level_2`, `level_3`, dan `level_4` tidak diizinkan mengakses endpoint ini.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Data realisasi sasaran OPD tersimpan", content = @Content(schema = @Schema(implementation = SasaranOpdResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Payload tidak valid", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Forbidden untuk role level_1, level_2, level_3, dan level_4", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Mono<SasaranOpdResponse> submitRealisasiSasaranOpd(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload realisasi sasaran OPD", required = true,
-                    content = @Content(schema = @Schema(implementation = SasaranOpdRequest.class)))
-            @RequestBody @Valid SasaranOpdRequest sasaranOpdRequest) {
-        return sasaranOpdService.submitRealisasiSasaranOpd(sasaranOpdRequest);
-    }
-
     @PostMapping("/faktor-penunjang")
     @Operation(summary = "Perbarui faktor penunjang sasaran OPD", description = "Memperbarui hanya field faktor_penunjang pada record yang cocok dengan composite key (kodeOpd, kodeSasaranOpd, kodeIndikator, kodeTarget, tahun, bulan).")
     @ApiResponses(value = {
@@ -109,32 +88,5 @@ public class SasaranOpdController {
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatSasaranOpdRequest.class)))
             @RequestBody @Valid FaktorPenghambatSasaranOpdRequest req) {
         return sasaranOpdService.updateFaktorPenghambat(req);
-    }
-
-    @PostMapping("/create/batch")
-    @Operation(summary = "Simpan batch realisasi sasaran OPD", description = "Menyimpan beberapa data realisasi sasaran OPD dalam satu request. Role `level_1`, `level_2`, `level_3`, dan `level_4` tidak diizinkan mengakses endpoint ini.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Batch berhasil disimpan", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SasaranOpdResponse.class)))),
-            @ApiResponse(responseCode = "400", description = "Payload batch tidak valid", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Forbidden untuk role level_1, level_2, level_3, dan level_4", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<SasaranOpdResponse> batchSubmitRealisasiSasaranOpd(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Daftar payload realisasi sasaran OPD", required = true,
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = SasaranOpdRequest.class))))
-            @RequestBody @Valid List<SasaranOpdRequest> sasaranOpdRequests) {
-        return sasaranOpdService.batchSubmitRealisasiSasaranOpd(sasaranOpdRequests);
-    }
-
-    @PostMapping(value = "/{id}/bukti-pendukung", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Upload dan perbarui bukti pendukung", description = "Mengunggah file dan langsung memperbarui field bukti_pendukung pada record Sasaran OPD yang sudah ada. Role `level_1`, `level_2`, `level_3`, dan `level_4` tidak diizinkan mengakses endpoint ini.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = SasaranOpd.class))),
-            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Data tidak ditemukan", content = @Content),
-            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-    })
-    public Mono<SasaranOpd> uploadBuktiPendukung(@PathVariable Long id, @RequestPart("file") FilePart file) {
-        return sasaranOpdService.uploadBuktiPendukung(id, file);
     }
 }

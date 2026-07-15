@@ -54,14 +54,16 @@ public class SecurityConfig {
     );
     private static final List<String> INDIVIDU_CORE_FULL_ACCESS_PREFIXES = List.of(
             "/renaksi_individu",
-            "/rekin"
+            "/rekin",
+            "/renja_individu"
     );
     private static final List<String> INDIVIDU_RENJA_ALLOWED_GET_PREFIXES = List.of(
             "/renja_individu"
     );
     private static final List<String> INDIVIDU_ALL_FULL_ACCESS_PREFIXES = List.of(
             "/renaksi_individu",
-            "/rekin"
+            "/rekin",
+            "/renja_individu"
     );
     private static final List<String> INDIVIDU_RENJA_PROGRAM_FULL_ACCESS_PREFIXES = List.of(
             "/renja_individu/program"

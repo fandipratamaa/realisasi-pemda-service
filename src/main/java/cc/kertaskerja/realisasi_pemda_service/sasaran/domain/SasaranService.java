@@ -6,19 +6,13 @@ import cc.kertaskerja.realisasi_pemda_service.sasaran.web.FaktorPenghambatSasara
 import cc.kertaskerja.realisasi_pemda_service.sasaran.web.FaktorPenunjangSasaranRequest;
 import cc.kertaskerja.realisasi_pemda_service.sasaran.web.LaporanRealisasiSasaranResponse;
 import cc.kertaskerja.realisasi_pemda_service.sasaran.web.SasaranRequest;
-import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Value;
+import cc.kertaskerja.integration.upload.UploadClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,12 +21,11 @@ import java.util.Map;
 @Service
 public class SasaranService {
     private final SasaranRepository sasaranRepository;
+    private final UploadClient uploadClient;
 
-    @Value("${file.upload-dir:uploads}")
-    private String uploadDir;
-
-    public SasaranService(SasaranRepository sasaranRepository) {
+    public SasaranService(SasaranRepository sasaranRepository, UploadClient uploadClient) {
         this.sasaranRepository = sasaranRepository;
+        this.uploadClient = uploadClient;
     }
 
     public Flux<Sasaran> getAllRealisasiSasaranByTahunAndBulan(String tahun, String bulan) {
@@ -40,33 +33,35 @@ public class SasaranService {
     }
 
     public Mono<Sasaran> submitRealisasiSasaran(SasaranRequest req) {
-        if (req.targetRealisasiId() != null) {
-            return sasaranRepository.findById(req.targetRealisasiId())
-                    .flatMap(existing -> sasaranRepository.save(buildUpdatedRealisasiSasaran(existing, req)))
+        String bukti = req.buktiPendukung() != null ? req.buktiPendukung() : "";
+
+            if (req.targetRealisasiId() != null) {
+                return sasaranRepository.findById(req.targetRealisasiId())
+                        .flatMap(existing -> sasaranRepository.save(buildUpdatedRealisasiSasaran(existing, req, bukti)))
+                        .switchIfEmpty(Mono.defer(() -> {
+                            Sasaran baru = buildUnchekcedRealisasiSasaran(
+                                    req.sasaranId(), req.indikatorId(), req.targetId(),
+                                    req.target(), req.realisasi(), req.satuan(),
+                                    req.tahun(), req.bulan(), req.rumusPerhitungan(),
+                                    req.sumberData(), req.jenisRealisasi(), bukti, req.keteranganBuktiPendukung());
+                            return sasaranRepository.save(baru);
+                        }));
+            }
+            return sasaranRepository
+                    .findFirstBySasaranIdAndIndikatorIdAndTargetIdAndTahunAndBulan(
+                            req.sasaranId(), req.indikatorId(), req.targetId(), req.tahun(), req.bulan())
+                    .flatMap(existing -> sasaranRepository.save(buildUpdatedRealisasiSasaran(existing, req, bukti)))
                     .switchIfEmpty(Mono.defer(() -> {
                         Sasaran baru = buildUnchekcedRealisasiSasaran(
                                 req.sasaranId(), req.indikatorId(), req.targetId(),
                                 req.target(), req.realisasi(), req.satuan(),
                                 req.tahun(), req.bulan(), req.rumusPerhitungan(),
-                                req.sumberData(), req.jenisRealisasi());
+                                req.sumberData(), req.jenisRealisasi(), bukti, req.keteranganBuktiPendukung());
                         return sasaranRepository.save(baru);
                     }));
-        }
-        return sasaranRepository
-                .findFirstBySasaranIdAndIndikatorIdAndTargetIdAndTahunAndBulan(
-                        req.sasaranId(), req.indikatorId(), req.targetId(), req.tahun(), req.bulan())
-                .flatMap(existing -> sasaranRepository.save(buildUpdatedRealisasiSasaran(existing, req)))
-                .switchIfEmpty(Mono.defer(() -> {
-                    Sasaran baru = buildUnchekcedRealisasiSasaran(
-                            req.sasaranId(), req.indikatorId(), req.targetId(),
-                            req.target(), req.realisasi(), req.satuan(),
-                            req.tahun(), req.bulan(), req.rumusPerhitungan(),
-                            req.sumberData(), req.jenisRealisasi());
-                    return sasaranRepository.save(baru);
-                }));
     }
 
-    private static Sasaran buildUpdatedRealisasiSasaran(Sasaran existing, SasaranRequest req) {
+    private static Sasaran buildUpdatedRealisasiSasaran(Sasaran existing, SasaranRequest req, String buktiPendukung) {
         return new Sasaran(
                 existing.id(),
                 existing.sasaranId(),
@@ -85,7 +80,8 @@ public class SasaranService {
                 existing.faktorPenghambat(),
                 req.jenisRealisasi(),
                 SasaranStatus.UNCHECKED,
-                existing.buktiPendukung(),
+                buktiPendukung != null && !buktiPendukung.isBlank() ? buktiPendukung : existing.buktiPendukung(),
+                req.keteranganBuktiPendukung() != null ? req.keteranganBuktiPendukung() : existing.keteranganBuktiPendukung(),
                 existing.createdBy(),
                 existing.createdDate(),
                 existing.lastModifiedDate(),
@@ -95,7 +91,7 @@ public class SasaranService {
 
     // sasaranId check to sasaranService
     // and modify sasaran, check target, satuan, and change status to CHECKED
-    public static Sasaran buildUnchekcedRealisasiSasaran(String sasaranId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, String rumusPerhitungan, String sumberData, JenisRealisasi jenisRealisasi) {
+    public static Sasaran buildUnchekcedRealisasiSasaran(String sasaranId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, String rumusPerhitungan, String sumberData, JenisRealisasi jenisRealisasi, String buktiPendukung, String keteranganBuktiPendukung) {
         return Sasaran.of(sasaranId,
                 "Realisasi Sasaran " + sasaranId,
                 indikatorId,
@@ -106,75 +102,8 @@ public class SasaranService {
                 "",
                 jenisRealisasi,
                 SasaranStatus.UNCHECKED,
-                null);
-    }
-
-    public Flux<Sasaran> batchSubmitRealisasiSasaran(@Valid List<SasaranRequest> sasaranRequests) {
-        return Flux.fromIterable(sasaranRequests)
-                .flatMap(req -> {
-                    if (req.targetRealisasiId() != null) {
-                        return sasaranRepository.findById(req.targetRealisasiId())
-                                .flatMap(existing -> {
-                                    Sasaran updated = new Sasaran(
-                                            existing.id(),
-                                            existing.sasaranId(),
-                                            existing.sasaran(),
-                                            existing.indikatorId(),
-                                            existing.indikator(),
-                                            existing.targetId(),
-                                            req.target(),
-                                            req.realisasi(),
-                                            req.satuan(),
-                                            req.tahun(),
-                                            req.bulan(),
-                                            req.rumusPerhitungan(),
-                                            req.sumberData(),
-                                            existing.faktorPenunjang(),
-                                            existing.faktorPenghambat(),
-                                            req.jenisRealisasi(),
-                                            SasaranStatus.UNCHECKED,
-                                            existing.buktiPendukung(),
-                                            existing.createdBy(),
-                                            existing.createdDate(),
-                                            existing.lastModifiedDate(),
-                                            existing.lastModifiedBy()
-                                    );
-                                    return sasaranRepository.save(updated);
-                                })
-                                .switchIfEmpty(Mono.defer(() -> {
-                                    Sasaran baru = buildUnchekcedRealisasiSasaran(
-                                            req.sasaranId(),
-                                            req.indikatorId(),
-                                            req.targetId(),
-                                            req.target(),
-                                            req.realisasi(),
-                                            req.satuan(),
-                                            req.tahun(),
-                                            req.bulan(),
-                                            req.rumusPerhitungan(),
-                                            req.sumberData(),
-                                            req.jenisRealisasi()
-                                    );
-                                    return sasaranRepository.save(baru);
-                                }));
-                    }
-                    else {
-                        Sasaran baru = buildUnchekcedRealisasiSasaran(
-                                req.sasaranId(),
-                                req.indikatorId(),
-                                req.targetId(),
-                                req.target(),
-                                req.realisasi(),
-                                req.satuan(),
-                                req.tahun(),
-                                req.bulan(),
-                                req.rumusPerhitungan(),
-                                req.sumberData(),
-                                req.jenisRealisasi()
-                        );
-                        return sasaranRepository.save(baru);
-                    }
-                });
+                buktiPendukung,
+                keteranganBuktiPendukung);
     }
 
     public Flux<LaporanRealisasiSasaranResponse> getLaporanRealisasi(String tahun, JenisLaporan jenisLaporan, String bulan) {
@@ -253,6 +182,7 @@ public class SasaranService {
                             existing.jenisRealisasi(),
                             SasaranStatus.UNCHECKED,
                             existing.buktiPendukung(),
+                            existing.keteranganBuktiPendukung(),
                             existing.createdBy(),
                             existing.createdDate(),
                             existing.lastModifiedDate(),
@@ -286,6 +216,7 @@ public class SasaranService {
                             existing.jenisRealisasi(),
                             SasaranStatus.UNCHECKED,
                             existing.buktiPendukung(),
+                            existing.keteranganBuktiPendukung(),
                             existing.createdBy(),
                             existing.createdDate(),
                             existing.lastModifiedDate(),
@@ -295,50 +226,8 @@ public class SasaranService {
                 });
     }
 
-    public Mono<Sasaran> uploadBuktiPendukung(Long id, FilePart file) {
-        return sasaranRepository.findById(id)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Sasaran tidak ditemukan")))
-                .flatMap(existing -> uploadFile(file).flatMap(filePath -> {
-                    Sasaran updated = new Sasaran(
-                            existing.id(),
-                            existing.sasaranId(),
-                            existing.sasaran(),
-                            existing.indikatorId(),
-                            existing.indikator(),
-                            existing.targetId(),
-                            existing.target(),
-                            existing.realisasi(),
-                            existing.satuan(),
-                            existing.tahun(),
-                            existing.bulan(),
-                            existing.rumusPerhitungan(),
-                            existing.sumberData(),
-                            existing.faktorPenunjang(),
-                            existing.faktorPenghambat(),
-                            existing.jenisRealisasi(),
-                            SasaranStatus.UNCHECKED,
-                            filePath,
-                            existing.createdBy(),
-                            existing.createdDate(),
-                            existing.lastModifiedDate(),
-                            existing.lastModifiedBy()
-                    );
-                    return sasaranRepository.save(updated);
-                }));
-    }
-
-    private Mono<String> uploadFile(FilePart file) {
-        Path basePath = Paths.get(uploadDir).toAbsolutePath().normalize();
-        try {
-            Files.createDirectories(basePath);
-        } catch (IOException e) {
-            return Mono.error(new RuntimeException("Gagal membuat direktori upload", e));
-        }
-
-        String filename = System.currentTimeMillis() + "_" + file.filename();
-        Path targetPath = basePath.resolve(filename);
-
-        return file.transferTo(targetPath)
-                .thenReturn("/uploads/" + filename);
+    public Mono<String> uploadFile(FilePart file) {
+        return uploadClient.uploadFile(file)
+                .map(UploadClient.UploadMetadata::url);
     }
 }

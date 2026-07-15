@@ -20,8 +20,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.MediaType;
-import org.springframework.http.codec.multipart.FilePart;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -153,39 +151,5 @@ public class RenjaOpdController {
             @RequestBody @Valid FaktorPenghambatTargetRenjaSubKegiatanOpdRequest req) {
         return renjaOpdService.updateFaktorPenghambatSubKegiatan(req);
     }
-    @PostMapping(value = "/program/{id}/bukti-pendukung", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Upload dan perbarui bukti pendukung target renja program OPD", description = "Mengunggah file dan langsung memperbarui field bukti_pendukung pada record target renja program OPD yang sudah ada.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = RenjaProgramOpd.class))),
-            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Data tidak ditemukan", content = @Content),
-            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-    })
-    public Mono<RenjaProgramOpd> uploadBuktiPendukungProgram(@PathVariable Long id, @RequestPart("file") FilePart file) {
-        return renjaOpdService.uploadBuktiPendukungProgram(id, file);
-    }
 
-    @PostMapping(value = "/kegiatan/{id}/bukti-pendukung", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Upload dan perbarui bukti pendukung target renja kegiatan OPD", description = "Mengunggah file dan langsung memperbarui field bukti_pendukung pada record target renja kegiatan OPD yang sudah ada.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = RenjaKegiatanOpd.class))),
-            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Data tidak ditemukan", content = @Content),
-            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-    })
-    public Mono<RenjaKegiatanOpd> uploadBuktiPendukungKegiatan(@PathVariable Long id, @RequestPart("file") FilePart file) {
-        return renjaOpdService.uploadBuktiPendukungKegiatan(id, file);
-    }
-
-    @PostMapping(value = "/subkegiatan/{id}/bukti-pendukung", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Upload dan perbarui bukti pendukung target renja subkegiatan OPD", description = "Mengunggah file dan langsung memperbarui field bukti_pendukung pada record target renja subkegiatan OPD yang sudah ada.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Berhasil diperbarui", content = @Content(schema = @Schema(implementation = RenjaSubKegiatanOpd.class))),
-            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Data tidak ditemukan", content = @Content),
-            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-    })
-    public Mono<RenjaSubKegiatanOpd> uploadBuktiPendukungSubKegiatan(@PathVariable Long id, @RequestPart("file") FilePart file) {
-        return renjaOpdService.uploadBuktiPendukungSubKegiatan(id, file);
-    }
 }

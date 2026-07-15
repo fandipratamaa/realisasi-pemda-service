@@ -44,7 +44,9 @@ public class RekinServiceTests {
             new BigDecimal("75.5"),
             JenisRealisasi.NAIK,
             "2026",
-            "1"
+            "1",
+            null,
+            null
     );
 
     private PenetapanRekinIndividu.RekinIndividuData createPenetapanData(Double targetValue) {
@@ -66,7 +68,7 @@ public class RekinServiceTests {
                             1L, r.kodeOpd(), r.nip(), r.tahun(), r.bulan(),
                             r.kodePkRekin(), r.kodeIndikatorPkRekin(), r.kodeTargetPkRekin(),
                             r.kodeSasaranOpd(),
-                            r.realisasi(), r.jenisRealisasi(), r.faktorPenunjang(), r.faktorPenghambat(), r.buktiPendukung(),
+                            r.realisasi(), r.jenisRealisasi(), r.faktorPenunjang(), r.faktorPenghambat(), r.buktiPendukung(), r.keteranganBuktiPendukung(),
                             null, null, null, null));
                 });
         when(penetapanClient.fetchRekinIndividu(anyString(), anyString(), anyInt()))
@@ -93,7 +95,7 @@ public class RekinServiceTests {
         RekinIndividu existing = new RekinIndividu(
                 99L, "1.01.0.00.0.00.01.0000", "198012312005011001", "2025", "1",
                 "REKIN-001", "IND-REKIN-001", "TAR-1", null,
-                new BigDecimal("50.0"), JenisRealisasi.NAIK, "", "", "",
+                new BigDecimal("50.0"), JenisRealisasi.NAIK, "", "", "", null,
                 null, null, null, null);
 
         when(repository.findFirstByKodeOpdAndNipAndTahunAndBulanAndKodePkRekinAndKodeIndikatorPkRekinAndKodeTargetPkRekin(
@@ -130,7 +132,7 @@ public class RekinServiceTests {
                             1L, r.kodeOpd(), r.nip(), r.tahun(), r.bulan(),
                             r.kodePkRekin(), r.kodeIndikatorPkRekin(), r.kodeTargetPkRekin(),
                             r.kodeSasaranOpd(),
-                            r.realisasi(), r.jenisRealisasi(), r.faktorPenunjang(), r.faktorPenghambat(), r.buktiPendukung(),
+                            r.realisasi(), r.jenisRealisasi(), r.faktorPenunjang(), r.faktorPenghambat(), r.buktiPendukung(), r.keteranganBuktiPendukung(),
                             null, null, null, null));
                 });
         when(penetapanClient.fetchRekinIndividu(anyString(), anyString(), anyInt()))
@@ -158,7 +160,7 @@ public class RekinServiceTests {
         RekinIndividu existing = new RekinIndividu(
                 1L, "1.01.0.00.0.00.01.0000", "198012312005011001", "2026", "1",
                 "REKIN-001", "IND-REKIN-001", "TAR-1", null,
-                new BigDecimal("75.5"), JenisRealisasi.NAIK, "", "", "",
+                new BigDecimal("75.5"), JenisRealisasi.NAIK, "", "", "", null,
                 null, null, null, null);
 
         when(repository.findFirstByKodeOpdAndNipAndTahunAndBulanAndKodePkRekinAndKodeIndikatorPkRekinAndKodeTargetPkRekin(
@@ -205,7 +207,7 @@ public class RekinServiceTests {
         RekinIndividu r1 = RekinIndividu.of(
                 kodeOpd, "198012312005011001", "2026", "1",
                 "REKIN-001", "IND-REKIN-001", "TAR-1", "SAS-001",
-                BigDecimal.valueOf(75.5), JenisRealisasi.NAIK, "", "", "");
+                BigDecimal.valueOf(75.5), JenisRealisasi.NAIK, "", "", "", null);
 
         when(repository.findAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan))
                 .thenReturn(Flux.just(r1));

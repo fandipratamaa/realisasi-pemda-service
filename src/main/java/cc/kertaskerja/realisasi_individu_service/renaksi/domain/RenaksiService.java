@@ -5,6 +5,8 @@ import cc.kertaskerja.realisasi_individu_service.renaksi.web.FaktorPenghambatRen
 import cc.kertaskerja.realisasi_individu_service.renaksi.web.FaktorPenunjangRenaksiRequest;
 import cc.kertaskerja.realisasi_individu_service.renaksi.web.LaporanRealisasiRenaksiIndividuResponse;
 import cc.kertaskerja.realisasi_individu_service.renaksi.web.RenaksiIndividuRequest;
+import cc.kertaskerja.integration.upload.UploadClient;
+import cc.kertaskerja.integration.kepegawaian.PegawaiClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -12,8 +14,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.codec.multipart.FilePart;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,12 +22,16 @@ import java.util.Map;
 @Service
 public class RenaksiService {
     private final RenaksiIndividuRepository renaksiIndividuRepository;
+    private final UploadClient uploadClient;
+    private final PegawaiClient pegawaiClient;
 
     @Value("${file.upload-dir:uploads}")
     private String uploadDir;
 
-    public RenaksiService(RenaksiIndividuRepository renaksiIndividuRepository) {
+    public RenaksiService(RenaksiIndividuRepository renaksiIndividuRepository, UploadClient uploadClient, PegawaiClient pegawaiClient) {
         this.renaksiIndividuRepository = renaksiIndividuRepository;
+        this.uploadClient = uploadClient;
+        this.pegawaiClient = pegawaiClient;
     }
 
     public Mono<RenaksiIndividu> submitRealisasiTarget(RenaksiIndividuRequest req) {
@@ -75,8 +79,23 @@ public class RenaksiService {
         return renaksiIndividuRepository.findAllByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
     }
 
-    public Flux<RenaksiIndividu> getAllByKodeOpdAndTahunAndBulan(String kodeOpd, String tahun, String bulan) {
-        return renaksiIndividuRepository.findAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
+    public Flux<RenaksiIndividu> searchRealisasi(String kodeOpd, String tahun, String bulan, String levelRole, String nip) {
+        java.util.List<String> validRoles = java.util.List.of("LEVEL_1", "LEVEL_2", "LEVEL_3", "LEVEL_4");
+        if (!validRoles.contains(levelRole.toUpperCase())) {
+            return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
+        }
+
+        return pegawaiClient.fetchAllPegawai()
+                .flatMapMany(pegawais -> {
+                    boolean nipExists = pegawais.stream()
+                            .anyMatch(p -> nip.equals(p.nip()));
+                    
+                    if (!nipExists) {
+                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
+                    }
+                    
+                    return getAllByNipAndKodeOpdAndTahunAndBulan(nip, kodeOpd, tahun, bulan);
+                });
     }
 
     public Flux<LaporanRealisasiRenaksiIndividuResponse> getLaporanRealisasi(
@@ -207,7 +226,7 @@ public class RenaksiService {
                             existing.paguAnggaran(), existing.realisasi(),
                             existing.tahun(), existing.bulan(), existing.satuan(), existing.status(),
                             existing.jenisRealisasi(),
-                            req.faktorPenunjang(), existing.faktorPenghambat(), existing.buktiPendukung(),
+                            req.faktorPenunjang(), existing.faktorPenghambat(), existing.buktiPendukung(), existing.keteranganBuktiPendukung(),
                             existing.createdBy(), existing.lastModifiedBy(),
                             existing.createdDate(), existing.lastModifiedDate()
                     );
@@ -233,7 +252,7 @@ public class RenaksiService {
                             existing.paguAnggaran(), existing.realisasi(),
                             existing.tahun(), existing.bulan(), existing.satuan(), existing.status(),
                             existing.jenisRealisasi(),
-                            existing.faktorPenunjang(), req.faktorPenghambat(), existing.buktiPendukung(),
+                            existing.faktorPenunjang(), req.faktorPenghambat(), existing.buktiPendukung(), existing.keteranganBuktiPendukung(),
                             existing.createdBy(), existing.lastModifiedBy(),
                             existing.createdDate(), existing.lastModifiedDate()
                     );
@@ -252,7 +271,9 @@ public class RenaksiService {
                 req.paguAnggaran(), req.realisasi(),
                 req.tahun(), req.bulan(), req.satuan(), RenaksiStatus.UNCHECKED,
                 req.jenisRealisasi(),
-                existing.faktorPenunjang(), existing.faktorPenghambat(), existing.buktiPendukung(),
+                existing.faktorPenunjang(), existing.faktorPenghambat(),
+                req.buktiPendukung() != null && !req.buktiPendukung().isBlank() ? req.buktiPendukung() : existing.buktiPendukung(),
+                req.keteranganBuktiPendukung() != null ? req.keteranganBuktiPendukung() : existing.keteranganBuktiPendukung(),
                 existing.createdBy(), existing.lastModifiedBy(),
                 existing.createdDate(), existing.lastModifiedDate()
         );
@@ -267,34 +288,12 @@ public class RenaksiService {
                 req.kodeTarget(), req.target(),
                 req.paguAnggaran(), req.realisasi(),
                 req.tahun(), req.bulan(), req.satuan(), RenaksiStatus.UNCHECKED,
-                req.jenisRealisasi(), "", "", null
+                req.jenisRealisasi(), "", "", req.buktiPendukung(), req.keteranganBuktiPendukung()
         );
     }
 
-    public Mono<RenaksiIndividu> uploadBuktiPendukung(Long id, FilePart file) {
-        return renaksiIndividuRepository.findById(id)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Data tidak ditemukan")))
-                .flatMap(existing -> {
-                    String filename = System.currentTimeMillis() + "_" + file.filename();
-                    Path targetPath = Paths.get(uploadDir).resolve(filename).normalize();
-                    return file.transferTo(targetPath).then(Mono.defer(() -> {
-                        String fileUrl = "/api/files/" + filename;
-                        RenaksiIndividu updated = new RenaksiIndividu(
-                                existing.id(),
-                                existing.kodeOpd(), existing.nip(),
-                                existing.kodeSasaran(), existing.sasaran(),
-                                existing.kodeRenaksi(), existing.renaksi(),
-                                existing.kodeIndikator(), existing.indikator(),
-                                existing.kodeTarget(), existing.target(),
-                                existing.paguAnggaran(), existing.realisasi(),
-                                existing.tahun(), existing.bulan(), existing.satuan(), existing.status(),
-                                existing.jenisRealisasi(),
-                                existing.faktorPenunjang(), existing.faktorPenghambat(), fileUrl,
-                                existing.createdBy(), existing.lastModifiedBy(),
-                                existing.createdDate(), existing.lastModifiedDate()
-                        );
-                        return renaksiIndividuRepository.save(updated);
-                    }));
-                });
+    public Mono<String> uploadFile(FilePart file) {
+        return uploadClient.uploadFile(file)
+                .map(UploadClient.UploadMetadata::url);
     }
 }
