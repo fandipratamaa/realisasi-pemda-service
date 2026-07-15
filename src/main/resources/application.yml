@@ -3,13 +3,13 @@ spring:
     name: realisasi-pemda-service
   docker:
     compose:
-      enabled: true
+      enabled: false
   lifecycle:
     timeout-per-shutdown-phase: 15s
   r2dbc:
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    url: ${DB_URL}
+    username: postgres
+    password: root
+    url: r2dbc:postgresql://localhost:5432/kertaskerja_realisasi_pemda
   flyway:
     user: ${spring.r2dbc.username}
     password: ${spring.r2dbc.password}
@@ -18,7 +18,9 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://keycloak.kertaskerja.local/realms/KabMadiun
+          issuer-uri: https://auth.kertaskerja.cc/realms/TestRealm
+  output:
+    ansi: enabled
 
 server:
   port: 9001
@@ -35,17 +37,19 @@ logging:
 
 integration:
   penetapan:
-    base-url: https://penetapan-service-staging.zeabur.app
+    base-url: ${PENETAPAN_SERVICE_URL}
     read-through-enabled: true
     connect-timeout: 5s
     read-timeout: 10s
 
   upload:
-    base-url: https://upload-service-staging.zeabur.app
+    base-url: ${UPLOAD_SERVICE_URL}
+    read-through-enabled: true
     connect-timeout: 5s
     read-timeout: 10s
 
   kepegawaian:
-    base-url: https://kepegawaian-service-mahulu-test.zeabur.app
+    base-url: ${KEPEGAWAIAN_SERVICE_URL}
+    read-through-enabled: true
     connect-timeout: 5s
     read-timeout: 10s
