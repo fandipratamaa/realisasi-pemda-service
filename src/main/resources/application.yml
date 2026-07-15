@@ -3,13 +3,13 @@ spring:
     name: realisasi-pemda-service
   docker:
     compose:
-      enabled: false
+      enabled: true
   lifecycle:
     timeout-per-shutdown-phase: 15s
   r2dbc:
-    username: postgres
-    password: root
-    url: r2dbc:postgresql://localhost:5432/kertaskerja_realisasi_pemda
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    url: ${DB_URL}
   flyway:
     user: ${spring.r2dbc.username}
     password: ${spring.r2dbc.password}
@@ -18,9 +18,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: https://auth.kertaskerja.cc/realms/TestRealm
-  output:
-    ansi: enabled
+          issuer-uri: http://keycloak.kertaskerja.local/realms/KabMadiun
 
 server:
   port: 9001
