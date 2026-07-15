@@ -42,7 +42,10 @@ public class IkuService {
                         t.tahun(),
                         t.faktorPenunjang(),
                         t.faktorPenghambat(),
-                        t.jenisRealisasi()
+                        t.jenisRealisasi(),
+                        t.rumusPerhitungan(),
+                        t.sumberData(),
+                        t.bulan()
                 ));
 
         Flux<Iku> ikuSasaran = sasaranRepository.findAll()
@@ -57,15 +60,18 @@ public class IkuService {
                         s.tahun(),
                         s.faktorPenunjang(),
                         s.faktorPenghambat(),
-                        s.jenisRealisasi()
+                        s.jenisRealisasi(),
+                        s.rumusPerhitungan(),
+                        s.sumberData(),
+                        s.bulan()
                 ));
 
         return Flux.merge(ikuTujuan, ikuSasaran);
     }
 
-    public Flux<Iku> getAllIkuByTahun(String tahun) {
+    public Flux<Iku> getAllIkuByTahunAndBulan(String tahun, String bulan) {
         Flux<Iku> ikuTujuan = tujuanRepository.findAll()
-                .filter(t -> tahun.equals(t.tahun()))
+                .filter(t -> tahun.equals(t.tahun()) && bulan.equals(t.bulan()))
                 .map(t -> buildIkuTujuan(
                         t.indikatorId(),
                         t.indikator(),
@@ -77,11 +83,14 @@ public class IkuService {
                         t.tahun(),
                         t.faktorPenunjang(),
                         t.faktorPenghambat(),
-                        t.jenisRealisasi()
+                        t.jenisRealisasi(),
+                        t.rumusPerhitungan(),
+                        t.sumberData(),
+                        t.bulan()
                 ));
 
         Flux<Iku> ikuSasaran = sasaranRepository.findAll()
-                .filter(s -> tahun.equals(s.tahun()))
+                .filter(s -> tahun.equals(s.tahun()) && bulan.equals(s.bulan()))
                 .map(s -> buildIkuSasaran(
                         s.indikatorId(),
                         s.indikator(),
@@ -93,19 +102,22 @@ public class IkuService {
                         s.tahun(),
                         s.faktorPenunjang(),
                         s.faktorPenghambat(),
-                        s.jenisRealisasi()
+                        s.jenisRealisasi(),
+                        s.rumusPerhitungan(),
+                        s.sumberData(),
+                        s.bulan()
                 ));
 
         return Flux.merge(ikuTujuan, ikuSasaran);
     }
 
 
-    public static Iku buildIkuTujuan(String indikatorId, String indikator, String targetId, String target, Double realisasi, String satuan, String capaian, String tahun, String faktorPenunjang, String faktorPenghambat, JenisRealisasi jenisRealisasi) {
-        return Iku.of(indikatorId, indikator, targetId, target, realisasi, satuan, capaian, tahun, faktorPenunjang, faktorPenghambat, jenisRealisasi, JenisIku.TUJUAN);
+    public static Iku buildIkuTujuan(String indikatorId, String indikator, String targetId, String target, Double realisasi, String satuan, String capaian, String tahun, String faktorPenunjang, String faktorPenghambat, JenisRealisasi jenisRealisasi, String rumusPerhitungan, String sumberData, String bulan) {
+        return Iku.of(indikatorId, indikator, targetId, target, realisasi, satuan, capaian, tahun, faktorPenunjang, faktorPenghambat, jenisRealisasi, JenisIku.TUJUAN, rumusPerhitungan, sumberData, bulan);
     }
 
-    public static Iku buildIkuSasaran(String indikatorId, String indikator, String targetId, String target, Double realisasi, String satuan, String capaian, String tahun, String faktorPenunjang, String faktorPenghambat, JenisRealisasi jenisRealisasi) {
-        return Iku.of(indikatorId, indikator, targetId, target, realisasi, satuan, capaian, tahun, faktorPenunjang, faktorPenghambat, jenisRealisasi, JenisIku.SASARAN);
+    public static Iku buildIkuSasaran(String indikatorId, String indikator, String targetId, String target, Double realisasi, String satuan, String capaian, String tahun, String faktorPenunjang, String faktorPenghambat, JenisRealisasi jenisRealisasi, String rumusPerhitungan, String sumberData, String bulan) {
+        return Iku.of(indikatorId, indikator, targetId, target, realisasi, satuan, capaian, tahun, faktorPenunjang, faktorPenghambat, jenisRealisasi, JenisIku.SASARAN, rumusPerhitungan, sumberData, bulan);
     }
 
     public Mono<Iku> updateFaktorPenunjang(FaktorPenunjangIkuRequest req) {
@@ -115,7 +127,8 @@ public class IkuService {
             )).map(t -> buildIkuTujuan(
                     t.indikatorId(), t.indikator(), t.targetId(), t.target(),
                     t.realisasi(), t.satuan(), t.capaian(), t.tahun(),
-                    t.faktorPenunjang(), t.faktorPenghambat(), t.jenisRealisasi()
+                    t.faktorPenunjang(), t.faktorPenghambat(), t.jenisRealisasi(),
+                    t.rumusPerhitungan(), t.sumberData(), t.bulan()
             ));
         }
         return sasaranService.updateFaktorPenunjang(new FaktorPenunjangSasaranRequest(
@@ -123,7 +136,8 @@ public class IkuService {
         )).map(s -> buildIkuSasaran(
                 s.indikatorId(), s.indikator(), s.targetId(), s.target(),
                 s.realisasi(), s.satuan(), s.capaian(), s.tahun(),
-                s.faktorPenunjang(), s.faktorPenghambat(), s.jenisRealisasi()
+                s.faktorPenunjang(), s.faktorPenghambat(), s.jenisRealisasi(),
+                s.rumusPerhitungan(), s.sumberData(), s.bulan()
         ));
     }
 
@@ -134,7 +148,8 @@ public class IkuService {
             )).map(t -> buildIkuTujuan(
                     t.indikatorId(), t.indikator(), t.targetId(), t.target(),
                     t.realisasi(), t.satuan(), t.capaian(), t.tahun(),
-                    t.faktorPenunjang(), t.faktorPenghambat(), t.jenisRealisasi()
+                    t.faktorPenunjang(), t.faktorPenghambat(), t.jenisRealisasi(),
+                    t.rumusPerhitungan(), t.sumberData(), t.bulan()
             ));
         }
         return sasaranService.updateFaktorPenghambat(new FaktorPenghambatSasaranRequest(
@@ -142,7 +157,8 @@ public class IkuService {
         )).map(s -> buildIkuSasaran(
                 s.indikatorId(), s.indikator(), s.targetId(), s.target(),
                 s.realisasi(), s.satuan(), s.capaian(), s.tahun(),
-                s.faktorPenunjang(), s.faktorPenghambat(), s.jenisRealisasi()
+                s.faktorPenunjang(), s.faktorPenghambat(), s.jenisRealisasi(),
+                s.rumusPerhitungan(), s.sumberData(), s.bulan()
         ));
     }
 }

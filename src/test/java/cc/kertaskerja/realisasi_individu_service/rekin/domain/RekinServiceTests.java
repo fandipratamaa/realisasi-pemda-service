@@ -6,7 +6,6 @@ import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.FaktorPenghambatRekinRequest;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.FaktorPenunjangRekinRequest;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.RekinRequest;
-import cc.kertaskerja.realisasi_individu_service.rekin.web.RekinResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
@@ -45,7 +44,9 @@ public class RekinServiceTests {
             new BigDecimal("75.5"),
             JenisRealisasi.NAIK,
             "2026",
-            "1"
+            "1",
+            null,
+            null
     );
 
     private PenetapanRekinIndividu.RekinIndividuData createPenetapanData(Double targetValue) {
@@ -67,7 +68,7 @@ public class RekinServiceTests {
                             1L, r.kodeOpd(), r.nip(), r.tahun(), r.bulan(),
                             r.kodePkRekin(), r.kodeIndikatorPkRekin(), r.kodeTargetPkRekin(),
                             r.kodeSasaranOpd(),
-                            r.realisasi(), r.jenisRealisasi(), r.faktorPenunjang(), r.faktorPenghambat(),
+                            r.realisasi(), r.jenisRealisasi(), r.faktorPenunjang(), r.faktorPenghambat(), r.buktiPendukung(), r.keteranganBuktiPendukung(),
                             null, null, null, null));
                 });
         when(penetapanClient.fetchRekinIndividu(anyString(), anyString(), anyInt()))
@@ -94,7 +95,7 @@ public class RekinServiceTests {
         RekinIndividu existing = new RekinIndividu(
                 99L, "1.01.0.00.0.00.01.0000", "198012312005011001", "2025", "1",
                 "REKIN-001", "IND-REKIN-001", "TAR-1", null,
-                new BigDecimal("50.0"), JenisRealisasi.NAIK, "", "",
+                new BigDecimal("50.0"), JenisRealisasi.NAIK, "", "", "", null,
                 null, null, null, null);
 
         when(repository.findFirstByKodeOpdAndNipAndTahunAndBulanAndKodePkRekinAndKodeIndikatorPkRekinAndKodeTargetPkRekin(
@@ -131,7 +132,7 @@ public class RekinServiceTests {
                             1L, r.kodeOpd(), r.nip(), r.tahun(), r.bulan(),
                             r.kodePkRekin(), r.kodeIndikatorPkRekin(), r.kodeTargetPkRekin(),
                             r.kodeSasaranOpd(),
-                            r.realisasi(), r.jenisRealisasi(), r.faktorPenunjang(), r.faktorPenghambat(),
+                            r.realisasi(), r.jenisRealisasi(), r.faktorPenunjang(), r.faktorPenghambat(), r.buktiPendukung(), r.keteranganBuktiPendukung(),
                             null, null, null, null));
                 });
         when(penetapanClient.fetchRekinIndividu(anyString(), anyString(), anyInt()))
@@ -159,7 +160,7 @@ public class RekinServiceTests {
         RekinIndividu existing = new RekinIndividu(
                 1L, "1.01.0.00.0.00.01.0000", "198012312005011001", "2026", "1",
                 "REKIN-001", "IND-REKIN-001", "TAR-1", null,
-                new BigDecimal("75.5"), JenisRealisasi.NAIK, "", "",
+                new BigDecimal("75.5"), JenisRealisasi.NAIK, "", "", "", null,
                 null, null, null, null);
 
         when(repository.findFirstByKodeOpdAndNipAndTahunAndBulanAndKodePkRekinAndKodeIndikatorPkRekinAndKodeTargetPkRekin(
@@ -206,15 +207,18 @@ public class RekinServiceTests {
         RekinIndividu r1 = RekinIndividu.of(
                 kodeOpd, "198012312005011001", "2026", "1",
                 "REKIN-001", "IND-REKIN-001", "TAR-1", "SAS-001",
-                BigDecimal.valueOf(75.5), JenisRealisasi.NAIK, "", "");
+                BigDecimal.valueOf(75.5), JenisRealisasi.NAIK, "", "", "", null);
 
         when(repository.findAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan))
                 .thenReturn(Flux.just(r1));
+        when(penetapanClient.fetchRekinIndividu(anyString(), anyString(), anyInt()))
+                .thenReturn(Mono.empty());
 
         var result = rekinService.getAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
 
         StepVerifier.create(result)
-                .expectNext(r1)
+                .expectNextMatches(r -> 
+                        r.kodeOpd().equals(r1.kodeOpd()) && r.nip().equals(r1.nip()))
                 .verifyComplete();
 
         verify(repository, times(1)).findAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);

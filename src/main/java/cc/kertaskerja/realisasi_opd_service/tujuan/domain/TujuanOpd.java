@@ -43,6 +43,12 @@ public record TujuanOpd(
         @Column("faktor_penghambat")
         String faktorPenghambat,
 
+        @Column("bukti_pendukung")
+        String buktiPendukung,
+
+        @Column("keterangan_bukti_pendukung")
+        String keteranganBuktiPendukung,
+
         @CreatedBy
         @Column("created_by")
         String createdBy,
@@ -65,10 +71,12 @@ public record TujuanOpd(
             String kodeIndikator,
             String kodeTarget,
             BigDecimal realisasi,
-            JenisRealisasi jenisRealisasi
+            JenisRealisasi jenisRealisasi,
+            String buktiPendukung,
+            String keteranganBuktiPendukung
     ) {
         return new TujuanOpd(null, kodeOpd, tahun, bulan, kodeTujuanOpd, kodeIndikator, kodeTarget,
-                realisasi, jenisRealisasi, "", "",
+                realisasi, jenisRealisasi, "", "", buktiPendukung, keteranganBuktiPendukung,
                 null, null, null, null);
     }
 
@@ -88,13 +96,13 @@ public record TujuanOpd(
 
     public TujuanOpd withFaktorPenunjang(String faktorPenunjang) {
         return new TujuanOpd(id, kodeOpd, tahun, bulan, kodeTujuanOpd, kodeIndikator, kodeTarget,
-                realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat,
+                realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat, buktiPendukung, keteranganBuktiPendukung,
                 createdBy, createdDate, lastModifiedDate, lastModifiedBy);
     }
 
     public TujuanOpd withFaktorPenghambat(String faktorPenghambat) {
         return new TujuanOpd(id, kodeOpd, tahun, bulan, kodeTujuanOpd, kodeIndikator, kodeTarget,
-                realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat,
+                realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat, buktiPendukung, keteranganBuktiPendukung,
                 createdBy, createdDate, lastModifiedDate, lastModifiedBy);
     }
 }

@@ -10,6 +10,8 @@ import cc.kertaskerja.realisasi_individu_service.rekin.web.LaporanRealisasiRekin
 import cc.kertaskerja.realisasi_individu_service.rekin.web.PenetapanRekinIndividuResponse;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.RekinRequest;
 import cc.kertaskerja.realisasi_individu_service.rekin.web.RekinResponse;
+import cc.kertaskerja.integration.kepegawaian.PegawaiClient;
+import cc.kertaskerja.integration.upload.UploadClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -22,19 +24,30 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.codec.multipart.FilePart;
 
 @Service
 public class RekinService {
     private static final Logger log = LoggerFactory.getLogger(RekinService.class);
     private final RekinIndividuRepository repository;
     private final PenetapanRekinIndividuClient penetapanClient;
+    private final PegawaiClient pegawaiClient;
+    private final UploadClient uploadClient;
+
+    @Value("${file.upload-dir:uploads}")
+    private String uploadDir;
 
     public RekinService(
             RekinIndividuRepository repository,
-            PenetapanRekinIndividuClient penetapanClient
+            PenetapanRekinIndividuClient penetapanClient,
+            PegawaiClient pegawaiClient,
+            UploadClient uploadClient
     ) {
         this.repository = repository;
         this.penetapanClient = penetapanClient;
+        this.pegawaiClient = pegawaiClient;
+        this.uploadClient = uploadClient;
     }
 
     public Mono<RekinResponse> createRekin(RekinRequest req) {
@@ -45,6 +58,7 @@ public class RekinService {
 
     private Mono<RekinIndividu> upsert(RekinRequest req) {
         JenisRealisasi jenisRealisasi = req.jenisRealisasi() != null ? req.jenisRealisasi() : JenisRealisasi.NAIK;
+        String bukti = req.buktiPendukung() != null ? req.buktiPendukung() : "";
         return repository
                 .findFirstByKodeOpdAndNipAndTahunAndBulanAndKodePkRekinAndKodeIndikatorPkRekinAndKodeTargetPkRekin(
                         req.kodeOpd(), req.nip(), req.tahun(), req.bulan(),
@@ -57,6 +71,8 @@ public class RekinService {
                             req.kodeSasaranOpd(),
                             req.realisasi(), jenisRealisasi,
                             existing.faktorPenunjang(), existing.faktorPenghambat(),
+                            bukti != null && !bukti.isBlank() ? bukti : existing.buktiPendukung(),
+                            req.keteranganBuktiPendukung() != null ? req.keteranganBuktiPendukung() : existing.keteranganBuktiPendukung(),
                             existing.createdBy(), existing.lastModifiedBy(),
                             existing.createdDate(), existing.lastModifiedDate()
                     );
@@ -68,13 +84,13 @@ public class RekinService {
                             req.kodePkRekin(), req.kodeIndikatorPKrekin(), req.kodeTargetPKrekin(),
                             req.kodeSasaranOpd(),
                             req.realisasi(), jenisRealisasi,
-                            "", "");
+                            "", "", bukti, req.keteranganBuktiPendukung());
                     return repository.save(newEntity);
                 }));
     }
 
     private RekinResponse toResponse(RekinIndividu entity) {
-        return RekinResponse.from(entity, null, null);
+        return RekinResponse.from(entity, null, null, null);
     }
 
     private Mono<RekinResponse> applyPenetapan(Mono<RekinResponse> responseMono, RekinRequest req) {
@@ -128,10 +144,10 @@ public class RekinService {
                 response.kodePkRekin(), response.kodeIndikatorPkRekin(), response.kodeTargetPkRekin(),
                 response.kodeSasaranOpd(),
                 response.realisasi(), response.jenisRealisasi(),
-                response.faktorPenunjang(), response.faktorPenghambat(),
+                response.faktorPenunjang(), response.faktorPenghambat(), response.buktiPendukung(),
                 response.createdBy(), response.lastModifiedBy(),
                 response.createdDate(), response.lastModifiedDate(),
-                capaianResult.capaian(), capaianResult.keteranganCapaian()
+                matchingTarget.target(), capaianResult.capaian(), capaianResult.keteranganCapaian(), response.keteranganBuktiPendukung()
         );
     }
 
@@ -149,7 +165,7 @@ public class RekinService {
                             existing.kodeSasaranOpd(),
                             existing.realisasi(), existing.jenisRealisasi(),
                             req.faktorPenunjang(),
-                            existing.faktorPenghambat(),
+                            existing.faktorPenghambat(), existing.buktiPendukung(), existing.keteranganBuktiPendukung(),
                             existing.createdBy(), existing.lastModifiedBy(),
                             existing.createdDate(), existing.lastModifiedDate()
                     );
@@ -171,7 +187,7 @@ public class RekinService {
                             existing.kodeSasaranOpd(),
                             existing.realisasi(), existing.jenisRealisasi(),
                             existing.faktorPenunjang(),
-                            req.faktorPenghambat(),
+                            req.faktorPenghambat(), existing.buktiPendukung(), existing.keteranganBuktiPendukung(),
                             existing.createdBy(), existing.lastModifiedBy(),
                             existing.createdDate(), existing.lastModifiedDate()
                     );
@@ -179,8 +195,52 @@ public class RekinService {
                 });
     }
 
-    public reactor.core.publisher.Flux<RekinIndividu> getAllByKodeOpdAndTahunAndBulan(String kodeOpd, String tahun, String bulan) {
-        return repository.findAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
+    public reactor.core.publisher.Flux<RekinResponse> getAllByKodeOpdAndTahunAndBulan(String kodeOpd, String tahun, String bulan) {
+        return repository.findAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan)
+                .collectList()
+                .flatMapMany(list -> {
+                    Map<String, List<RekinIndividu>> byNip = list.stream().collect(Collectors.groupingBy(RekinIndividu::nip));
+                    return reactor.core.publisher.Flux.fromIterable(byNip.entrySet())
+                            .flatMap(entry -> {
+                                String nip = entry.getKey();
+                                List<RekinIndividu> rekins = entry.getValue();
+                                return penetapanClient.fetchRekinIndividu(nip, kodeOpd, Integer.parseInt(tahun))
+                                        .map(penetapanData -> {
+                                            return rekins.stream().map(rekin -> {
+                                                Double target = null;
+                                                Double capaian = null;
+                                                String ket = null;
+                                                
+                                                if (penetapanData.rekins() != null) {
+                                                    for (var r : penetapanData.rekins()) {
+                                                        if (r.kodePk().equals(rekin.kodePkRekin()) && r.indikatorPk() != null) {
+                                                            for (var ind : r.indikatorPk()) {
+                                                                if (ind.kodeIndikatorPk().equals(rekin.kodeIndikatorPkRekin()) && ind.targetPk() != null) {
+                                                                    for (var t : ind.targetPk()) {
+                                                                        if (t.kodeTargetPk().equals(rekin.kodeTargetPkRekin())) {
+                                                                            target = t.target();
+                                                                            break;
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                if (target != null) {
+                                                    Double realisasiValue = rekin.realisasi() != null ? rekin.realisasi().doubleValue() : null;
+                                                    var capaianResult = RekinIndividu.hitungCapaian(realisasiValue, target);
+                                                    capaian = capaianResult.capaian();
+                                                    ket = capaianResult.keteranganCapaian();
+                                                }
+                                                
+                                                return RekinResponse.from(rekin, target, capaian, ket);
+                                            }).toList();
+                                        })
+                                        .defaultIfEmpty(rekins.stream().map(rekin -> RekinResponse.from(rekin, null, null, null)).toList());
+                            })
+                            .flatMapIterable(Function.identity());
+                });
     }
 
     // --- Laporan ---
@@ -329,8 +389,31 @@ public class RekinService {
                 });
     }
 
-    // --- Penetapan Integration ---
+    // --- Pegawai Integration ---
+    public Mono<List<cc.kertaskerja.integration.kepegawaian.PegawaiClient.PegawaiData>> getAllPegawai() {
+        return pegawaiClient.fetchAllPegawai();
+    }
 
+    public Mono<PenetapanRekinIndividuResponse> searchRekin(String kodeOpd, String tahun, String bulan, String levelRole, String nip) {
+        List<String> validRoles = List.of("LEVEL_1", "LEVEL_2", "LEVEL_3", "LEVEL_4");
+        if (!validRoles.contains(levelRole.toUpperCase())) {
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
+        }
+
+        return pegawaiClient.fetchAllPegawai()
+                .flatMap(pegawais -> {
+                    boolean nipExists = pegawais.stream()
+                            .anyMatch(p -> nip.equals(p.nip()));
+                    
+                    if (!nipExists) {
+                        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
+                    }
+                    
+                    return getPenetapanByNip(nip, kodeOpd, Integer.parseInt(tahun), bulan);
+                });
+    }
+
+    // --- Penetapan Integration ---
     public Mono<PenetapanRekinIndividuResponse> getPenetapanByNip(String nip, String kodeOpd, int tahun, String bulan) {
         return penetapanClient.fetchRekinIndividu(nip, kodeOpd, tahun)
                 .flatMap(data -> {
@@ -367,7 +450,7 @@ public class RekinService {
         List<PenetapanRekinIndividuResponse.TargetPenetapanResponse> targets = indikator.targetPk().stream()
                 .map(t -> new PenetapanRekinIndividuResponse.TargetPenetapanResponse(
                         t.id(), t.kodeTargetPk(), t.tahun(), t.target(), t.satuan(),
-                        null, null, null, null, null, null
+                        null, null, null, null, null, null, null, null
                 ))
                 .toList();
         return new PenetapanRekinIndividuResponse.IndikatorPenetapanResponse(
@@ -444,15 +527,22 @@ public class RekinService {
         RekinIndividu.CapaianResult capaianResult = RekinIndividu.hitungCapaian(realisasiValue, target.target());
         String faktorPenunjang = local != null ? local.faktorPenunjang() : null;
         String faktorPenghambat = local != null ? local.faktorPenghambat() : null;
+        String buktiPendukung = local != null ? local.buktiPendukung() : null;
+        String keteranganBuktiPendukung = local != null ? local.keteranganBuktiPendukung() : null;
         String jenisRealisasi = "NAIK";
         return new PenetapanRekinIndividuResponse.TargetPenetapanResponse(
                 target.id(), target.kodeTargetPk(), target.tahun(), target.target(), target.satuan(),
                 realisasiValue, capaianResult.capaian(), capaianResult.keteranganCapaian(),
-                faktorPenunjang, faktorPenghambat, jenisRealisasi
+                faktorPenunjang, faktorPenghambat, buktiPendukung, keteranganBuktiPendukung, jenisRealisasi
         );
     }
 
     private Integer parseInteger(String value) {
         return value == null ? null : Integer.parseInt(value);
+    }
+
+    public Mono<String> uploadFile(FilePart file) {
+        return uploadClient.uploadFile(file)
+                .map(UploadClient.UploadMetadata::url);
     }
 }

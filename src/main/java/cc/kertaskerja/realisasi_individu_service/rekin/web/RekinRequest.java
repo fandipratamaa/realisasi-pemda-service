@@ -53,6 +53,12 @@ public record RekinRequest(
         @NotNull(message = "Bulan harus terdefinisi")
         @NotEmpty(message = "Bulan tidak boleh kosong")
         @Schema(description = "Bulan realisasi", example = "1")
-        String bulan
+        String bulan,
+
+        @Schema(description = "URL bukti pendukung realisasi", example = "https://example.com/bukti.pdf")
+        String buktiPendukung,
+
+        @Schema(description = "Keterangan dari bukti pendukung", example = "Dokumen pendukung")
+        String keteranganBuktiPendukung
 ) {
 }

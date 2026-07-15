@@ -1,6 +1,5 @@
 package cc.kertaskerja.realisasi_individu_service.renja.web.program;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -49,5 +48,11 @@ public record RenjaIndividuProgramRequest(
         Double realisasi,
 
         @Schema(hidden = true)
-        String jenisRealisasi
+        String jenisRealisasi,
+
+        @Schema(description = "URL bukti pendukung realisasi", example = "https://example.com/bukti.pdf")
+        String buktiPendukung,
+
+        @Schema(description = "Keterangan dari bukti pendukung", example = "Dokumen pendukung")
+        String keteranganBuktiPendukung
 ) {}

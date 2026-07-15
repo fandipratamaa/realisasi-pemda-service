@@ -20,6 +20,7 @@ public record RenjaIndividuKegiatanResponse(
         String keteranganCapaian,
         String faktorPenunjang,
         String faktorPenghambat,
+        String buktiPendukung,
         String createdBy,
         String lastModifiedBy
 ) {}

@@ -32,6 +32,8 @@ class RenaksiIndividuTest {
                 RenaksiStatus.UNCHECKED,
                 jenisRealisasi,
                 "",
+                "",
+                "",
                 ""
         );
     }

@@ -33,7 +33,7 @@ class SasaranOpdServiceTest {
     void getRealisasiSasaranOpdByTahunAndKodeOpdAndBulan_ShouldReturnMappedResponses() {
         SasaranOpd entity = new SasaranOpd(1L, "5.01.5.05.0.00.01.0000", "2026", "3",
                 "SAS-OPD-001", "IND-01", "TGT-001", BigDecimal.valueOf(75),
-                JenisRealisasi.NAIK, "", "",
+                JenisRealisasi.NAIK, "file.pdf", "bukti valid", "", "",
                 "tester", Instant.now(), Instant.now(), "tester");
 
         when(sasaranOpdRepository.findAllByKodeOpdAndTahunAndBulan(
@@ -67,11 +67,11 @@ class SasaranOpdServiceTest {
     @Test
     void submitRealisasiSasaranOpd_ShouldCreateNew_WhenNotExists() {
         SasaranOpdRequest req = new SasaranOpdRequest("SAS-OPD-001", "IND-01", "TGT-001",
-                75.0, JenisRealisasi.NAIK, "2026", "3", "5.01.5.05.0.00.01.0000");
+                75.0, JenisRealisasi.NAIK, "2026", "3", "5.01.5.05.0.00.01.0000", "file.pdf", "bukti valid");
 
         SasaranOpd saved = new SasaranOpd(1L, "5.01.5.05.0.00.01.0000", "2026", "3",
                 "SAS-OPD-001", "IND-01", "TGT-001", BigDecimal.valueOf(75),
-                JenisRealisasi.NAIK, "", "",
+                JenisRealisasi.NAIK, "file.pdf", "bukti valid", "", "",
                 null, null, null, null);
 
         when(sasaranOpdRepository.findFirstByKodeOpdAndKodeSasaranOpdAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
@@ -92,16 +92,16 @@ class SasaranOpdServiceTest {
     @Test
     void submitRealisasiSasaranOpd_ShouldUpdate_WhenExists() {
         SasaranOpdRequest req = new SasaranOpdRequest("SAS-OPD-001", "IND-01", "TGT-001",
-                85.0, JenisRealisasi.NAIK, "2026", "3", "5.01.5.05.0.00.01.0000");
+                85.0, JenisRealisasi.NAIK, "2026", "3", "5.01.5.05.0.00.01.0000", "file.pdf", "bukti valid");
 
         SasaranOpd existing = new SasaranOpd(1L, "5.01.5.05.0.00.01.0000", "2026", "3",
                 "SAS-OPD-001", "IND-01", "TGT-001", BigDecimal.valueOf(75),
-                JenisRealisasi.NAIK, "faktor", "",
+                JenisRealisasi.NAIK, "faktor", "", "file.pdf", "bukti valid",
                 "creator", Instant.now(), null, null);
 
         SasaranOpd updated = new SasaranOpd(1L, "5.01.5.05.0.00.01.0000", "2026", "3",
                 "SAS-OPD-001", "IND-01", "TGT-001", BigDecimal.valueOf(85),
-                JenisRealisasi.NAIK, "faktor", "",
+                JenisRealisasi.NAIK, "faktor", "", "file.pdf", "bukti valid",
                 "creator", existing.createdDate(), null, null);
 
         when(sasaranOpdRepository.findFirstByKodeOpdAndKodeSasaranOpdAndKodeIndikatorAndKodeTargetAndTahunAndBulan(

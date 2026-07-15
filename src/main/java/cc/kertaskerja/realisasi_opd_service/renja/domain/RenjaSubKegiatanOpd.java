@@ -40,6 +40,9 @@ public record RenjaSubKegiatanOpd(
         @Column("faktor_penghambat")
         String faktorPenghambat,
 
+        @Column("bukti_pendukung")
+        String buktiPendukung,
+
         @CreatedDate Instant createdDate,
         @LastModifiedDate Instant lastModifiedDate,
         @CreatedBy String createdBy,
@@ -48,7 +51,7 @@ public record RenjaSubKegiatanOpd(
     public RenjaSubKegiatanOpd withFaktorPenunjang(String faktorPenunjang) {
         return new RenjaSubKegiatanOpd(
                 id, kodeOpd, tahun, bulan, kodeSubkegiatan, kodeIndikator, kodeTarget, kodePagu,
-                realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat,
+                realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat, buktiPendukung,
                 createdDate, lastModifiedDate, createdBy, lastModifiedBy
         );
     }
@@ -56,7 +59,7 @@ public record RenjaSubKegiatanOpd(
     public RenjaSubKegiatanOpd withFaktorPenghambat(String faktorPenghambat) {
         return new RenjaSubKegiatanOpd(
                 id, kodeOpd, tahun, bulan, kodeSubkegiatan, kodeIndikator, kodeTarget, kodePagu,
-                realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat,
+                realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat, buktiPendukung,
                 createdDate, lastModifiedDate, createdBy, lastModifiedBy
         );
     }

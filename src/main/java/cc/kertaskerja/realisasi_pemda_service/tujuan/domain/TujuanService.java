@@ -1,5 +1,6 @@
 package cc.kertaskerja.realisasi_pemda_service.tujuan.domain;
 
+import cc.kertaskerja.integration.upload.UploadClient;
 import cc.kertaskerja.realisasi.domain.JenisLaporan;
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import cc.kertaskerja.realisasi_pemda_service.tujuan.web.FaktorPenghambatRequest;
@@ -7,6 +8,7 @@ import cc.kertaskerja.realisasi_pemda_service.tujuan.web.FaktorPenunjangRequest;
 import cc.kertaskerja.realisasi_pemda_service.tujuan.web.LaporanRealisasiTujuanResponse;
 import cc.kertaskerja.realisasi_pemda_service.tujuan.web.TujuanRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
@@ -19,39 +21,43 @@ import java.util.Map;
 @Service
 public class TujuanService {
     private final TujuanRepository tujuanRepository;
+    private final UploadClient uploadClient;
 
-    public TujuanService(TujuanRepository tujuanRepository) {
+    public TujuanService(TujuanRepository tujuanRepository, UploadClient uploadClient) {
         this.tujuanRepository = tujuanRepository;
+        this.uploadClient = uploadClient;
     }
 
     public Mono<Tujuan> submitRealisasiTujuan(TujuanRequest req) {
-        if (req.targetRealisasiId() != null) {
-            return tujuanRepository.findById(req.targetRealisasiId())
-                    .flatMap(existing -> tujuanRepository.save(buildUpdatedRealisasiTujuan(existing, req)))
+        String bukti = req.buktiPendukung() != null ? req.buktiPendukung() : "";
+
+            if (req.targetRealisasiId() != null) {
+                return tujuanRepository.findById(req.targetRealisasiId())
+                        .flatMap(existing -> tujuanRepository.save(buildUpdatedRealisasiTujuan(existing, req, bukti)))
+                        .switchIfEmpty(Mono.defer(() -> {
+                            Tujuan baru = buildUncheckedRealisasiTujuan(
+                                    req.tujuanId(), req.indikatorId(), req.targetId(),
+                                    req.target(), req.realisasi(), req.satuan(),
+                                    req.tahun(), req.bulan(), req.visiMisi(),
+                                    req.rumusPerhitungan(), req.sumberData(), req.jenisRealisasi(), bukti, req.keteranganBuktiPendukung());
+                            return tujuanRepository.save(baru);
+                        }));
+            }
+            return tujuanRepository
+                    .findFirstByTujuanIdAndIndikatorIdAndTargetIdAndTahunAndBulan(
+                            req.tujuanId(), req.indikatorId(), req.targetId(), req.tahun(), req.bulan())
+                    .flatMap(existing -> tujuanRepository.save(buildUpdatedRealisasiTujuan(existing, req, bukti)))
                     .switchIfEmpty(Mono.defer(() -> {
                         Tujuan baru = buildUncheckedRealisasiTujuan(
                                 req.tujuanId(), req.indikatorId(), req.targetId(),
                                 req.target(), req.realisasi(), req.satuan(),
                                 req.tahun(), req.bulan(), req.visiMisi(),
-                                req.rumusPerhitungan(), req.sumberData(), req.jenisRealisasi());
+                                req.rumusPerhitungan(), req.sumberData(), req.jenisRealisasi(), bukti, req.keteranganBuktiPendukung());
                         return tujuanRepository.save(baru);
                     }));
-        }
-        return tujuanRepository
-                .findFirstByTujuanIdAndIndikatorIdAndTargetIdAndTahunAndBulan(
-                        req.tujuanId(), req.indikatorId(), req.targetId(), req.tahun(), req.bulan())
-                .flatMap(existing -> tujuanRepository.save(buildUpdatedRealisasiTujuan(existing, req)))
-                .switchIfEmpty(Mono.defer(() -> {
-                    Tujuan baru = buildUncheckedRealisasiTujuan(
-                            req.tujuanId(), req.indikatorId(), req.targetId(),
-                            req.target(), req.realisasi(), req.satuan(),
-                            req.tahun(), req.bulan(), req.visiMisi(),
-                            req.rumusPerhitungan(), req.sumberData(), req.jenisRealisasi());
-                    return tujuanRepository.save(baru);
-                }));
     }
 
-    private static Tujuan buildUpdatedRealisasiTujuan(Tujuan existing, TujuanRequest req) {
+    private static Tujuan buildUpdatedRealisasiTujuan(Tujuan existing, TujuanRequest req, String buktiPendukung) {
         return new Tujuan(
                 existing.id(),
                 existing.tujuanId(),
@@ -71,6 +77,8 @@ public class TujuanService {
                 existing.faktorPenghambat(),
                 req.jenisRealisasi(),
                 TujuanStatus.UNCHECKED,
+                buktiPendukung != null && !buktiPendukung.isBlank() ? buktiPendukung : existing.buktiPendukung(),
+                req.keteranganBuktiPendukung() != null ? req.keteranganBuktiPendukung() : existing.keteranganBuktiPendukung(),
                 existing.createdBy(),
                 existing.createdDate(),
                 existing.lastModifiedDate(),
@@ -78,78 +86,7 @@ public class TujuanService {
         );
     }
 
-    public Flux<Tujuan> batchSubmitRealisasiTujuan(List<TujuanRequest> tujuans) {
-        return Flux.fromIterable(tujuans)
-                .flatMap(req -> {
-                    if (req.targetRealisasiId() != null) {
-                        return tujuanRepository.findById(req.targetRealisasiId())
-                                .flatMap(existing -> {
-                                    Tujuan updated = new Tujuan(
-                                            existing.id(),
-                                            existing.tujuanId(),
-                                            existing.tujuan(),
-                                            existing.indikatorId(),
-                                            existing.indikator(),
-                                            existing.targetId(),
-                                            req.target(),
-                                            req.realisasi(),
-                                            req.satuan(),
-                                            req.tahun(),
-                                            req.bulan(),
-                                            req.visiMisi(),
-                                            req.rumusPerhitungan(),
-                                            req.sumberData(),
-                                            existing.faktorPenunjang(),
-                                            existing.faktorPenghambat(),
-                                            req.jenisRealisasi(),
-                                            TujuanStatus.UNCHECKED,
-                                            existing.createdBy(),
-                                            existing.createdDate(),
-                                            existing.lastModifiedDate(),
-                                            existing.lastModifiedBy()
-                                    );
-                                    return tujuanRepository.save(updated);
-                                })
-                                .switchIfEmpty(Mono.defer(() -> {
-                                    Tujuan baru = buildUncheckedRealisasiTujuan(
-                                            req.tujuanId(),
-                                            req.indikatorId(),
-                                            req.targetId(),
-                                            req.target(),
-                                            req.realisasi(),
-                                            req.satuan(),
-                                            req.tahun(),
-                                            req.bulan(),
-                                            req.visiMisi(),
-                                            req.rumusPerhitungan(),
-                                        req.sumberData(),
-                                        req.jenisRealisasi()
-                                    );
-                                    return tujuanRepository.save(baru);
-                                }));
-                    }
-                    else {
-                        Tujuan baru = buildUncheckedRealisasiTujuan(
-                                req.tujuanId(),
-                                req.indikatorId(),
-                                req.targetId(),
-                                req.target(),
-                                req.realisasi(),
-                                req.satuan(),
-                                req.tahun(),
-                                req.bulan(),
-                                req.visiMisi(),
-                                req.rumusPerhitungan(),
-                                req.sumberData(),
-                                req.jenisRealisasi()
-                        );
-                        return tujuanRepository.save(baru);
-                    }
-                }
-        );
-    }
-
-    public static Tujuan buildUncheckedRealisasiTujuan(String tujuanId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, String visiMisi, String rumusPerhitungan, String sumberData, JenisRealisasi jenisRealisasi) {
+    public static Tujuan buildUncheckedRealisasiTujuan(String tujuanId, String indikatorId, String targetId, String target, Double realisasi, String satuan, String tahun, String bulan, String visiMisi, String rumusPerhitungan, String sumberData, JenisRealisasi jenisRealisasi, String buktiPendukung, String keteranganBuktiPendukung) {
         return Tujuan.of(tujuanId,
                 "Realisasi Tujuan " + tujuanId,
                 indikatorId,
@@ -158,7 +95,9 @@ public class TujuanService {
                 "",
                 "",
                 jenisRealisasi,
-                TujuanStatus.UNCHECKED);
+                TujuanStatus.UNCHECKED,
+                buktiPendukung,
+                keteranganBuktiPendukung);
     }
 
     public Flux<Tujuan> getRealisasiTujuanByTahunAndBulan(String tahun, String bulan) {
@@ -241,6 +180,8 @@ public class TujuanService {
                             existing.faktorPenghambat(),
                             existing.jenisRealisasi(),
                             TujuanStatus.UNCHECKED,
+                            existing.buktiPendukung(),
+                            existing.keteranganBuktiPendukung(),
                             existing.createdBy(),
                             existing.createdDate(),
                             existing.lastModifiedDate(),
@@ -274,6 +215,8 @@ public class TujuanService {
                             req.faktorPenghambat(),
                             existing.jenisRealisasi(),
                             TujuanStatus.UNCHECKED,
+                            existing.buktiPendukung(),
+                            existing.keteranganBuktiPendukung(),
                             existing.createdBy(),
                             existing.createdDate(),
                             existing.lastModifiedDate(),
@@ -281,5 +224,10 @@ public class TujuanService {
                     );
                     return tujuanRepository.save(updated);
                 });
+    }
+
+    public Mono<String> uploadFile(FilePart file) {
+        return uploadClient.uploadFile(file)
+                .map(UploadClient.UploadMetadata::url);
     }
 }

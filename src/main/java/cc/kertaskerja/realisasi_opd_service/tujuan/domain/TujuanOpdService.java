@@ -2,6 +2,7 @@ package cc.kertaskerja.realisasi_opd_service.tujuan.domain;
 
 import cc.kertaskerja.integration.penetapan.PenetapanTujuanOpdClient;
 import cc.kertaskerja.integration.penetapan.tujuan_opd.PenetapanTujuanOpd;
+import cc.kertaskerja.integration.upload.UploadClient;
 import cc.kertaskerja.realisasi_opd_service.tujuan.web.PenetapanTujuanOpdListResponse;
 import cc.kertaskerja.realisasi_opd_service.tujuan.web.TujuanOpdPenetapanResponse;
 import cc.kertaskerja.realisasi_opd_service.tujuan.web.TujuanOpdRequest;
@@ -14,7 +15,9 @@ import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import cc.kertaskerja.realisasi_opd_service.tujuan.web.LaporanRealisasiTujuanOpdResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
@@ -32,13 +35,19 @@ public class TujuanOpdService {
     private static final Logger log = LoggerFactory.getLogger(TujuanOpdService.class);
     private final TujuanOpdRepository tujuanOpdRepository;
     private final PenetapanTujuanOpdClient penetapanClient;
+    private final UploadClient uploadClient;
+
+    @Value("${file.upload-dir:uploads}")
+    private String uploadDir;
 
     public TujuanOpdService(
             TujuanOpdRepository tujuanOpdRepository,
-            PenetapanTujuanOpdClient penetapanClient
+            PenetapanTujuanOpdClient penetapanClient,
+            UploadClient uploadClient
     ) {
         this.tujuanOpdRepository = tujuanOpdRepository;
         this.penetapanClient = penetapanClient;
+        this.uploadClient = uploadClient;
     }
 
     public Flux<TujuanOpdResponse> getRealisasiTujuanOpdByTahunAndKodeOpdAndBulan(String tahun, String kodeOpd, String bulan) {
@@ -167,6 +176,7 @@ public class TujuanOpdService {
         JenisRealisasi jenisRealisasi = req.jenisRealisasi() != null
                 ? req.jenisRealisasi()
                 : JenisRealisasi.NAIK;
+        String bukti = req.buktiPendukung() != null ? req.buktiPendukung() : "";
         return tujuanOpdRepository
                 .findFirstByKodeOpdAndKodeTujuanOpdAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
                         req.kodeOpd(), req.kodeTujuanOpd(), req.kodeIndikator(),
@@ -178,13 +188,15 @@ public class TujuanOpdService {
                                 BigDecimal.valueOf(req.realisasi()),
                                 jenisRealisasi,
                                 existing.faktorPenunjang(), existing.faktorPenghambat(),
+                                bukti != null && !bukti.isBlank() ? bukti : existing.buktiPendukung(),
+                                req.keteranganBuktiPendukung() != null ? req.keteranganBuktiPendukung() : existing.keteranganBuktiPendukung(),
                                 existing.createdBy(), existing.createdDate(), null, null)))
                 .switchIfEmpty(Mono.defer(() -> tujuanOpdRepository.save(
                         TujuanOpd.of(
                                 req.kodeOpd(), req.tahun(), req.bulan(),
                                 req.kodeTujuanOpd(), req.kodeIndikator(), req.kodeTarget(),
                                 BigDecimal.valueOf(req.realisasi()),
-                                jenisRealisasi))));
+                                jenisRealisasi, bukti, req.keteranganBuktiPendukung()))));
     }
 
     private TujuanOpdResponse toResponse(TujuanOpd entity) {
@@ -196,7 +208,8 @@ public class TujuanOpdService {
                 entity.faktorPenunjang(), entity.faktorPenghambat(),
                 null, null, null, null, null, null, null, null, null,
                 entity.jenisRealisasi(),
-                entity.createdBy(), entity.lastModifiedBy());
+                entity.createdBy(), entity.lastModifiedBy(), entity.buktiPendukung(),
+                entity.keteranganBuktiPendukung());
     }
 
     private Mono<TujuanOpdResponse> applyPenetapan(Mono<TujuanOpdResponse> responseMono, String kodeOpd, String tahun) {
@@ -234,7 +247,8 @@ public class TujuanOpdService {
                     response.realisasi(), response.faktorPenunjang(), response.faktorPenghambat(),
                     penetapan.tujuanOpd(), null, null, null, null, null, null, null, null,
                     response.jenisRealisasi(),
-                    response.createdBy(), response.lastModifiedBy());
+                    response.createdBy(), response.lastModifiedBy(), response.buktiPendukung(),
+                    response.keteranganBuktiPendukung());
         }
 
         var matchedTarget = matchedIndikator.get().targets().stream()
@@ -257,7 +271,8 @@ public class TujuanOpdService {
                 target, satuan,
                 capaianResult.capaian(), capaianResult.keteranganCapaian(),
                 response.jenisRealisasi(),
-                response.createdBy(), response.lastModifiedBy()
+                response.createdBy(), response.lastModifiedBy(), response.buktiPendukung(),
+                response.keteranganBuktiPendukung()
         );
     }
 
@@ -364,11 +379,12 @@ public class TujuanOpdService {
                 : null;
         String faktorPenunjang = matched != null ? matched.faktorPenunjang() : null;
         String faktorPenghambat = matched != null ? matched.faktorPenghambat() : null;
+        String buktiPendukung = matched != null ? matched.buktiPendukung() : null;
         var capaianResult = TujuanOpd.hitungCapaian(realisasiValue, t.target());
         return new TujuanOpdPenetapanResponse.TargetPenetapan(
                 t.kodeTarget(), t.satuan(), t.target(),
                 realisasiValue, capaianResult.capaian(), capaianResult.keteranganCapaian(),
-                faktorPenunjang, faktorPenghambat
+                faktorPenunjang, faktorPenghambat, buktiPendukung
         );
     }
 
@@ -387,5 +403,10 @@ public class TujuanOpdService {
 
     private Integer parseInteger(String value) {
         return value == null ? null : Integer.parseInt(value);
+    }
+
+    public Mono<String> uploadFile(FilePart file) {
+        return uploadClient.uploadFile(file)
+                .map(UploadClient.UploadMetadata::url);
     }
 }

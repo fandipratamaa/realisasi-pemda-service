@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.MediaType;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -45,33 +46,36 @@ public class RenaksiController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     public Flux<RenaksiIndividu> getRealisasiByNipAndKodeOpdAndTahunAndBulan(
-            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
-            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
-            @Parameter(description = "Tahun realisasi", example = "2026") @PathVariable String tahun,
-            @Parameter(description = "Bulan realisasi", example = "01") @PathVariable String bulan) {
+            @Parameter(description = "NIP pelaksana") @PathVariable String nip,
+            @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun realisasi") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi") @PathVariable String bulan) {
         if (nip == null || nip.isBlank() || kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip, kodeOpd, tahun, dan bulan tidak boleh kosong");
         }
         return renaksiService.getAllByNipAndKodeOpdAndTahunAndBulan(nip, kodeOpd, tahun, bulan);
     }
 
-    @GetMapping("/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}")
-    @Operation(summary = "Cari realisasi renaksi individu berdasarkan kode OPD, tahun, dan bulan")
+    @GetMapping("/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}/levelRole/{levelRole}/nip/{nip}")
+    @Operation(summary = "Mencari realisasi renaksi individu", description = "Endpoint untuk fitur pencarian realisasi renaksi individu di frontend. Memvalidasi NIP ke service pegawai lalu mengambil data realisasi.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Daftar realisasi renaksi individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenaksiIndividu.class)))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Pegawai tidak ditemukan", content = @Content)
     })
     @PreAuthorize("hasAnyAuthority('super_admin', 'ROLE_SUPER_ADMIN', 'admin_opd', 'ROLE_ADMIN_OPD')")
-    public Flux<RenaksiIndividu> getRealisasiByKodeOpdAndTahunAndBulan(
+    public Flux<RenaksiIndividu> searchRealisasi(
             @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun realisasi") @PathVariable String tahun,
-            @Parameter(description = "Bulan realisasi") @PathVariable String bulan) {
+            @Parameter(description = "Bulan realisasi") @PathVariable String bulan,
+            @Parameter(description = "Level Role (LEVEL_1, dll)") @PathVariable String levelRole,
+            @Parameter(description = "NIP Pegawai") @PathVariable String nip) {
         if (kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd, tahun, dan bulan tidak boleh kosong");
         }
-        return renaksiService.getAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
+        return renaksiService.searchRealisasi(kodeOpd, tahun, bulan, levelRole, nip);
     }
 
     @GetMapping("/laporan/nip/{nip}/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
@@ -113,7 +117,7 @@ public class RenaksiController {
         return renaksiService.getLaporanRealisasiByOpd(kodeOpd, tahun, jenisLaporan, bulan);
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Simpan realisasi target renaksi individu (upsert)", description = "Menyimpan realisasi target renaksi individu. Jika data dengan composite key yang sama sudah ada, akan diperbarui.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Realisasi tersimpan", content = @Content(schema = @Schema(implementation = RenaksiIndividu.class))),
@@ -127,7 +131,7 @@ public class RenaksiController {
         return renaksiService.submitRealisasiTarget(request);
     }
 
-    @PostMapping("/batch")
+    @PostMapping(value = "/batch", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Simpan batch realisasi renaksi individu", description = "Menyimpan beberapa data realisasi renaksi individu dalam satu request.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Batch berhasil disimpan", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenaksiIndividu.class)))),
@@ -170,4 +174,6 @@ public class RenaksiController {
             @RequestBody @Valid FaktorPenghambatRenaksiRequest request) {
         return renaksiService.updateFaktorPenghambat(request);
     }
+
+
 }

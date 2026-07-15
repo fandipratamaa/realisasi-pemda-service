@@ -53,7 +53,10 @@ public record TujuanOpdPenetapanResponse(
             String faktorPenunjang,
 
             @JsonProperty("faktor_penghambat")
-            String faktorPenghambat
+            String faktorPenghambat,
+
+            @JsonProperty("bukti_pendukung")
+            String buktiPendukung
     ) {
     }
 }

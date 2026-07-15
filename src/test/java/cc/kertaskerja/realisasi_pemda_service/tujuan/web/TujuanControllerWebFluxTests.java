@@ -17,13 +17,9 @@ import org.springframework.security.test.web.reactive.server.SecurityMockServerC
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.server.ResponseStatusException;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
 
@@ -39,41 +35,61 @@ public class TujuanControllerWebFluxTests {
     @Autowired
     private ObjectMapper objectMapper;
 
+
+
     @Test
-    void whenBatchSubmit_thenReturnsSavedTujuans() throws Exception {
-        TujuanRequest r1 = new TujuanRequest(null, "T1", "I1", "TAR-1", "100.0", 50.0, "unit1", "2025", "01", "Visi Misi 1", "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK);
-        TujuanRequest r2 = new TujuanRequest(null, "T2", "I2", "TAR-2", "200.0", 75.0, "unit2", "2026", "01", "Visi Misi 2", "(realisasi/target)*100", "Bappeda", JenisRealisasi.TURUN);
-
-        Tujuan t1 = TujuanService.buildUncheckedRealisasiTujuan(
-                r1.tujuanId(), r1.indikatorId(), r1.targetId(), r1.target(), r1.realisasi(),
-                r1.satuan(), r1.tahun(), r1.bulan(), r1.visiMisi(), r1.rumusPerhitungan(), r1.sumberData(), r1.jenisRealisasi()
-        );
-        Tujuan t2Baru = TujuanService.buildUncheckedRealisasiTujuan(
-                r2.tujuanId(), r2.indikatorId(), r2.targetId(), r2.target(), r2.realisasi(),
-                r2.satuan(), r2.tahun(), r2.bulan(), r2.visiMisi(), r2.rumusPerhitungan(), r2.sumberData(), r2.jenisRealisasi()
+    void whenSubmitRealisasiTujuan_thenReturnsTujuan() throws Exception {
+        TujuanRequest request = new TujuanRequest(
+                null, "TUJ-123", "IND-TUJ-123", "TAR-1", "100.0", 80.0, "%", "2025", "01",
+                "Visi Misi 1", "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK, "test.pdf", "keterangan bukti"
         );
 
-        when(tujuanService.batchSubmitRealisasiTujuan(anyList()))
-                .thenReturn(Flux.just(t1, t2Baru));
+        Tujuan updated = Tujuan.of("TUJ-123", "Realisasi Tujuan TUJ-123",
+                "IND-TUJ-123", "Realisasi Indikator IND-TUJ-123",
+                "TAR-1", "100.0", 80.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
+                "BPS", "", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED, "test.pdf", "keterangan bukti");
+
+        when(tujuanService.submitRealisasiTujuan(any(TujuanRequest.class)))
+                .thenReturn(Mono.just(updated));
 
         webTestClient
                 .mutateWith(csrf())
-                .mutateWith(SecurityMockServerConfigurers.mockJwt()
-                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                .mutateWith(SecurityMockServerConfigurers.mockJwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                 .post()
-                .uri("/tujuans/batch")
-                .bodyValue(objectMapper.writeValueAsString(List.of(r1, r2)))
-                .header("Content-Type", "application/json")
+                .uri("/tujuans")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .bodyValue(objectMapper.writeValueAsString(request))
                 .exchange()
                 .expectStatus().isOk()
-                .expectBodyList(Tujuan.class)
+                .expectBody(Tujuan.class)
                 .consumeWith(response -> {
                     var body = response.getResponseBody();
                     Assertions.assertNotNull(body);
-                    Assertions.assertEquals(2, body.size());
-                    Assertions.assertEquals(t1, body.get(0));
-                    Assertions.assertEquals(t2Baru, body.get(1));
+                    Assertions.assertEquals("TUJ-123", body.tujuanId());
+                    Assertions.assertEquals("test.pdf", body.buktiPendukung());
+                    Assertions.assertEquals("keterangan bukti", body.keteranganBuktiPendukung());
                 });
+    }
+
+    @Test
+    void whenUploadFile_thenReturnsUrl() throws Exception {
+        when(tujuanService.uploadFile(any())).thenReturn(Mono.just("test.pdf"));
+
+        org.springframework.http.client.MultipartBodyBuilder builder = new org.springframework.http.client.MultipartBodyBuilder();
+        builder.part("file", "test file content".getBytes())
+                .filename("test.pdf");
+
+        webTestClient
+                .mutateWith(csrf())
+                .mutateWith(SecurityMockServerConfigurers.mockJwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                .post()
+                .uri("/tujuans/upload/file")
+                .contentType(org.springframework.http.MediaType.MULTIPART_FORM_DATA)
+                .body(org.springframework.web.reactive.function.BodyInserters.fromMultipartData(builder.build()))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.url").isEqualTo("test.pdf");
     }
 
     @Test
@@ -84,7 +100,7 @@ public class TujuanControllerWebFluxTests {
         Tujuan updated = Tujuan.of("TUJ-123", "Realisasi Tujuan TUJ-123",
                 "IND-TUJ-123", "Realisasi Indikator IND-TUJ-123",
                 "TAR-1", "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
-                "BPS", "Kerjasama antar daerah", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED);
+                "BPS", "Kerjasama antar daerah", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED, "file.pdf", "bukti valid");
 
         when(tujuanService.updateFaktorPenunjang(any(FaktorPenunjangRequest.class)))
                 .thenReturn(Mono.just(updated));
@@ -114,7 +130,7 @@ public class TujuanControllerWebFluxTests {
         Tujuan updated = Tujuan.of("TUJ-123", "Realisasi Tujuan TUJ-123",
                 "IND-TUJ-123", "Realisasi Indikator IND-TUJ-123",
                 "TAR-1", "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
-                "BPS", "", "Keterbatasan anggaran", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED);
+                "BPS", "", "Keterbatasan anggaran", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED, "file.pdf", "bukti valid");
 
         when(tujuanService.updateFaktorPenghambat(any(FaktorPenghambatRequest.class)))
                 .thenReturn(Mono.just(updated));

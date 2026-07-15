@@ -151,4 +151,5 @@ public class RenjaOpdController {
             @RequestBody @Valid FaktorPenghambatTargetRenjaSubKegiatanOpdRequest req) {
         return renjaOpdService.updateFaktorPenghambatSubKegiatan(req);
     }
+
 }

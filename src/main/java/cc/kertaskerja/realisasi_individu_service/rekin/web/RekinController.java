@@ -20,8 +20,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.MediaType;
+import org.springframework.http.codec.multipart.FilePart;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -33,6 +36,38 @@ public class RekinController {
 
     public RekinController(RekinService rekinService) {
         this.rekinService = rekinService;
+    }
+
+    @GetMapping("/pegawai")
+    @Operation(summary = "Mengambil data seluruh pegawai", description = "Endpoint untuk mengambil data pegawai untuk opsi dropdown di frontend.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Berhasil mengambil data pegawai", content = @Content(array = @ArraySchema(schema = @Schema(implementation = cc.kertaskerja.integration.kepegawaian.PegawaiClient.PegawaiData.class)))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Mono<java.util.List<cc.kertaskerja.integration.kepegawaian.PegawaiClient.PegawaiData>> getAllPegawai() {
+        return rekinService.getAllPegawai();
+    }
+
+    @GetMapping("/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}/levelRole/{levelRole}/nip/{nip}")
+    @Operation(summary = "Mencari rekin individu berdasarkan filter", description = "Endpoint untuk fitur pencarian rekin individu di frontend. Memvalidasi NIP ke service pegawai lalu mengambil data penetapan.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Berhasil mengambil data", content = @Content(schema = @Schema(implementation = PenetapanRekinIndividuResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Pegawai tidak ditemukan", content = @Content)
+    })
+    @PreAuthorize("hasAnyAuthority('super_admin', 'ROLE_SUPER_ADMIN', 'admin_opd', 'ROLE_ADMIN_OPD')")
+    public Mono<PenetapanRekinIndividuResponse> searchRekin(
+            @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun") @PathVariable String tahun,
+            @Parameter(description = "Bulan") @PathVariable String bulan,
+            @Parameter(description = "Level Role (LEVEL_1, dll)") @PathVariable String levelRole,
+            @Parameter(description = "NIP Pegawai") @PathVariable String nip) {
+        if (kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd, tahun, dan bulan tidak boleh kosong");
+        }
+        return rekinService.searchRekin(kodeOpd, tahun, bulan, levelRole, nip);
     }
 
     @GetMapping("/nip/{nip}/kodeOpd/{kodeOpd}/tahun/{tahun}/penetapan")
@@ -92,26 +127,8 @@ public class RekinController {
         return rekinService.getLaporanRealisasiByOpd(kodeOpd, tahun, jenisLaporan, bulan);
     }
 
-    @GetMapping("/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}")
-    @Operation(summary = "Cari realisasi rekin individu berdasarkan kode OPD, tahun, dan bulan")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realisasi rekin individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RekinIndividu.class)))),
-            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
-    })
-    @PreAuthorize("hasAnyAuthority('super_admin', 'ROLE_SUPER_ADMIN', 'admin_opd', 'ROLE_ADMIN_OPD')")
-    public Flux<RekinIndividu> getRekinByKodeOpdAndTahunAndBulan(
-            @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
-            @Parameter(description = "Tahun") @PathVariable String tahun,
-            @Parameter(description = "Bulan") @PathVariable String bulan) {
-        if (kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank() || bulan == null || bulan.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd, tahun, dan bulan tidak boleh kosong");
-        }
-        return rekinService.getAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
-    }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Buat realisasi target rekin individu (upsert)", description = "Menyimpan realisasi target rekin individu. Jika data dengan composite key yang sama sudah ada, akan diperbarui.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Realisasi tersimpan", content = @Content(schema = @Schema(implementation = RekinResponse.class))),
@@ -153,5 +170,14 @@ public class RekinController {
                     content = @Content(schema = @Schema(implementation = FaktorPenghambatRekinRequest.class)))
             @RequestBody @Valid FaktorPenghambatRekinRequest request) {
         return rekinService.updateFaktorPenghambat(request);
+    }
+
+    @PostMapping(value = "/upload/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Upload file bukti pendukung", description = "Mengunggah file dan mengembalikan string URL.")
+    public Mono<java.util.Map<String, String>> uploadFile(
+            @Parameter(description = "File yang akan diupload", content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE))
+            @RequestPart("file") FilePart file) {
+        return rekinService.uploadFile(file)
+                .map(url -> java.util.Map.of("url", url));
     }
 }

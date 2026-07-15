@@ -18,10 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
@@ -39,47 +36,62 @@ public class SasaranControllerWebFluxTests {
     private ObjectMapper objectMapper;
 
     @Test
-    void whenBatchSubmit_thenReturnSavedSasarans() throws Exception {
-        // prepare data
-        SasaranRequest s1 = new SasaranRequest(null, "S-1", "IS-1", "TIS-1",
-                "10", 10.0, "%", "2025", "01", "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK);
-        SasaranRequest s2 = new SasaranRequest(null, "S-12", "IS-12", "TIS-12",
-                "10", 5.0, "%", "2025", "01", "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK);
-
-        Sasaran ss1 = SasaranService.buildUnchekcedRealisasiSasaran(
-                s1.sasaranId(), s1.indikatorId(), s1.targetId(),
-                s1.target(), s1.realisasi(), s1.satuan(), s1.tahun(), s1.bulan(), s1.rumusPerhitungan(), s1.sumberData(), s1.jenisRealisasi()
+    void whenSubmitRealisasiSasaran_thenReturnsSasaran() throws Exception {
+        SasaranRequest request = new SasaranRequest(
+                null, "SAS-001", "IND-SAS-123", "TAR-1", "100.0", 80.0, "%", "2025", "01",
+                "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK, "test.pdf", "keterangan bukti"
         );
 
-        Sasaran ss2 = SasaranService.buildUnchekcedRealisasiSasaran(
-                s2.sasaranId(), s2.indikatorId(), s2.targetId(),
-                s2.target(), s2.realisasi(), s2.satuan(), s2.tahun(), s2.bulan(), s2.rumusPerhitungan(), s2.sumberData(), s2.jenisRealisasi()
-        );
+        Sasaran updated = Sasaran.of("SAS-001", "Realisasi Sasaran SAS-001",
+                "IND-SAS-123", "Realisasi Indikator IND-SAS-123",
+                "TAR-1", "100.0", 80.0, "%", "2025", "01",
+                "(realisasi/target)*100", "BPS",
+                "", "",
+                JenisRealisasi.NAIK, SasaranStatus.UNCHECKED, "test.pdf", "keterangan bukti");
 
-        when(sasaranService.batchSubmitRealisasiSasaran(anyList()))
-                .thenReturn(Flux.just(ss1, ss2));
+        when(sasaranService.submitRealisasiSasaran(any(SasaranRequest.class)))
+                .thenReturn(Mono.just(updated));
 
-        // execute
         webTestClient
                 .mutateWith(csrf())
                 .mutateWith(SecurityMockServerConfigurers.mockJwt()
-                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                )
+                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                 .post()
-                .uri("/sasarans/batch")
-                .header("Content-Type", "application/json")
-                .bodyValue(objectMapper.writeValueAsString(List.of(ss1, ss2)))
+                .uri("/sasarans")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .bodyValue(objectMapper.writeValueAsString(request))
                 .exchange()
-                .expectStatus().is2xxSuccessful()
-                .expectBodyList(Sasaran.class)
+                .expectStatus().isOk()
+                .expectBody(Sasaran.class)
                 .consumeWith(response -> {
                     var body = response.getResponseBody();
                     Assertions.assertNotNull(body);
-                    Assertions.assertEquals(2, body.size());
-                    Assertions.assertEquals(ss1, body.get(0));
-                    Assertions.assertEquals(ss2, body.get(1));
+                    Assertions.assertEquals("SAS-001", body.sasaranId());
+                    Assertions.assertEquals("test.pdf", body.buktiPendukung());
+                    Assertions.assertEquals("keterangan bukti", body.keteranganBuktiPendukung());
                 });
+    }
 
+    @Test
+    void whenUploadFile_thenReturnsUrl() throws Exception {
+        when(sasaranService.uploadFile(any())).thenReturn(Mono.just("test.pdf"));
+
+        org.springframework.http.client.MultipartBodyBuilder builder = new org.springframework.http.client.MultipartBodyBuilder();
+        builder.part("file", "test file content".getBytes())
+                .filename("test.pdf");
+
+        webTestClient
+                .mutateWith(csrf())
+                .mutateWith(SecurityMockServerConfigurers.mockJwt()
+                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                .post()
+                .uri("/sasarans/upload/file")
+                .contentType(org.springframework.http.MediaType.MULTIPART_FORM_DATA)
+                .body(org.springframework.web.reactive.function.BodyInserters.fromMultipartData(builder.build()))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.url").isEqualTo("test.pdf");
     }
 
     @Test
@@ -89,7 +101,7 @@ public class SasaranControllerWebFluxTests {
 
         Sasaran ss = SasaranService.buildUnchekcedRealisasiSasaran(
                 "S-1", "IS-1", "TIS-1",
-                "10", 10.0, "%", tahun, bulan, "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK
+                "10", 10.0, "%", tahun, bulan, "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK, "file.pdf", "bukti valid"
         );
 
         when(sasaranService.getAllRealisasiSasaranByTahunAndBulan(anyString(), anyString()))
@@ -124,7 +136,7 @@ public class SasaranControllerWebFluxTests {
                 "TAR-1", "100.0", 100.0, "%", "2025", "01",
                 "(realisasi/target)*100", "BPS",
                 "Kerjasama antar daerah", "Keterbatasan anggaran",
-                JenisRealisasi.NAIK, SasaranStatus.UNCHECKED);
+                JenisRealisasi.NAIK, SasaranStatus.UNCHECKED, "file.pdf", "bukti valid");
 
         when(sasaranService.updateFaktorPenunjang(any(FaktorPenunjangSasaranRequest.class)))
                 .thenReturn(Mono.just(updated));
@@ -157,7 +169,7 @@ public class SasaranControllerWebFluxTests {
                 "TAR-1", "100.0", 100.0, "%", "2025", "01",
                 "(realisasi/target)*100", "BPS",
                 "Kerjasama antar daerah", "Keterbatasan anggaran",
-                JenisRealisasi.NAIK, SasaranStatus.UNCHECKED);
+                JenisRealisasi.NAIK, SasaranStatus.UNCHECKED, "file.pdf", "bukti valid");
 
         when(sasaranService.updateFaktorPenghambat(any(FaktorPenghambatSasaranRequest.class)))
                 .thenReturn(Mono.just(updated));
