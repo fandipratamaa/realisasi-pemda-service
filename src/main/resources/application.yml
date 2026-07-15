@@ -44,3 +44,8 @@ integration:
     base-url: https://upload-service-staging.zeabur.app
     connect-timeout: 5s
     read-timeout: 10s
+
+  kepegawaian:
+    base-url: https://kepegawaian-service-mahulu-test.zeabur.app
+    connect-timeout: 5s
+    read-timeout: 10s
