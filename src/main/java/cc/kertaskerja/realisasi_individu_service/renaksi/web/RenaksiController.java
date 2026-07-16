@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.MediaType;
+import org.springframework.http.codec.multipart.FilePart;
+import org.springframework.web.bind.annotation.RequestPart;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -143,6 +145,15 @@ public class RenaksiController {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenaksiIndividuRequest.class))))
             @RequestBody @Valid List<RenaksiIndividuRequest> requests) {
         return renaksiService.batchSubmitRealisasiTarget(requests);
+    }
+
+    @PostMapping(value = "/upload/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Upload file bukti pendukung", description = "Mengunggah file dan mengembalikan string URL.")
+    public Mono<java.util.Map<String, String>> uploadFile(
+            @Parameter(description = "File yang akan diupload", content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE))
+            @RequestPart("file") FilePart file) {
+        return renaksiService.uploadFile(file)
+                .map(url -> java.util.Map.of("url", url));
     }
 
     @PostMapping("/faktor-penunjang")
