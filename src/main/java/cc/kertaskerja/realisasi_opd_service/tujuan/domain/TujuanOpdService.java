@@ -380,11 +380,12 @@ public class TujuanOpdService {
         String faktorPenunjang = matched != null ? matched.faktorPenunjang() : null;
         String faktorPenghambat = matched != null ? matched.faktorPenghambat() : null;
         String buktiPendukung = matched != null ? matched.buktiPendukung() : null;
+        String keteranganBuktiPendukung = matched != null ? matched.keteranganBuktiPendukung() : null;
         var capaianResult = TujuanOpd.hitungCapaian(realisasiValue, t.target());
         return new TujuanOpdPenetapanResponse.TargetPenetapan(
                 t.kodeTarget(), t.satuan(), t.target(),
                 realisasiValue, capaianResult.capaian(), capaianResult.keteranganCapaian(),
-                faktorPenunjang, faktorPenghambat, buktiPendukung
+                faktorPenunjang, faktorPenghambat, buktiPendukung, keteranganBuktiPendukung
         );
     }
 
