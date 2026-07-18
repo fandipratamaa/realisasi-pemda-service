@@ -68,6 +68,10 @@ public class TujuanOpdService {
                 });
     }
 
+    public Mono<String> syncPenetapanTujuanOpd(String kodeOpd, int tahun) {
+        return penetapanClient.syncTujuanOpd(kodeOpd, tahun);
+    }
+
     public Mono<TujuanOpdResponse> submitRealisasiTujuanOpd(TujuanOpdRequest req) {
         return upsert(req)
                 .map(this::toResponse)

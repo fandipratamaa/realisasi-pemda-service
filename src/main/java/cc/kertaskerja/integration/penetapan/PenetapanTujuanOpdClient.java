@@ -42,6 +42,21 @@ public class PenetapanTujuanOpdClient {
                 });
     }
 
+    public Mono<String> syncTujuanOpd(String kodeOpd, int tahun) {
+        return webClient.post()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/opd/tujuan/sync")
+                        .queryParam("kodeOpd", kodeOpd)
+                        .queryParam("tahun", tahun)
+                        .build())
+                .retrieve()
+                .bodyToMono(String.class)
+                .onErrorResume(e -> {
+                    log.error("Failed to sync penetapan tujuan OPD for kodeOpd={}, tahun={}", kodeOpd, tahun, e);
+                    return Mono.empty();
+                });
+    }
+
     private List<PenetapanTujuanOpd.TujuanPenetapanData> parseTujuanOpdPayload(String payload) {
         try {
             JsonNode rootNode = objectMapper.readTree(payload);

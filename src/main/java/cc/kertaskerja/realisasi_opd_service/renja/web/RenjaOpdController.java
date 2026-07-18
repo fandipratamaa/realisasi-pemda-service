@@ -47,6 +47,21 @@ public class RenjaOpdController {
         return renjaOpdService.getPenetapanWithRealisasi(kodeOpd, Integer.parseInt(tahun), bulan);
     }
 
+    @PostMapping("/{kodeOpd}/tahun/{tahun}/sync/penetapan")
+    @Operation(summary = "Sinkronisasi renja OPD", description = "Memicu sinkronisasi data renja OPD dari service penetapan dan langsung mengembalikan data terbarunya.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data penetapan ter-sinkronisasi dan terintegrasi dengan realisasi", content = @Content(schema = @Schema(implementation = RenjaOpdPenetapanResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Mono<RenjaOpdPenetapanResponse> syncRenjaOpd(
+            @Parameter(description = "Kode OPD", example = "5.01.5.05.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun", example = "2026") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi (opsional)", example = "1") @RequestParam(required = false) String bulan) {
+        return renjaOpdService.syncPenetapanRenjaOpd(kodeOpd, Integer.parseInt(tahun))
+                .then(renjaOpdService.getPenetapanWithRealisasi(kodeOpd, Integer.parseInt(tahun), bulan));
+    }
+
     @GetMapping("/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
     @Operation(summary = "Laporan realisasi renja OPD per periode", description = "Mengambil total realisasi renja OPD yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN). Data diagregasi dari program, kegiatan, dan subkegiatan.")
     @ApiResponses(value = {

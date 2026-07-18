@@ -74,6 +74,10 @@ public class RenjaOpdService {
                 ));
     }
 
+    public Mono<String> syncPenetapanRenjaOpd(String kodeOpd, int tahun) {
+        return penetapanClient.syncRenjaOpd(kodeOpd, tahun);
+    }
+
     public Mono<RenjaProgramOpd> updateFaktorPenunjangProgram(FaktorPenunjangTargetRenjaProgramOpdRequest req) {
         return targetProgramRepo.findByKodeOpdAndKodeProgramAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
                         req.kodeOpd(), req.kodeProgram(), req.kodeIndikator(), req.kodeTarget(), req.tahun(), req.bulan())
