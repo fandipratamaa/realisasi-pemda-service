@@ -126,8 +126,8 @@ public class RekinController {
         return rekinService.getLaporanRealisasi(nip, kodeOpd, tahun, jenisLaporan, bulan);
     }
 
-    @GetMapping("/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
-    @Operation(summary = "Laporan realisasi rekin individu per periode (OPD)", description = "Mengambil total realisasi rekin individu yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN) untuk seluruh OPD.")
+    @GetMapping("/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}/levelRole/{levelRole}/nip/{nip}")
+    @Operation(summary = "Laporan realisasi rekin individu per periode (OPD)", description = "Mengambil total realisasi rekin individu yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN) untuk NIP tertentu.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data laporan realisasi rekin individu", content = @Content(schema = @Schema(implementation = LaporanRealisasiRekinIndividuResponse.class))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
@@ -139,11 +139,13 @@ public class RekinController {
             @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun laporan") @PathVariable String tahun,
             @Parameter(description = "Jenis periode laporan") @PathVariable JenisLaporan jenisLaporan,
+            @Parameter(description = "Level Role") @PathVariable String levelRole,
+            @Parameter(description = "NIP Pegawai") @PathVariable String nip,
             @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN") @RequestParam(required = false) String bulan) {
         if (kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd dan tahun tidak boleh kosong");
         }
-        return rekinService.getLaporanRealisasiByOpd(kodeOpd, tahun, jenisLaporan, bulan);
+        return rekinService.getLaporanRealisasiByOpd(kodeOpd, tahun, jenisLaporan, bulan, levelRole, nip);
     }
 
 

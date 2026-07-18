@@ -28,8 +28,6 @@ import org.springframework.web.bind.annotation.RequestPart;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("renaksi_individu")
 @Tag(name = "Individu - Renaksi", description = "Endpoint realisasi renaksi tingkat individu. Role `super_admin` dan `admin_opd` hanya diizinkan mengakses endpoint `GET` pada resource ini, sedangkan role `level_1`, `level_2`, `level_3`, dan `level_4` dapat mengakses seluruh endpoint pada resource ini.")
@@ -88,19 +86,19 @@ public class RenaksiController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     public Flux<LaporanRealisasiRenaksiIndividuResponse> getLaporanRealisasi(
-            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
-            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
-            @Parameter(description = "Tahun laporan", example = "2026") @PathVariable String tahun,
-            @Parameter(description = "Jenis periode laporan", example = "TAHUNAN") @PathVariable JenisLaporan jenisLaporan,
-            @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN", example = "3") @RequestParam(required = false) String bulan) {
+            @Parameter(description = "NIP pelaksana") @PathVariable String nip,
+            @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun laporan") @PathVariable String tahun,
+            @Parameter(description = "Jenis periode laporan") @PathVariable JenisLaporan jenisLaporan,
+            @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN") @RequestParam(required = false) String bulan) {
         if (nip == null || nip.isBlank() || kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip, kodeOpd, dan tahun tidak boleh kosong");
         }
         return renaksiService.getLaporanRealisasi(nip, kodeOpd, tahun, jenisLaporan, bulan);
     }
 
-    @GetMapping("/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
-    @Operation(summary = "Laporan realisasi renaksi individu per periode (OPD)", description = "Mengambil total realisasi renaksi individu yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN) untuk seluruh OPD.")
+    @GetMapping("/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}/levelRole/{levelRole}/nip/{nip}")
+    @Operation(summary = "Laporan realisasi renaksi individu per periode (OPD)", description = "Mengambil total realisasi renaksi individu yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN) untuk NIP tertentu.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data laporan realisasi renaksi individu", content = @Content(schema = @Schema(implementation = LaporanRealisasiRenaksiIndividuResponse.class))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
@@ -109,14 +107,16 @@ public class RenaksiController {
     })
     @PreAuthorize("hasAnyAuthority('super_admin', 'ROLE_SUPER_ADMIN', 'admin_opd', 'ROLE_ADMIN_OPD')")
     public Flux<LaporanRealisasiRenaksiIndividuResponse> getLaporanRealisasiByOpd(
-            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
-            @Parameter(description = "Tahun laporan", example = "2026") @PathVariable String tahun,
-            @Parameter(description = "Jenis periode laporan", example = "TAHUNAN") @PathVariable JenisLaporan jenisLaporan,
-            @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN", example = "3") @RequestParam(required = false) String bulan) {
+            @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun laporan") @PathVariable String tahun,
+            @Parameter(description = "Jenis periode laporan") @PathVariable JenisLaporan jenisLaporan,
+            @Parameter(description = "Level Role") @PathVariable String levelRole,
+            @Parameter(description = "NIP Pegawai") @PathVariable String nip,
+            @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN") @RequestParam(required = false) String bulan) {
         if (kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd dan tahun tidak boleh kosong");
         }
-        return renaksiService.getLaporanRealisasiByOpd(kodeOpd, tahun, jenisLaporan, bulan);
+        return renaksiService.getLaporanRealisasiByOpd(kodeOpd, tahun, jenisLaporan, bulan, levelRole, nip);
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -131,20 +131,6 @@ public class RenaksiController {
                     content = @Content(schema = @Schema(implementation = RenaksiIndividuRequest.class)))
             @RequestBody @Valid RenaksiIndividuRequest request) {
         return renaksiService.submitRealisasiTarget(request);
-    }
-
-    @PostMapping(value = "/batch", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Simpan batch realisasi renaksi individu", description = "Menyimpan beberapa data realisasi renaksi individu dalam satu request.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Batch berhasil disimpan", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenaksiIndividu.class)))),
-            @ApiResponse(responseCode = "400", description = "Payload batch tidak valid", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Flux<RenaksiIndividu> batchSubmitRealisasi(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Daftar payload realisasi renaksi individu", required = true,
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenaksiIndividuRequest.class))))
-            @RequestBody @Valid List<RenaksiIndividuRequest> requests) {
-        return renaksiService.batchSubmitRealisasiTarget(requests);
     }
 
     @PostMapping(value = "/upload/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
