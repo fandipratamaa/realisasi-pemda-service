@@ -26,7 +26,7 @@ public class PenetapanRenjaOpd {
             String program,
             @JsonProperty("is_locked") Boolean isLocked,
             List<IndikatorPenetapanData> indikators,
-            @JsonProperty("pagu_anggaran") Double paguAnggaran
+            @JsonProperty("pagu_anggaran") List<PaguAnggaranData> paguAnggaran
     ) {
         public ProgramPenetapanData {
             if (indikators == null) indikators = List.of();
@@ -39,7 +39,7 @@ public class PenetapanRenjaOpd {
             String kegiatan,
             @JsonProperty("is_locked") Boolean isLocked,
             List<IndikatorPenetapanData> indikators,
-            @JsonProperty("pagu_anggaran") Double paguAnggaran
+            @JsonProperty("pagu_anggaran") List<PaguAnggaranData> paguAnggaran
     ) {
         public KegiatanPenetapanData {
             if (indikators == null) indikators = List.of();
@@ -52,7 +52,7 @@ public class PenetapanRenjaOpd {
             String subkegiatan,
             @JsonProperty("is_locked") Boolean isLocked,
             List<IndikatorPenetapanData> indikators,
-            @JsonProperty("pagu_anggaran") Double paguAnggaran
+            @JsonProperty("pagu_anggaran") List<PaguAnggaranData> paguAnggaran
     ) {
         public SubkegiatanPenetapanData {
             if (indikators == null) indikators = List.of();
@@ -76,5 +76,12 @@ public class PenetapanRenjaOpd {
             Integer tahun,
             Double target,
             String satuan
+    ) {}
+
+    public record PaguAnggaranData(
+            Long id,
+            @JsonProperty("kode_pagu") String kodePagu,
+            Double pagu,
+            @JsonProperty("jenis_pagu") String jenisPagu
     ) {}
 }

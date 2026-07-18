@@ -21,7 +21,7 @@ public record RenjaOpdPenetapanResponse(
             String program,
             @JsonProperty("is_locked") Boolean isLocked,
             List<IndikatorPenetapan> indikators,
-            @JsonProperty("pagu_anggaran") Double paguAnggaran
+            @JsonProperty("pagu_anggaran") List<PaguAnggaranPenetapan> paguAnggaran
     ) {}
 
     public record KegiatanPenetapan(
@@ -30,7 +30,7 @@ public record RenjaOpdPenetapanResponse(
             String kegiatan,
             @JsonProperty("is_locked") Boolean isLocked,
             List<IndikatorPenetapan> indikators,
-            @JsonProperty("pagu_anggaran") Double paguAnggaran
+            @JsonProperty("pagu_anggaran") List<PaguAnggaranPenetapan> paguAnggaran
     ) {}
 
     public record SubkegiatanPenetapan(
@@ -39,7 +39,7 @@ public record RenjaOpdPenetapanResponse(
             String subkegiatan,
             @JsonProperty("is_locked") Boolean isLocked,
             List<IndikatorPenetapan> indikators,
-            @JsonProperty("pagu_anggaran") Double paguAnggaran
+            @JsonProperty("pagu_anggaran") List<PaguAnggaranPenetapan> paguAnggaran
     ) {}
 
     public record IndikatorPenetapan(
@@ -62,5 +62,12 @@ public record RenjaOpdPenetapanResponse(
             @JsonProperty("faktor_penunjang") String faktorPenunjang,
             @JsonProperty("faktor_penghambat") String faktorPenghambat,
             @JsonProperty("bukti_pendukung") String buktiPendukung
+    ) {}
+
+    public record PaguAnggaranPenetapan(
+            Long id,
+            @JsonProperty("kode_pagu") String kodePagu,
+            Double pagu,
+            @JsonProperty("jenis_pagu") String jenisPagu
     ) {}
 }

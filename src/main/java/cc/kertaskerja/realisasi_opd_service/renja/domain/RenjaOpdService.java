@@ -277,7 +277,7 @@ public class RenjaOpdService {
 
         return new RenjaOpdPenetapanResponse.ProgramPenetapan(
                 p.id(), p.kodeProgram(), p.program(), p.isLocked(),
-                indikators, p.paguAnggaran()
+                indikators, mapPaguAnggaran(p.paguAnggaran())
         );
     }
 
@@ -299,7 +299,7 @@ public class RenjaOpdService {
 
         return new RenjaOpdPenetapanResponse.KegiatanPenetapan(
                 k.id(), k.kodeKegiatan(), k.kegiatan(), k.isLocked(),
-                indikators, k.paguAnggaran()
+                indikators, mapPaguAnggaran(k.paguAnggaran())
         );
     }
 
@@ -321,7 +321,7 @@ public class RenjaOpdService {
 
         return new RenjaOpdPenetapanResponse.SubkegiatanPenetapan(
                 s.id(), s.kodeSubkegiatan(), s.subkegiatan(), s.isLocked(),
-                indikators, s.paguAnggaran()
+                indikators, mapPaguAnggaran(s.paguAnggaran())
         );
     }
 
@@ -362,7 +362,7 @@ public class RenjaOpdService {
 
         return new RenjaOpdPenetapanResponse.ProgramPenetapan(
                 p.id(), p.kodeProgram(), p.program(), p.isLocked(),
-                indikators, p.paguAnggaran()
+                indikators, mapPaguAnggaran(p.paguAnggaran())
         );
     }
 
@@ -399,7 +399,7 @@ public class RenjaOpdService {
 
         return new RenjaOpdPenetapanResponse.KegiatanPenetapan(
                 k.id(), k.kodeKegiatan(), k.kegiatan(), k.isLocked(),
-                indikators, k.paguAnggaran()
+                indikators, mapPaguAnggaran(k.paguAnggaran())
         );
     }
 
@@ -436,7 +436,7 @@ public class RenjaOpdService {
 
         return new RenjaOpdPenetapanResponse.SubkegiatanPenetapan(
                 s.id(), s.kodeSubkegiatan(), s.subkegiatan(), s.isLocked(),
-                indikators, s.paguAnggaran()
+                indikators, mapPaguAnggaran(s.paguAnggaran())
         );
     }
 
@@ -458,6 +458,14 @@ public class RenjaOpdService {
 
     private <T> List<T> safeList(List<T> list) {
         return list == null ? List.of() : list;
+    }
+
+    private List<RenjaOpdPenetapanResponse.PaguAnggaranPenetapan> mapPaguAnggaran(List<PenetapanRenjaOpd.PaguAnggaranData> paguList) {
+        return safeList(paguList).stream()
+                .map(p -> new RenjaOpdPenetapanResponse.PaguAnggaranPenetapan(
+                        p.id(), p.kodePagu(), p.pagu(), p.jenisPagu()
+                ))
+                .toList();
     }
 
     private Integer parseInteger(String value) {
