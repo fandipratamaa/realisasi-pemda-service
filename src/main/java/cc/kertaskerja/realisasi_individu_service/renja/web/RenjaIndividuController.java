@@ -209,8 +209,8 @@ public class RenjaIndividuController {
         return renjaIndividuService.getLaporanRealisasiSubKegiatan(nip, kodeOpd, tahun, jenisLaporan, bulan);
     }
 
-    @GetMapping("/program/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
-    @Operation(summary = "Laporan realisasi renja individu program per periode (OPD)", description = "Mengambil total realisasi renja individu tingkat program yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN) untuk seluruh OPD.")
+    @GetMapping("/program/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}/levelRole/{levelRole}/nip/{nip}")
+    @Operation(summary = "Laporan realisasi renja individu program per periode (OPD)", description = "Mengambil total realisasi renja individu tingkat program yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN) untuk NIP tertentu.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data laporan realisasi renja individu program", content = @Content(schema = @Schema(implementation = LaporanRealisasiRenjaProgramIndividuResponse.class))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
@@ -222,12 +222,17 @@ public class RenjaIndividuController {
             @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun laporan") @PathVariable String tahun,
             @Parameter(description = "Jenis periode laporan") @PathVariable JenisLaporan jenisLaporan,
+            @Parameter(description = "Level Role") @PathVariable String levelRole,
+            @Parameter(description = "NIP Pegawai") @PathVariable String nip,
             @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN") @RequestParam(required = false) String bulan) {
-        return renjaIndividuService.getLaporanRealisasiProgramByOpd(kodeOpd, tahun, jenisLaporan, bulan);
+        if (kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd dan tahun tidak boleh kosong");
+        }
+        return renjaIndividuService.getLaporanRealisasiProgramByOpd(kodeOpd, tahun, jenisLaporan, bulan, levelRole, nip);
     }
 
-    @GetMapping("/kegiatan/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
-    @Operation(summary = "Laporan realisasi renja individu kegiatan per periode (OPD)", description = "Mengambil total realisasi renja individu tingkat kegiatan yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN) untuk seluruh OPD.")
+    @GetMapping("/kegiatan/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}/levelRole/{levelRole}/nip/{nip}")
+    @Operation(summary = "Laporan realisasi renja individu kegiatan per periode (OPD)", description = "Mengambil total realisasi renja individu tingkat kegiatan yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN) untuk NIP tertentu.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data laporan realisasi renja individu kegiatan", content = @Content(schema = @Schema(implementation = LaporanRealisasiRenjaKegiatanIndividuResponse.class))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
@@ -239,12 +244,17 @@ public class RenjaIndividuController {
             @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun laporan") @PathVariable String tahun,
             @Parameter(description = "Jenis periode laporan") @PathVariable JenisLaporan jenisLaporan,
+            @Parameter(description = "Level Role") @PathVariable String levelRole,
+            @Parameter(description = "NIP Pegawai") @PathVariable String nip,
             @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN") @RequestParam(required = false) String bulan) {
-        return renjaIndividuService.getLaporanRealisasiKegiatanByOpd(kodeOpd, tahun, jenisLaporan, bulan);
+        if (kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd dan tahun tidak boleh kosong");
+        }
+        return renjaIndividuService.getLaporanRealisasiKegiatanByOpd(kodeOpd, tahun, jenisLaporan, bulan, levelRole, nip);
     }
 
-    @GetMapping("/subkegiatan/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
-    @Operation(summary = "Laporan realisasi renja individu subkegiatan per periode (OPD)", description = "Mengambil total realisasi target renja individu tingkat subkegiatan yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN) untuk seluruh OPD.")
+    @GetMapping("/subkegiatan/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}/levelRole/{levelRole}/nip/{nip}")
+    @Operation(summary = "Laporan realisasi renja individu subkegiatan per periode (OPD)", description = "Mengambil total realisasi target renja individu tingkat subkegiatan yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN) untuk NIP tertentu.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data laporan realisasi renja individu subkegiatan", content = @Content(schema = @Schema(implementation = LaporanRealisasiRenjaSubKegiatanIndividuResponse.class))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
@@ -256,8 +266,13 @@ public class RenjaIndividuController {
             @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun laporan") @PathVariable String tahun,
             @Parameter(description = "Jenis periode laporan") @PathVariable JenisLaporan jenisLaporan,
+            @Parameter(description = "Level Role") @PathVariable String levelRole,
+            @Parameter(description = "NIP Pegawai") @PathVariable String nip,
             @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN") @RequestParam(required = false) String bulan) {
-        return renjaIndividuService.getLaporanRealisasiSubKegiatanByOpd(kodeOpd, tahun, jenisLaporan, bulan);
+        if (kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd dan tahun tidak boleh kosong");
+        }
+        return renjaIndividuService.getLaporanRealisasiSubKegiatanByOpd(kodeOpd, tahun, jenisLaporan, bulan, levelRole, nip);
     }
 
     @PostMapping(value = "/program", consumes = MediaType.APPLICATION_JSON_VALUE)

@@ -46,6 +46,22 @@ public class PenetapanRekinIndividuClient {
                 });
     }
 
+    public Mono<String> syncRekinIndividu(String pegawaiId, String kodeOpd, int tahun) {
+        return webClient.post()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/individu/rekin/sync")
+                        .queryParam("pegawaiId", pegawaiId)
+                        .queryParam("kodeOpd", kodeOpd)
+                        .queryParam("tahun", tahun)
+                        .build())
+                .retrieve()
+                .bodyToMono(String.class)
+                .onErrorResume(e -> {
+                    log.error("Failed to sync rekin individu for pegawaiId={}, kodeOpd={}, tahun={}", pegawaiId, kodeOpd, tahun, e);
+                    return Mono.empty();
+                });
+    }
+
     private PenetapanRekinIndividu.RekinIndividuData parseRekinIndividuPayload(String payload) {
         try {
             JsonNode rootNode = objectMapper.readTree(payload);

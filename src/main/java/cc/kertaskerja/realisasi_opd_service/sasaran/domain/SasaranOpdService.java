@@ -68,6 +68,10 @@ public class SasaranOpdService {
                 });
     }
 
+    public Mono<String> syncPenetapanSasaranOpd(String kodeOpd, int tahun) {
+        return penetapanClient.syncSasaranOpd(kodeOpd, tahun);
+    }
+
     public Mono<SasaranOpdResponse> submitRealisasiSasaranOpd(SasaranOpdRequest req) {
         return upsert(req)
                 .map(this::toResponse)

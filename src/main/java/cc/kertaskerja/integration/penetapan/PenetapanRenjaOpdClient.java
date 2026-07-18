@@ -40,6 +40,21 @@ public class PenetapanRenjaOpdClient {
                 });
     }
 
+    public Mono<String> syncRenjaOpd(String kodeOpd, int tahun) {
+        return webClient.post()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/opd/renja/sync")
+                        .queryParam("kodeOpd", kodeOpd)
+                        .queryParam("tahun", tahun)
+                        .build())
+                .retrieve()
+                .bodyToMono(String.class)
+                .onErrorResume(e -> {
+                    log.error("Failed to sync penetapan renja OPD for kodeOpd={}, tahun={}", kodeOpd, tahun, e);
+                    return Mono.empty();
+                });
+    }
+
     private PenetapanRenjaOpd.PenetapanRenjaOpdRoot parseRenjaOpdPayload(String payload) {
         try {
             JsonNode rootNode = objectMapper.readTree(payload);

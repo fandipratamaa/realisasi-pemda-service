@@ -286,72 +286,117 @@ public class RenjaIndividuService {
     }
 
     public Flux<LaporanRealisasiRenjaProgramIndividuResponse> getLaporanRealisasiProgramByOpd(
-            String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan) {
-        return programRepo.findAllByKodeOpdAndTahun(kodeOpd, tahun)
-                .collectList()
-                .flatMapMany(list -> {
-                    Map<String, java.util.List<RenjaProgramIndividu>> grouped = list.stream()
-                            .collect(java.util.stream.Collectors
-                                    .groupingBy(t -> t.nip() + "|" + t.kodeIndikator() + "|" + t.kodeTarget()));
-                    return Flux.fromIterable(grouped.values()).map(groupList -> {
-                        RenjaProgramIndividu first = groupList.get(0);
-                        Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan,
-                                item -> item.realisasi() != null ? item.realisasi().doubleValue() : null);
-                        Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN
-                                || jenisLaporan == JenisLaporan.TAHUNAN)
-                                        ? listData.values().stream().mapToDouble(Double::doubleValue).sum()
-                                        : null;
-                        return new LaporanRealisasiRenjaProgramIndividuResponse(tahun, kodeOpd, first.nip(),
-                                first.indikator(), first.target() != null ? first.target().toString() : null,
-                                jenisLaporan, listData, totalRealisasi);
-                    });
+            String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan, String levelRole, String nip) {
+        java.util.List<String> validRoles = java.util.List.of("LEVEL_1", "LEVEL_2", "LEVEL_3", "LEVEL_4");
+        if (!validRoles.contains(levelRole.toUpperCase())) {
+            return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
+        }
+
+        return pegawaiClient.fetchAllPegawai()
+                .flatMapMany(pegawais -> {
+                    boolean nipExists = pegawais.stream()
+                            .anyMatch(p -> nip.equals(p.nip()));
+                    
+                    if (!nipExists) {
+                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
+                    }
+                    
+                    return programRepo.findAllByKodeOpdAndNipAndTahun(kodeOpd, nip, tahun)
+                            .collectList()
+                            .flatMapMany(list -> {
+                                Map<String, java.util.List<RenjaProgramIndividu>> grouped = list.stream()
+                                        .collect(java.util.stream.Collectors
+                                                .groupingBy(t -> t.nip() + "|" + t.kodeIndikator() + "|" + t.kodeTarget()));
+                                return Flux.fromIterable(grouped.values()).map(groupList -> {
+                                    RenjaProgramIndividu first = groupList.get(0);
+                                    Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan,
+                                            item -> item.realisasi() != null ? item.realisasi().doubleValue() : null);
+                                    Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN
+                                            || jenisLaporan == JenisLaporan.TAHUNAN)
+                                                    ? listData.values().stream().mapToDouble(Double::doubleValue).sum()
+                                                    : null;
+                                    return new LaporanRealisasiRenjaProgramIndividuResponse(tahun, kodeOpd, first.nip(),
+                                            first.indikator(), first.target() != null ? first.target().toString() : null,
+                                            jenisLaporan, listData, totalRealisasi);
+                                });
+                            });
                 });
     }
 
     public Flux<LaporanRealisasiRenjaKegiatanIndividuResponse> getLaporanRealisasiKegiatanByOpd(
-            String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan) {
-        return kegiatanRepo.findAllByKodeOpdAndTahun(kodeOpd, tahun)
-                .collectList()
-                .flatMapMany(list -> {
-                    Map<String, java.util.List<RenjaKegiatanIndividu>> grouped = list.stream()
-                            .collect(java.util.stream.Collectors
-                                    .groupingBy(t -> t.nip() + "|" + t.kodeIndikator() + "|" + t.kodeTarget()));
-                    return Flux.fromIterable(grouped.values()).map(groupList -> {
-                        RenjaKegiatanIndividu first = groupList.get(0);
-                        Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan,
-                                item -> item.realisasi() != null ? item.realisasi().doubleValue() : null);
-                        Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN
-                                || jenisLaporan == JenisLaporan.TAHUNAN)
-                                        ? listData.values().stream().mapToDouble(Double::doubleValue).sum()
-                                        : null;
-                        return new LaporanRealisasiRenjaKegiatanIndividuResponse(tahun, kodeOpd, first.nip(),
-                                first.indikator(), first.target() != null ? first.target().toString() : null,
-                                jenisLaporan, listData, totalRealisasi);
-                    });
+            String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan, String levelRole, String nip) {
+        java.util.List<String> validRoles = java.util.List.of("LEVEL_1", "LEVEL_2", "LEVEL_3", "LEVEL_4");
+        if (!validRoles.contains(levelRole.toUpperCase())) {
+            return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
+        }
+
+        return pegawaiClient.fetchAllPegawai()
+                .flatMapMany(pegawais -> {
+                    boolean nipExists = pegawais.stream()
+                            .anyMatch(p -> nip.equals(p.nip()));
+                    
+                    if (!nipExists) {
+                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
+                    }
+                    
+                    return kegiatanRepo.findAllByKodeOpdAndNipAndTahun(kodeOpd, nip, tahun)
+                            .collectList()
+                            .flatMapMany(list -> {
+                                Map<String, java.util.List<RenjaKegiatanIndividu>> grouped = list.stream()
+                                        .collect(java.util.stream.Collectors
+                                                .groupingBy(t -> t.nip() + "|" + t.kodeIndikator() + "|" + t.kodeTarget()));
+                                return Flux.fromIterable(grouped.values()).map(groupList -> {
+                                    RenjaKegiatanIndividu first = groupList.get(0);
+                                    Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan,
+                                            item -> item.realisasi() != null ? item.realisasi().doubleValue() : null);
+                                    Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN
+                                            || jenisLaporan == JenisLaporan.TAHUNAN)
+                                                    ? listData.values().stream().mapToDouble(Double::doubleValue).sum()
+                                                    : null;
+                                    return new LaporanRealisasiRenjaKegiatanIndividuResponse(tahun, kodeOpd, first.nip(),
+                                            first.indikator(), first.target() != null ? first.target().toString() : null,
+                                            jenisLaporan, listData, totalRealisasi);
+                                });
+                            });
                 });
     }
 
     public Flux<LaporanRealisasiRenjaSubKegiatanIndividuResponse> getLaporanRealisasiSubKegiatanByOpd(
-            String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan) {
-        return subKegiatanRepo.findAllByKodeOpdAndTahun(kodeOpd, tahun)
-                .collectList()
-                .flatMapMany(list -> {
-                    Map<String, java.util.List<RenjaSubKegiatanIndividu>> grouped = list.stream()
-                            .collect(java.util.stream.Collectors
-                                    .groupingBy(t -> t.nip() + "|" + t.kodeIndikator() + "|" + t.kodeTarget()));
-                    return Flux.fromIterable(grouped.values()).map(groupList -> {
-                        RenjaSubKegiatanIndividu first = groupList.get(0);
-                        Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan,
-                                item -> item.realisasiTarget() != null ? item.realisasiTarget().doubleValue() : null);
-                        Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN
-                                || jenisLaporan == JenisLaporan.TAHUNAN)
-                                        ? listData.values().stream().mapToDouble(Double::doubleValue).sum()
-                                        : null;
-                        return new LaporanRealisasiRenjaSubKegiatanIndividuResponse(tahun, kodeOpd, first.nip(),
-                                first.indikator(),
-                                first.targetRealisasi() != null ? first.targetRealisasi().toString() : null,
-                                jenisLaporan, listData, totalRealisasi);
-                    });
+            String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan, String levelRole, String nip) {
+        java.util.List<String> validRoles = java.util.List.of("LEVEL_1", "LEVEL_2", "LEVEL_3", "LEVEL_4");
+        if (!validRoles.contains(levelRole.toUpperCase())) {
+            return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
+        }
+
+        return pegawaiClient.fetchAllPegawai()
+                .flatMapMany(pegawais -> {
+                    boolean nipExists = pegawais.stream()
+                            .anyMatch(p -> nip.equals(p.nip()));
+                    
+                    if (!nipExists) {
+                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
+                    }
+                    
+                    return subKegiatanRepo.findAllByKodeOpdAndNipAndTahun(kodeOpd, nip, tahun)
+                            .collectList()
+                            .flatMapMany(list -> {
+                                Map<String, java.util.List<RenjaSubKegiatanIndividu>> grouped = list.stream()
+                                        .collect(java.util.stream.Collectors
+                                                .groupingBy(t -> t.nip() + "|" + t.kodeIndikator() + "|" + t.kodeTarget()));
+                                return Flux.fromIterable(grouped.values()).map(groupList -> {
+                                    RenjaSubKegiatanIndividu first = groupList.get(0);
+                                    Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan,
+                                            item -> item.realisasiTarget() != null ? item.realisasiTarget().doubleValue() : null);
+                                    Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN
+                                            || jenisLaporan == JenisLaporan.TAHUNAN)
+                                                    ? listData.values().stream().mapToDouble(Double::doubleValue).sum()
+                                                    : null;
+                                    return new LaporanRealisasiRenjaSubKegiatanIndividuResponse(tahun, kodeOpd, first.nip(),
+                                            first.indikator(),
+                                            first.targetRealisasi() != null ? first.targetRealisasi().toString() : null,
+                                            jenisLaporan, listData, totalRealisasi);
+                                });
+                            });
                 });
     }
 

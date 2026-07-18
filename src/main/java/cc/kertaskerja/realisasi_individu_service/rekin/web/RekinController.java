@@ -88,6 +88,25 @@ public class RekinController {
         return rekinService.getPenetapanByNip(nip, kodeOpd, Integer.parseInt(tahun), bulan);
     }
 
+    @PostMapping("/nip/{nip}/kodeOpd/{kodeOpd}/tahun/{tahun}/sync/penetapan")
+    @Operation(summary = "Sinkronisasi rekin individu", description = "Memicu sinkronisasi data rekin individu dari service penetapan dan langsung mengembalikan data terbarunya.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data penetapan ter-sinkronisasi dan terintegrasi dengan realisasi", content = @Content(schema = @Schema(implementation = PenetapanRekinIndividuResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Mono<PenetapanRekinIndividuResponse> syncRekinIndividu(
+            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
+            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun", example = "2026") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi (opsional)", example = "1") @RequestParam(required = false) String bulan) {
+        if (nip == null || nip.isBlank() || kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip, kodeOpd, dan tahun tidak boleh kosong");
+        }
+        return rekinService.syncPenetapanRekinIndividu(nip, kodeOpd, Integer.parseInt(tahun))
+                .then(rekinService.getPenetapanByNip(nip, kodeOpd, Integer.parseInt(tahun), bulan));
+    }
+
     @GetMapping("/laporan/nip/{nip}/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
     @Operation(summary = "Laporan realisasi rekin individu per periode", description = "Mengambil total realisasi rekin individu yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN).")
     @ApiResponses(value = {
@@ -107,8 +126,8 @@ public class RekinController {
         return rekinService.getLaporanRealisasi(nip, kodeOpd, tahun, jenisLaporan, bulan);
     }
 
-    @GetMapping("/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
-    @Operation(summary = "Laporan realisasi rekin individu per periode (OPD)", description = "Mengambil total realisasi rekin individu yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN) untuk seluruh OPD.")
+    @GetMapping("/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}/levelRole/{levelRole}/nip/{nip}")
+    @Operation(summary = "Laporan realisasi rekin individu per periode (OPD)", description = "Mengambil total realisasi rekin individu yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN) untuk NIP tertentu.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data laporan realisasi rekin individu", content = @Content(schema = @Schema(implementation = LaporanRealisasiRekinIndividuResponse.class))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
@@ -120,11 +139,13 @@ public class RekinController {
             @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun laporan") @PathVariable String tahun,
             @Parameter(description = "Jenis periode laporan") @PathVariable JenisLaporan jenisLaporan,
+            @Parameter(description = "Level Role") @PathVariable String levelRole,
+            @Parameter(description = "NIP Pegawai") @PathVariable String nip,
             @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN") @RequestParam(required = false) String bulan) {
         if (kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd dan tahun tidak boleh kosong");
         }
-        return rekinService.getLaporanRealisasiByOpd(kodeOpd, tahun, jenisLaporan, bulan);
+        return rekinService.getLaporanRealisasiByOpd(kodeOpd, tahun, jenisLaporan, bulan, levelRole, nip);
     }
 
 
