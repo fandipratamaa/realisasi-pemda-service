@@ -5,7 +5,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface RenaksiIndividuRepository extends ReactiveCrudRepository<RenaksiIndividu, Long> {
-    Flux<RenaksiIndividu> findAllByKodeOpdAndNipAndKodeSasaran(String kodeOpd, String nip, String kodeSasaran);
+    Flux<RenaksiIndividu> findAllByKodeOpdAndNipAndKodeRekin(String kodeOpd, String nip, String kodeRekin);
 
     Flux<RenaksiIndividu> findAllByKodeOpdAndNipAndTahunAndBulan(String kodeOpd, String nip, String tahun, String bulan);
 
@@ -15,9 +15,9 @@ public interface RenaksiIndividuRepository extends ReactiveCrudRepository<Renaks
 
     Flux<RenaksiIndividu> findAllByKodeOpdAndTahun(String kodeOpd, String tahun);
 
-    Mono<RenaksiIndividu> findFirstByKodeOpdAndNipAndKodeSasaranAndKodeRenaksiAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
-            String kodeOpd, String nip, String kodeSasaran,
-            String kodeRenaksi, String kodeIndikator, String kodeTarget,
+    Mono<RenaksiIndividu> findFirstByKodeOpdAndNipAndKodeRekinAndKodeRenaksiAndKodePelaksanaanAndTahunAndBulan(
+            String kodeOpd, String nip, String kodeRekin,
+            String kodeRenaksi, String kodePelaksanaan,
             String tahun, String bulan
     );
 }

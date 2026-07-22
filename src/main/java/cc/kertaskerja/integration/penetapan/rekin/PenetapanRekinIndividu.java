@@ -25,13 +25,36 @@ public class PenetapanRekinIndividu {
             @JsonProperty("kode_pk") String kodePk,
             String rekin,
             @JsonProperty("nama_pemilik_pk") String namaPemilikPk,
+            @JsonProperty("anggaran_pk") Long anggaranPk,
             Integer versi,
-            @JsonProperty("indikator_pk") List<IndikatorRekinData> indikatorPk
+            @JsonProperty("indikator_pk") List<IndikatorRekinData> indikatorPk,
+            List<RenaksiRekinData> renaksis
     ) {
         public RekinData {
             if (indikatorPk == null) indikatorPk = List.of();
+            if (renaksis == null) renaksis = List.of();
         }
     }
+
+    public record RenaksiRekinData(
+            Long id,
+            @JsonProperty("urutan_renaksi") Integer urutanRenaksi,
+            @JsonProperty("kode_renaksi") String kodeRenaksi,
+            @JsonProperty("nama_renaksi") String namaRenaksi,
+            @JsonProperty("anggaran_renaksi") Long anggaranRenaksi,
+            List<PelaksanaanRekinData> pelaksanaans
+    ) {
+        public RenaksiRekinData {
+            if (pelaksanaans == null) pelaksanaans = List.of();
+        }
+    }
+
+    public record PelaksanaanRekinData(
+            Long id,
+            @JsonProperty("kode_pelaksanaan") String kodePelaksanaan,
+            @JsonProperty("bulan_pelaksanaan") Integer bulanPelaksanaan,
+            @JsonProperty("bobot_pelaksanaan") Integer bobotPelaksanaan
+    ) {}
 
     public record IndikatorRekinData(
             Long id,

@@ -17,8 +17,34 @@ public record PenetapanRekinIndividuResponse(
             @JsonProperty("kode_sasaran_opd") String kodeSasaranOpd,
             @JsonProperty("kode_pk") String kodePk,
             String rekin,
+            @JsonProperty("anggaran_pk") Long anggaranPk,
             Integer versi,
-            @JsonProperty("indikator_pk") List<IndikatorPenetapanResponse> indikatorPk
+            @JsonProperty("indikator_pk") List<IndikatorPenetapanResponse> indikatorPk,
+            List<RenaksiPenetapanResponse> renaksis
+    ) {}
+
+    public record RenaksiPenetapanResponse(
+            Long id,
+            @JsonProperty("urutan_renaksi") Integer urutanRenaksi,
+            @JsonProperty("kode_renaksi") String kodeRenaksi,
+            @JsonProperty("nama_renaksi") String namaRenaksi,
+            @JsonProperty("anggaran_renaksi") Long anggaranRenaksi,
+            List<PelaksanaanPenetapanResponse> pelaksanaans
+    ) {}
+
+    public record PelaksanaanPenetapanResponse(
+            Long id,
+            @JsonProperty("kode_pelaksanaan") String kodePelaksanaan,
+            @JsonProperty("bulan_pelaksanaan") Integer bulanPelaksanaan,
+            @JsonProperty("bobot_pelaksanaan") Integer bobotPelaksanaan,
+            Double realisasi,
+            Double capaian,
+            @JsonProperty("keterangan_capaian") String keteranganCapaian,
+            @JsonProperty("faktor_penunjang") String faktorPenunjang,
+            @JsonProperty("faktor_penghambat") String faktorPenghambat,
+            @JsonProperty("bukti_pendukung") String buktiPendukung,
+            @JsonProperty("keterangan_bukti_pendukung") String keteranganBuktiPendukung,
+            @JsonProperty("jenis_realisasi") String jenisRealisasi
     ) {}
 
     public record IndikatorPenetapanResponse(

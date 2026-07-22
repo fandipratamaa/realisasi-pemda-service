@@ -40,14 +40,15 @@ public class RekinControllerWebFluxTests {
                 "8.01.0.00.0.00.01.0000", 2026, null,
                 List.of(new PenetapanRekinIndividuResponse.RekinPenetapanResponse(
                         1L, null, "REKIN-PEG-2026-33475",
-                        "Peningkatan Pembinaan", 5,
+                        "Peningkatan Pembinaan", null, 5,
                         List.of(new PenetapanRekinIndividuResponse.IndikatorPenetapanResponse(
                                 1L, "IND-REKIN-87169", "Persentase terlaksananya",
                                 List.of(new PenetapanRekinIndividuResponse.TargetPenetapanResponse(
                                         1L, "TRGT-IND-REKIN-66602", 2026, 100.0, "%",
                                         null, null, null, null, null, null, null, null
                                 ))
-                        ))
+                        )),
+                        List.of()
                 ))
         );
 
@@ -84,14 +85,15 @@ public class RekinControllerWebFluxTests {
                 "8.01.0.00.0.00.01.0000", 2026, 1,
                 List.of(new PenetapanRekinIndividuResponse.RekinPenetapanResponse(
                         1L, null, "REKIN-PEG-2026-33475",
-                        "Peningkatan Pembinaan", 5,
+                        "Peningkatan Pembinaan", null, 5,
                         List.of(new PenetapanRekinIndividuResponse.IndikatorPenetapanResponse(
                                 1L, "IND-REKIN-87169", "Persentase terlaksananya",
                                 List.of(new PenetapanRekinIndividuResponse.TargetPenetapanResponse(
                                         1L, "TRGT-IND-REKIN-66602", 2026, 100.0, "%",
                                         75.5, 75.5, null, null, null, null, null, null
                                 ))
-                        ))
+                        )),
+                        List.of()
                 ))
         );
 

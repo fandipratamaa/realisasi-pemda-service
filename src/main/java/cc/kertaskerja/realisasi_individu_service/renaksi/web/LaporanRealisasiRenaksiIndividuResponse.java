@@ -18,8 +18,8 @@ public record LaporanRealisasiRenaksiIndividuResponse(
         @Schema(description = "NIP pegawai", example = "198012312005011001")
         String nip,
 
-        @Schema(description = "Indikator laporan", example = "Indikator A")
-        String indikator,
+        @Schema(description = "Renaksi laporan", example = "Renaksi A")
+        String renaksi,
 
         @Schema(description = "Target laporan", example = "100")
         String target,

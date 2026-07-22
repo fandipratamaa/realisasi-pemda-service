@@ -34,28 +34,22 @@ public class RenaksiControllerWebFluxTests {
         String bulan = "1";
 
         RenaksiIndividu r1 = RenaksiIndividu.of(
-                kodeOpd, nip, "SASARAN-1", "Realisasi Sasaran SASARAN-1",
-                "RENAKSI-1", "Realisasi Renaksi RENAKSI-1",
-                "IND-1", "Realisasi Indikator IND-1",
-                "TAR-1", BigDecimal.valueOf(100), BigDecimal.valueOf(50000000),
+                kodeOpd, nip, "REKIN-1", "RENAKSI-1", "TAR-1",
                 BigDecimal.valueOf(75), tahun, bulan, "%",
                 RenaksiStatus.UNCHECKED, JenisRealisasi.NAIK, "", "", "", "");
         RenaksiIndividu r2 = RenaksiIndividu.of(
-                kodeOpd, nip, "SASARAN-2", "Realisasi Sasaran SASARAN-2",
-                "RENAKSI-2", "Realisasi Renaksi RENAKSI-2",
-                "IND-2", "Realisasi Indikator IND-2",
-                "TAR-2", BigDecimal.valueOf(50), BigDecimal.valueOf(25000000),
+                kodeOpd, nip, "REKIN-2", "RENAKSI-2", "TAR-2",
                 BigDecimal.valueOf(25), tahun, bulan, "%",
                 RenaksiStatus.UNCHECKED, JenisRealisasi.NAIK, "", "", "", "");
 
-        when(renaksiService.getAllByNipAndKodeOpdAndTahunAndBulan(nip, kodeOpd, tahun, bulan))
+        when(renaksiService.searchRealisasi(kodeOpd, tahun, bulan, "LEVEL_1", nip))
                 .thenReturn(Flux.just(r1, r2));
 
         webTestClient
                 .mutateWith(SecurityMockServerConfigurers.mockJwt()
-                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN_OPD")))
                 .get()
-                .uri("/renaksi_individu/nip/{nip}/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}", nip, kodeOpd, tahun, bulan)
+                .uri("/renaksi_individu/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}/levelRole/{levelRole}/nip/{nip}", kodeOpd, tahun, bulan, "LEVEL_1", nip)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(RenaksiIndividu.class)
