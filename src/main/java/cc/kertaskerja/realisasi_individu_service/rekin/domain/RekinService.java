@@ -458,8 +458,18 @@ public class RekinService {
         List<PenetapanRekinIndividuResponse.IndikatorPenetapanResponse> indikators = rekin.indikatorPk().stream()
                 .map(this::mapIndikatorToResponse)
                 .toList();
+        List<PenetapanRekinIndividuResponse.RenaksiPenetapanResponse> renaksis = rekin.renaksis().stream()
+                .map(r -> {
+                    List<PenetapanRekinIndividuResponse.PelaksanaanPenetapanResponse> pelaksanaans = r.pelaksanaans().stream()
+                            .map(p -> new PenetapanRekinIndividuResponse.PelaksanaanPenetapanResponse(p.id(), p.kodePelaksanaan(), p.bulanPelaksanaan(), p.bobotPelaksanaan(), null, null, null, null, null, null, null, null))
+                            .toList();
+                    return new PenetapanRekinIndividuResponse.RenaksiPenetapanResponse(
+                            r.id(), r.urutanRenaksi(), r.kodeRenaksi(), r.namaRenaksi(), r.anggaranRenaksi(), pelaksanaans
+                    );
+                })
+                .toList();
         return new PenetapanRekinIndividuResponse.RekinPenetapanResponse(
-                rekin.id(), rekin.kodeSasaranOpd(), rekin.kodePk(), rekin.rekin(), rekin.versi(), indikators
+                rekin.id(), rekin.kodeSasaranOpd(), rekin.kodePk(), rekin.rekin(), rekin.anggaranPk(), rekin.versi(), indikators, renaksis
         );
     }
 
@@ -515,9 +525,19 @@ public class RekinService {
         List<PenetapanRekinIndividuResponse.IndikatorPenetapanResponse> indikators = rekin.indikatorPk().stream()
                 .map(ind -> mergeIndikatorWithRealisasi(rekin.kodePk(), ind, localTargetMap))
                 .toList();
+        List<PenetapanRekinIndividuResponse.RenaksiPenetapanResponse> renaksis = rekin.renaksis().stream()
+                .map(r -> {
+                    List<PenetapanRekinIndividuResponse.PelaksanaanPenetapanResponse> pelaksanaans = r.pelaksanaans().stream()
+                            .map(p -> new PenetapanRekinIndividuResponse.PelaksanaanPenetapanResponse(p.id(), p.kodePelaksanaan(), p.bulanPelaksanaan(), p.bobotPelaksanaan(), null, null, null, null, null, null, null, null))
+                            .toList();
+                    return new PenetapanRekinIndividuResponse.RenaksiPenetapanResponse(
+                            r.id(), r.urutanRenaksi(), r.kodeRenaksi(), r.namaRenaksi(), r.anggaranRenaksi(), pelaksanaans
+                    );
+                })
+                .toList();
         return new PenetapanRekinIndividuResponse.RekinPenetapanResponse(
                 rekin.id(), rekin.kodeSasaranOpd(), rekin.kodePk(), rekin.rekin(),
-                rekin.versi(), indikators
+                rekin.anggaranPk(), rekin.versi(), indikators, renaksis
         );
     }
 

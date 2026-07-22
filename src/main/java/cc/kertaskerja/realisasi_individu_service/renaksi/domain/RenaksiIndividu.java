@@ -20,23 +20,11 @@ public record RenaksiIndividu(
         @Column("kode_opd") String kodeOpd,
         String nip,
 
-        @Column("kode_sasaran") String kodeSasaran,
-
-        @Column("sasaran") String sasaran,
+        @Column("kode_rekin") String kodeRekin,
 
         @Column("kode_renaksi") String kodeRenaksi,
 
-        @Column("renaksi") String renaksi,
-
-        @Column("kode_indikator") String kodeIndikator,
-
-        @Column("indikator") String indikator,
-
-        @Column("kode_target") String kodeTarget,
-
-        @Column("target") BigDecimal target,
-
-        @Column("pagu_anggaran") BigDecimal paguAnggaran,
+        @Column("kode_pelaksanaan") String kodePelaksanaan,
         BigDecimal realisasi,
         String tahun,
         String bulan,
@@ -58,15 +46,10 @@ public record RenaksiIndividu(
     public static RenaksiIndividu of(
             String kodeOpd,
             String nip,
-            String kodeSasaran,
-            String sasaran,
+            String kodeRekin,
             String kodeRenaksi,
-            String renaksi,
-            String kodeIndikator,
-            String indikator,
-            String kodeTarget,
-            BigDecimal target,
-            BigDecimal paguAnggaran,
+            String kodePelaksanaan,
+
             BigDecimal realisasi,
             String tahun,
             String bulan,
@@ -77,8 +60,8 @@ public record RenaksiIndividu(
             String faktorPenghambat,
             String buktiPendukung,
             String keteranganBuktiPendukung) {
-        return new RenaksiIndividu(null, kodeOpd, nip, kodeSasaran, sasaran, kodeRenaksi, renaksi,
-                kodeIndikator, indikator, kodeTarget, target, paguAnggaran, realisasi,
+        return new RenaksiIndividu(null, kodeOpd, nip, kodeRekin, kodeRenaksi,
+                kodePelaksanaan, realisasi,
                 tahun, bulan, satuan, status, jenisRealisasi,
                 faktorPenunjang, faktorPenghambat, buktiPendukung, keteranganBuktiPendukung,
                 null, null, null, null);
@@ -103,14 +86,14 @@ public record RenaksiIndividu(
     @JsonProperty("capaian")
     public Double capaian() {
         Double realisasiVal = realisasi != null ? realisasi.doubleValue() : null;
-        Double targetVal = target != null ? target.doubleValue() : null;
+        Double targetVal = null;
         return hitungCapaian(realisasiVal, targetVal).capaian();
     }
 
     @JsonProperty("keteranganCapaian")
     public String keteranganCapaian() {
         Double realisasiVal = realisasi != null ? realisasi.doubleValue() : null;
-        Double targetVal = target != null ? target.doubleValue() : null;
+        Double targetVal = null;
         return hitungCapaian(realisasiVal, targetVal).keteranganCapaian();
     }
 }

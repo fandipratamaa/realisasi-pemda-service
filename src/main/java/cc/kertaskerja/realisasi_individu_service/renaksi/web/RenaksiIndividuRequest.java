@@ -26,34 +26,22 @@ public record RenaksiIndividuRequest(
         @Schema(description = "NIP pelaksana", example = "198012312005011001")
         String nip,
 
-        @NotNull(message = "Kode sasaran tidak boleh kosong")
-        @NotEmpty(message = "Kode sasaran tidak boleh kosong")
-        @Schema(description = "Kode sasaran", example = "SASARAN-001")
-        String kodeSasaran,
+        @NotNull(message = "Kode rekin tidak boleh kosong")
+        @NotEmpty(message = "Kode rekin tidak boleh kosong")
+        @Schema(description = "Kode rekin", example = "REKIN-001")
+        String kodeRekin,
 
         @NotNull(message = "Kode renaksi tidak boleh kosong")
         @NotEmpty(message = "Kode renaksi tidak boleh kosong")
         @Schema(description = "Kode renaksi", example = "RENAKSI-001")
         String kodeRenaksi,
 
-        @NotNull(message = "Kode indikator tidak boleh kosong")
-        @NotEmpty(message = "Kode indikator tidak boleh kosong")
-        @Schema(description = "Kode indikator", example = "IND-RENAKSI-001")
-        String kodeIndikator,
 
-        @NotNull(message = "Kode target tidak boleh kosong")
-        @NotEmpty(message = "Kode target tidak boleh kosong")
-        @Schema(description = "Kode target", example = "TAR-1")
-        String kodeTarget,
 
-        @NotNull(message = "Target tidak boleh kosong")
-        @PositiveOrZero(message = "Target tidak boleh negatif")
-        @Schema(description = "Nilai target", example = "100.00")
-        BigDecimal target,
-
-        @NotNull(message = "Pagu anggaran tidak boleh kosong")
-        @Schema(description = "Pagu anggaran", example = "50000000.00")
-        BigDecimal paguAnggaran,
+        @NotNull(message = "Kode pelaksanaan tidak boleh kosong")
+        @NotEmpty(message = "Kode pelaksanaan tidak boleh kosong")
+        @Schema(description = "Kode pelaksanaan", example = "PEL-1")
+        String kodePelaksanaan,
 
         @NotNull(message = "Realisasi tidak boleh kosong")
         @PositiveOrZero(message = "Realisasi tidak boleh negatif")
