@@ -75,7 +75,7 @@ public class TujuanService {
 
     private TujuanResponse toResponse(Tujuan entity) {
         return new TujuanResponse(
-                entity.id(), entity.kodeTujuanPemda(), entity.kodeIndikator(), entity.kodeTarget(),
+                entity.id(), null, null, entity.kodeTujuanPemda(), entity.kodeIndikator(), entity.kodeTarget(),
                 entity.realisasi(), entity.satuan(), entity.tahun(), entity.bulan(),
                 entity.faktorPenunjang(), entity.faktorPenghambat(),
                 null, null, null, null, null, null, null, null,
@@ -113,7 +113,7 @@ public class TujuanService {
 
         if (matchedIndikator.isEmpty()) {
             return new TujuanResponse(
-                    response.id(), response.kodeTujuanPemda(), response.kodeIndikator(), response.kodeTarget(),
+                    response.id(), penetapan.visi(), penetapan.misi(), response.kodeTujuanPemda(), response.kodeIndikator(), response.kodeTarget(),
                     response.realisasi(), response.satuan(), response.tahun(), response.bulan(),
                     response.faktorPenunjang(), response.faktorPenghambat(),
                     penetapan.tujuanPemda(), null, null, null, null, null, null, null,
@@ -139,7 +139,7 @@ public class TujuanService {
         }
 
         return new TujuanResponse(
-                response.id(), response.kodeTujuanPemda(), response.kodeIndikator(), response.kodeTarget(),
+                response.id(), penetapan.visi(), penetapan.misi(), response.kodeTujuanPemda(), response.kodeIndikator(), response.kodeTarget(),
                 response.realisasi(), response.satuan(), response.tahun(), response.bulan(),
                 response.faktorPenunjang(), response.faktorPenghambat(),
                 penetapan.tujuanPemda(),
@@ -411,7 +411,7 @@ public class TujuanService {
                 .toList();
 
         return new TujuanPemdaPenetapanResponse(
-                penetapan.id(), penetapan.kodeTujuanPemda(), penetapan.tujuanPemda(), indikatorList
+                penetapan.id(), penetapan.visi(), penetapan.misi(), penetapan.kodeTujuanPemda(), penetapan.tujuanPemda(), indikatorList
         );
     }
 

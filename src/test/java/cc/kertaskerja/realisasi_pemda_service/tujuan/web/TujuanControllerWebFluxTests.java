@@ -2,9 +2,7 @@ package cc.kertaskerja.realisasi_pemda_service.tujuan.web;
 
 import cc.kertaskerja.config.SecurityConfig;
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
-import cc.kertaskerja.realisasi_pemda_service.tujuan.domain.Tujuan;
 import cc.kertaskerja.realisasi_pemda_service.tujuan.domain.TujuanService;
-import cc.kertaskerja.realisasi_pemda_service.tujuan.domain.TujuanStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -44,7 +42,7 @@ public class TujuanControllerWebFluxTests {
                 JenisRealisasi.NAIK, "test.pdf", "keterangan bukti"
         );
 
-        TujuanResponse updated = new TujuanResponse(1L, "TUJ-123",
+        TujuanResponse updated = new TujuanResponse(1L, "visi", "misi", "TUJ-123",
                 "IND-TUJ-123", "TAR-1", 80.0, "%", "2025", "01",
                 "", "", "Realisasi Tujuan TUJ-123", "Realisasi Indikator IND-TUJ-123",
                 "(realisasi/target)*100", "BPS", "Definisi Operasional", 100.0, 80.0, null,
@@ -98,7 +96,7 @@ public class TujuanControllerWebFluxTests {
         FaktorPenunjangRequest req = new FaktorPenunjangRequest(
                 "TUJ-123", "IND-TUJ-123", "TAR-1", "2025", "01", "Kerjasama antar daerah");
 
-        TujuanResponse updated = new TujuanResponse(1L, "TUJ-123",
+        TujuanResponse updated = new TujuanResponse(1L, "visi", "misi", "TUJ-123",
                 "IND-TUJ-123", "TAR-1", 100.0, "%", "2025", "01",
                 "Kerjasama antar daerah", "", "Tujuan 1", "Indikator 1", "(realisasi/target)*100",
                 "BPS", "Definisi 1", 100.0, 100.0, null, JenisRealisasi.NAIK, "admin", "admin", "file.pdf", "bukti valid");
@@ -128,7 +126,7 @@ public class TujuanControllerWebFluxTests {
         FaktorPenghambatRequest req = new FaktorPenghambatRequest(
                 "TUJ-123", "IND-TUJ-123", "TAR-1", "2025", "01", "Keterbatasan anggaran");
 
-        TujuanResponse updated = new TujuanResponse(1L, "TUJ-123",
+        TujuanResponse updated = new TujuanResponse(1L, "visi", "misi", "TUJ-123",
                 "IND-TUJ-123", "TAR-1", 100.0, "%", "2025", "01",
                 "", "Keterbatasan anggaran", "Tujuan 1", "Indikator 1", "(realisasi/target)*100",
                 "BPS", "Definisi 1", 100.0, 100.0, null, JenisRealisasi.NAIK, "admin", "admin", "file.pdf", "bukti valid");

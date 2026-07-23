@@ -18,6 +18,8 @@ public class PenetapanTujuanPemda {
 
     public record TujuanPenetapanPemdaData(
             Long id,
+            String visi,
+            String misi,
             @JsonProperty("kode_tujuan_pemda") String kodeTujuanPemda,
             @JsonProperty("tujuan_pemda") String tujuanPemda,
             String periode,

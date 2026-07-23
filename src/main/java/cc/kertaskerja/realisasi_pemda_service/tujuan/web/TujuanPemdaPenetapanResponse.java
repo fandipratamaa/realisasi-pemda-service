@@ -6,6 +6,10 @@ import java.util.List;
 
 public record TujuanPemdaPenetapanResponse(
         Long id,
+        
+        String visi,
+        
+        String misi,
 
         @JsonProperty("kode_tujuan_pemda")
         String kodeTujuanPemda,

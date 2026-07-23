@@ -69,6 +69,8 @@ public class PenetapanTujuanPemdaClient {
             return root.tujuanPemdas().stream()
                     .map(t -> new PenetapanTujuanPemda.TujuanPenetapanPemdaData(
                             t.id(),
+                            t.visi(),
+                            t.misi(),
                             t.kodeTujuanPemda(),
                             t.tujuanPemda(),
                             t.periode(),

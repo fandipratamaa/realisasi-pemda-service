@@ -5,6 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record TujuanResponse(
         Long id,
+        
+        String visi,
+        
+        String misi,
 
         @JsonProperty("kode_tujuan_pemda")
         String kodeTujuanPemda,
