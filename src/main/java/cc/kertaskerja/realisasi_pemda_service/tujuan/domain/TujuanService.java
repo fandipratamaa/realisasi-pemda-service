@@ -131,7 +131,9 @@ public class TujuanService {
         Double capaian = null;
         String keteranganCapaian = null;
         if (response.realisasi() != null && target != null && target != 0 && response.realisasi() != 0) {
-            capaian = (response.realisasi() / target) * 100;
+            cc.kertaskerja.capaian.domain.Capaian capaianObj = new cc.kertaskerja.capaian.domain.Capaian(
+                    response.realisasi(), String.valueOf(target), response.jenisRealisasi());
+            capaian = capaianObj.hasilCapaian();
             if (capaian > 100) {
                 keteranganCapaian = "nilai capaian lebih dari 100% (" + String.format("%.2f%%", capaian) + ")";
                 capaian = 100.0;
@@ -448,15 +450,8 @@ public class TujuanService {
         String buktiPendukung = matched != null ? matched.buktiPendukung() : null;
         String keteranganBuktiPendukung = matched != null ? matched.keteranganBuktiPendukung() : null;
         
-        Double capaian = null;
-        String keteranganCapaian = null;
-        if (matched != null && realisasiValue != null && t.target() != null && t.target() != 0 && realisasiValue != 0) {
-            capaian = (realisasiValue / t.target()) * 100;
-            if (capaian > 100) {
-                keteranganCapaian = "nilai capaian lebih dari 100% (" + String.format("%.2f%%", capaian) + ")";
-                capaian = 100.0;
-            }
-        }
+        Double capaian = matched != null ? matched.hitungCapaian(t.target()) : null;
+        String keteranganCapaian = matched != null ? matched.keteranganCapaian(t.target()) : null;
         
         return new TujuanPemdaPenetapanResponse.TargetPenetapan(
                 t.kodeTarget(), t.satuan(), t.target(),

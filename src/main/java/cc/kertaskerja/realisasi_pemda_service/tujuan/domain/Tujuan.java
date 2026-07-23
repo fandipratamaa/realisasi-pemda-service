@@ -66,4 +66,22 @@ public record Tujuan(
                 realisasi, satuan, tahun, bulan, faktorPenunjang, faktorPenghambat, jenisRealisasi, status, buktiPendukung, keteranganBuktiPendukung,
                 null, null, null, null);
     }
+
+    public Double hitungCapaian(Double targetPenetapan) {
+        if (realisasi == null || targetPenetapan == null || targetPenetapan == 0 || realisasi == 0) {
+            return null;
+        }
+        cc.kertaskerja.capaian.domain.Capaian capaianObj = new cc.kertaskerja.capaian.domain.Capaian(realisasi, String.valueOf(targetPenetapan), jenisRealisasi);
+        Double calculatedCapaian = capaianObj.hasilCapaian();
+        return calculatedCapaian > 100 ? 100.0 : calculatedCapaian;
+    }
+
+    public String keteranganCapaian(Double targetPenetapan) {
+        if (realisasi == null || targetPenetapan == null || targetPenetapan == 0 || realisasi == 0) {
+            return null;
+        }
+        cc.kertaskerja.capaian.domain.Capaian capaianObj = new cc.kertaskerja.capaian.domain.Capaian(realisasi, String.valueOf(targetPenetapan), jenisRealisasi);
+        Double calculatedCapaian = capaianObj.hasilCapaian();
+        return calculatedCapaian > 100 ? "nilai capaian lebih dari 100% (" + String.format("%.2f%%", calculatedCapaian) + ")" : null;
+    }
 }
