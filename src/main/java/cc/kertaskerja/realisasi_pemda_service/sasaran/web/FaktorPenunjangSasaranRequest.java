@@ -8,18 +8,18 @@ import jakarta.validation.constraints.NotNull;
 public record FaktorPenunjangSasaranRequest(
         @NotNull(message = "ID sasaran tidak boleh kosong")
         @NotEmpty(message = "ID sasaran tidak boleh kosong")
-        @Schema(description = "ID sasaran dari sistem sumber", example = "SAS-001")
-        String sasaranId,
+        @Schema(description = "Kode sasaran pemda", example = "SAS-001")
+        String kodeSasaranPemda,
 
         @NotNull(message = "ID indikator tidak boleh kosong")
         @NotEmpty(message = "ID indikator tidak boleh kosong")
-        @Schema(description = "ID indikator sasaran", example = "IND-SAS-123")
-        String indikatorId,
+        @Schema(description = "Kode indikator sasaran", example = "IND-SAS-123")
+        String kodeIndikator,
 
         @NotNull(message = "ID target tidak boleh kosong")
         @NotEmpty(message = "ID target tidak boleh kosong")
-        @Schema(description = "ID target indikator", example = "TAR-1")
-        String targetId,
+        @Schema(description = "Kode target indikator", example = "TAR-1")
+        String kodeTarget,
 
         @NotNull(message = "Tahun tidak boleh kosong")
         @NotEmpty(message = "Tahun tidak boleh kosong")

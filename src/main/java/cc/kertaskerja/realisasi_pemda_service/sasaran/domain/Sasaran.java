@@ -2,7 +2,6 @@ package cc.kertaskerja.realisasi_pemda_service.sasaran.domain;
 
 import cc.kertaskerja.capaian.domain.Capaian;
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.CreatedBy;
@@ -17,20 +16,19 @@ import java.time.Instant;
 public record Sasaran(
         @Id Long id,
 
-        String sasaranId,
-        String sasaran,
-        String indikatorId,
-        String indikator,
-        String targetId,
-        String target,
+        @Column("kode_sasaran_pemda")
+        String kodeSasaranPemda,
+        
+        @Column("kode_indikator")
+        String kodeIndikator,
+        
+        @Column("kode_target")
+        String kodeTarget,
+        
         Double realisasi,
         String satuan,
         String tahun,
         String bulan,
-        @Column("rumus_perhitungan")
-        String rumusPerhitungan,
-        @Column("sumber_data")
-        String sumberData,
         @Column("faktor_penunjang")
         String faktorPenunjang,
         @Column("faktor_penghambat")
@@ -53,18 +51,13 @@ public record Sasaran(
         String lastModifiedBy
 ) {
     public static Sasaran of(
-            String sasaranId,
-            String sasaran,
-            String indikatorId,
-            String indikator,
-            String targetId,
-            String target,
+            String kodeSasaranPemda,
+            String kodeIndikator,
+            String kodeTarget,
             Double realisasi,
             String satuan,
             String tahun,
             String bulan,
-            String rumusPerhitungan,
-            String sumberData,
             String faktorPenunjang,
             String faktorPenghambat,
             JenisRealisasi jenisRealisasi,
@@ -73,36 +66,26 @@ public record Sasaran(
             String keteranganBuktiPendukung
     ) {
         return new Sasaran(null,
-                sasaranId, sasaran, indikatorId, indikator,
-                targetId, target,
-                realisasi, satuan, tahun, bulan, rumusPerhitungan, sumberData, faktorPenunjang, faktorPenghambat, jenisRealisasi, status, buktiPendukung, keteranganBuktiPendukung,
+                kodeSasaranPemda, kodeIndikator, kodeTarget,
+                realisasi, satuan, tahun, bulan, faktorPenunjang, faktorPenghambat, jenisRealisasi, status, buktiPendukung, keteranganBuktiPendukung,
                 null, null, null, null);
     }
 
-    @JsonProperty("capaian")
-    public String capaian() {
-        if (realisasi == null || target == null || target.equals("0") || realisasi == 0) {
+    public Double hitungCapaian(Double targetPenetapan) {
+        if (realisasi == null || targetPenetapan == null || targetPenetapan == 0 || realisasi == 0) {
             return null;
         }
-        double calculatedCapaian = capaianSasaran();
-        return formatCapaian(Math.min(calculatedCapaian, 100));
+        Capaian capaianObj = new Capaian(realisasi, String.valueOf(targetPenetapan), jenisRealisasi);
+        Double calculatedCapaian = capaianObj.hasilCapaian();
+        return calculatedCapaian > 100 ? 100.0 : calculatedCapaian;
     }
 
-    @JsonProperty("keteranganCapaian")
-    public String keteranganCapaian() {
-        if (realisasi == null || target == null || target.equals("0") || realisasi == 0) {
+    public String keteranganCapaian(Double targetPenetapan) {
+        if (realisasi == null || targetPenetapan == null || targetPenetapan == 0 || realisasi == 0) {
             return null;
         }
-        double calculatedCapaian = capaianSasaran();
-        return calculatedCapaian > 100 ? "nilai capaian lebih dari 100% (" + formatCapaian(calculatedCapaian) + ")" : null;
-    }
-
-    private String formatCapaian(double value) {
-        return String.format("%.2f%%", value);
-    }
-
-    public Double capaianSasaran() {
-        Capaian capaian = new Capaian(realisasi, target, jenisRealisasi);
-        return capaian.hasilCapaian();
+        Capaian capaianObj = new Capaian(realisasi, String.valueOf(targetPenetapan), jenisRealisasi);
+        Double calculatedCapaian = capaianObj.hasilCapaian();
+        return calculatedCapaian > 100 ? "nilai capaian lebih dari 100% (" + String.format("%.2f%%", calculatedCapaian) + ")" : null;
     }
 }

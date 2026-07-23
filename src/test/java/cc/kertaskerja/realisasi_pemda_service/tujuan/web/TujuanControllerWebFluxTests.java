@@ -2,9 +2,7 @@ package cc.kertaskerja.realisasi_pemda_service.tujuan.web;
 
 import cc.kertaskerja.config.SecurityConfig;
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
-import cc.kertaskerja.realisasi_pemda_service.tujuan.domain.Tujuan;
 import cc.kertaskerja.realisasi_pemda_service.tujuan.domain.TujuanService;
-import cc.kertaskerja.realisasi_pemda_service.tujuan.domain.TujuanStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -40,14 +38,15 @@ public class TujuanControllerWebFluxTests {
     @Test
     void whenSubmitRealisasiTujuan_thenReturnsTujuan() throws Exception {
         TujuanRequest request = new TujuanRequest(
-                null, "TUJ-123", "IND-TUJ-123", "TAR-1", "100.0", 80.0, "%", "2025", "01",
-                "Visi Misi 1", "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK, "test.pdf", "keterangan bukti"
+                null, "TUJ-123", "IND-TUJ-123", "TAR-1", 80.0, "%", "2025", "01",
+                JenisRealisasi.NAIK, "test.pdf", "keterangan bukti"
         );
 
-        Tujuan updated = Tujuan.of("TUJ-123", "Realisasi Tujuan TUJ-123",
-                "IND-TUJ-123", "Realisasi Indikator IND-TUJ-123",
-                "TAR-1", "100.0", 80.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
-                "BPS", "", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED, "test.pdf", "keterangan bukti");
+        TujuanResponse updated = new TujuanResponse(1L, "visi", "misi", "TUJ-123",
+                "IND-TUJ-123", "TAR-1", 80.0, "%", "2025", "01",
+                "", "", "Realisasi Tujuan TUJ-123", "Realisasi Indikator IND-TUJ-123",
+                "(realisasi/target)*100", "BPS", "Definisi Operasional", 100.0, 80.0, null,
+                JenisRealisasi.NAIK, "admin", "admin", "test.pdf", "keterangan bukti");
 
         when(tujuanService.submitRealisasiTujuan(any(TujuanRequest.class)))
                 .thenReturn(Mono.just(updated));
@@ -61,11 +60,11 @@ public class TujuanControllerWebFluxTests {
                 .bodyValue(objectMapper.writeValueAsString(request))
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody(Tujuan.class)
+                .expectBody(TujuanResponse.class)
                 .consumeWith(response -> {
                     var body = response.getResponseBody();
                     Assertions.assertNotNull(body);
-                    Assertions.assertEquals("TUJ-123", body.tujuanId());
+                    Assertions.assertEquals("TUJ-123", body.kodeTujuanPemda());
                     Assertions.assertEquals("test.pdf", body.buktiPendukung());
                     Assertions.assertEquals("keterangan bukti", body.keteranganBuktiPendukung());
                 });
@@ -97,10 +96,10 @@ public class TujuanControllerWebFluxTests {
         FaktorPenunjangRequest req = new FaktorPenunjangRequest(
                 "TUJ-123", "IND-TUJ-123", "TAR-1", "2025", "01", "Kerjasama antar daerah");
 
-        Tujuan updated = Tujuan.of("TUJ-123", "Realisasi Tujuan TUJ-123",
-                "IND-TUJ-123", "Realisasi Indikator IND-TUJ-123",
-                "TAR-1", "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
-                "BPS", "Kerjasama antar daerah", "", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED, "file.pdf", "bukti valid");
+        TujuanResponse updated = new TujuanResponse(1L, "visi", "misi", "TUJ-123",
+                "IND-TUJ-123", "TAR-1", 100.0, "%", "2025", "01",
+                "Kerjasama antar daerah", "", "Tujuan 1", "Indikator 1", "(realisasi/target)*100",
+                "BPS", "Definisi 1", 100.0, 100.0, null, JenisRealisasi.NAIK, "admin", "admin", "file.pdf", "bukti valid");
 
         when(tujuanService.updateFaktorPenunjang(any(FaktorPenunjangRequest.class)))
                 .thenReturn(Mono.just(updated));
@@ -114,7 +113,7 @@ public class TujuanControllerWebFluxTests {
                 .header("Content-Type", "application/json")
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody(Tujuan.class)
+                .expectBody(TujuanResponse.class)
                 .consumeWith(response -> {
                     var body = response.getResponseBody();
                     Assertions.assertNotNull(body);
@@ -127,10 +126,10 @@ public class TujuanControllerWebFluxTests {
         FaktorPenghambatRequest req = new FaktorPenghambatRequest(
                 "TUJ-123", "IND-TUJ-123", "TAR-1", "2025", "01", "Keterbatasan anggaran");
 
-        Tujuan updated = Tujuan.of("TUJ-123", "Realisasi Tujuan TUJ-123",
-                "IND-TUJ-123", "Realisasi Indikator IND-TUJ-123",
-                "TAR-1", "100.0", 100.0, "%", "2025", "01", "Visi Misi 1", "(realisasi/target)*100",
-                "BPS", "", "Keterbatasan anggaran", JenisRealisasi.NAIK, TujuanStatus.UNCHECKED, "file.pdf", "bukti valid");
+        TujuanResponse updated = new TujuanResponse(1L, "visi", "misi", "TUJ-123",
+                "IND-TUJ-123", "TAR-1", 100.0, "%", "2025", "01",
+                "", "Keterbatasan anggaran", "Tujuan 1", "Indikator 1", "(realisasi/target)*100",
+                "BPS", "Definisi 1", 100.0, 100.0, null, JenisRealisasi.NAIK, "admin", "admin", "file.pdf", "bukti valid");
 
         when(tujuanService.updateFaktorPenghambat(any(FaktorPenghambatRequest.class)))
                 .thenReturn(Mono.just(updated));
@@ -144,7 +143,7 @@ public class TujuanControllerWebFluxTests {
                 .header("Content-Type", "application/json")
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody(Tujuan.class)
+                .expectBody(TujuanResponse.class)
                 .consumeWith(response -> {
                     var body = response.getResponseBody();
                     Assertions.assertNotNull(body);

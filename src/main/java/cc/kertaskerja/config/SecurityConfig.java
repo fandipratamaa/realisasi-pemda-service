@@ -34,7 +34,8 @@ public class SecurityConfig {
     private static final List<String> PEMDA_ENDPOINT_PREFIXES = List.of(
             "/tujuans",
             "/sasarans",
-            "/ikus"
+            "/ikus",
+            "/pemda"
     );
     private static final List<String> OPD_ENDPOINT_PREFIXES = List.of(
             "/tujuan_opd",

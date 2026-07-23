@@ -13,22 +13,18 @@ public record SasaranRequest(
 
         @NotNull(message = "ID sasaran tidak boleh kosong")
         @NotEmpty(message = "ID sasaran tidak boleh kosong")
-        @Schema(description = "ID sasaran dari sistem sumber", example = "SAS-001")
-        String sasaranId,
+        @Schema(description = "Kode sasaran pemda", example = "SAS-001")
+        String kodeSasaranPemda,
 
         @NotNull(message = "ID indikator tidak boleh kosong")
         @NotEmpty(message = "ID indikator tidak boleh kosong")
-        @Schema(description = "ID indikator sasaran", example = "IND-SAS-123")
-        String indikatorId,
+        @Schema(description = "Kode indikator sasaran", example = "IND-SAS-123")
+        String kodeIndikator,
 
         @NotNull(message = "Target harus terdefinisi")
         @NotEmpty(message = "ID target tidak boleh kosong")
-        @Schema(description = "ID target indikator", example = "TAR-1")
-        String targetId,
-
-        @NotNull(message = "Target harus terdefinisi")
-        @Schema(description = "Nilai target yang ditetapkan", example = "100.0")
-        String target,
+        @Schema(description = "Kode target indikator", example = "TAR-1")
+        String kodeTarget,
 
         @NotNull(message = "Realisasi harus terdefinisi")
         @PositiveOrZero(message = "Realisasi tidak boleh negatif")
@@ -39,23 +35,13 @@ public record SasaranRequest(
         @Schema(description = "Satuan target/realisasi", example = "%")
         String satuan,
 
-@NotEmpty(message = "Tahun tidak boleh kosong")
+        @NotEmpty(message = "Tahun tidak boleh kosong")
         @Schema(description = "Tahun realisasi", example = "2026")
         String tahun,
 
         @NotEmpty(message = "Bulan tidak boleh kosong")
         @Schema(description = "Bulan realisasi", example = "1")
         String bulan,
-
-        @NotNull(message = "Rumus perhitungan tidak boleh kosong")
-        @NotEmpty(message = "Rumus perhitungan tidak boleh kosong")
-        @Schema(description = "Rumus perhitungan indikator", example = "(realisasi/target)*100")
-        String rumusPerhitungan,
-
-        @NotNull(message = "Sumber data tidak boleh kosong")
-        @NotEmpty(message = "Sumber data tidak boleh kosong")
-        @Schema(description = "Sumber data realisasi", example = "BPS")
-        String sumberData,
 
         @NotNull(message = "Pilih jenis NAIK atau TURUN")
         @Schema(description = "Jenis perhitungan capaian", example = "NAIK", allowableValues = {"NAIK", "TURUN"})

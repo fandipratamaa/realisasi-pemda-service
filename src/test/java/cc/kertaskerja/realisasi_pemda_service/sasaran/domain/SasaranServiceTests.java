@@ -33,17 +33,17 @@ public class SasaranServiceTests {
     @Test
     void submitRealisasiSasaran_withId_existingFound_shouldUpdate() {
         SasaranRequest request = new SasaranRequest(
-                1L, "SAS-1", "IND-1", "TAR-1", "100", 50.0, "%",
-                "2026", "1", "Rumus", "Sumber",
+                1L, "SAS-1", "IND-1", "TAR-1", 50.0, "%",
+                "2026", "1",
                 JenisRealisasi.NAIK, "http://old-bukti", "Keterangan"
         );
         Sasaran existing = Sasaran.of(
-                "SAS-1", "Sasaran Lama", "IND-1", "Indikator Lama", "TAR-1", "100", 40.0, "%", "2026", "1",
-                "Rumus Lama", "Sumber Lama", "Faktor Penunjang", "Faktor Penghambat", JenisRealisasi.NAIK, SasaranStatus.UNCHECKED, "http://old-bukti", "Keterangan"
+                "SAS-1", "IND-1", "TAR-1", 40.0, "%", "2026", "1",
+                "Faktor Penunjang", "Faktor Penghambat", JenisRealisasi.NAIK, SasaranStatus.UNCHECKED, "http://old-bukti", "Keterangan"
         );
         Sasaran updated = Sasaran.of(
-                "SAS-1", "Sasaran Lama", "IND-1", "Indikator Lama", "TAR-1", "100", 50.0, "%", "2026", "1",
-                "Rumus", "Sumber", "Faktor Penunjang", "Faktor Penghambat", JenisRealisasi.NAIK, SasaranStatus.UNCHECKED, "http://old-bukti", "Keterangan"
+                "SAS-1", "IND-1", "TAR-1", 50.0, "%", "2026", "1",
+                "Faktor Penunjang", "Faktor Penghambat", JenisRealisasi.NAIK, SasaranStatus.UNCHECKED, "http://old-bukti", "Keterangan"
         );
 
         when(sasaranRepository.findById(1L)).thenReturn(Mono.just(existing));
@@ -62,17 +62,17 @@ public class SasaranServiceTests {
     @Test
     void submitRealisasiSasaran_withoutId_existingNotFound_shouldSaveNew() {
         SasaranRequest request = new SasaranRequest(
-                null, "SAS-1", "IND-1", "TAR-1", "100", 50.0, "%",
-                "2026", "1", "Rumus", "Sumber",
+                null, "SAS-1", "IND-1", "TAR-1", 50.0, "%",
+                "2026", "1",
                 JenisRealisasi.NAIK, "http://new-file.pdf", "Keterangan"
         );
 
         Sasaran baru = SasaranService.buildUnchekcedRealisasiSasaran(
-                "SAS-1", "IND-1", "TAR-1", "100", 50.0, "%", "2026", "1",
-                "Rumus", "Sumber", JenisRealisasi.NAIK, "http://new-file.pdf", "Keterangan"
+                "SAS-1", "IND-1", "TAR-1", 50.0, "%", "2026", "1",
+                JenisRealisasi.NAIK, "http://new-file.pdf", "Keterangan"
         );
 
-        when(sasaranRepository.findFirstBySasaranIdAndIndikatorIdAndTargetIdAndTahunAndBulan(
+        when(sasaranRepository.findFirstByKodeSasaranPemdaAndKodeIndikatorAndKodeTargetAndTahunAndBulan(
                 "SAS-1", "IND-1", "TAR-1", "2026", "1"
         )).thenReturn(Mono.empty());
         when(sasaranRepository.save(any(Sasaran.class))).thenReturn(Mono.just(baru));
