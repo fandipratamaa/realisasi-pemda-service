@@ -1,8 +1,6 @@
 package cc.kertaskerja.realisasi_pemda_service.tujuan.domain;
 
-import cc.kertaskerja.capaian.domain.Capaian;
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.*;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
@@ -13,26 +11,24 @@ import java.time.Instant;
 public record Tujuan(
         @Id Long id,
 
-        String tujuanId,
-        String tujuan,
-        String indikatorId,
-        String indikator,
-        String targetId,
-        String target,
+        @Column("kode_tujuan_pemda")
+        String kodeTujuanPemda,
+        
+        @Column("kode_indikator")
+        String kodeIndikator,
+        
+        @Column("kode_target")
+        String kodeTarget,
+        
         Double realisasi,
         String satuan,
         String tahun,
         String bulan,
-        @Column("visi_misi")
-        String visiMisi,
-        @Column("rumus_perhitungan")
-        String rumusPerhitungan,
-        @Column("sumber_data")
-        String sumberData,
         @Column("faktor_penunjang")
         String faktorPenunjang,
         @Column("faktor_penghambat")
         String faktorPenghambat,
+        @Column("jenis_realisasi")
         JenisRealisasi jenisRealisasi,
         TujuanStatus status,
         @Column("bukti_pendukung")
@@ -51,19 +47,13 @@ public record Tujuan(
         String lastModifiedBy
 ) {
     public static Tujuan of(
-            String tujuanId,
-            String tujuan,
-            String indikatorId,
-            String indikator,
-            String targetId,
-            String target,
+            String kodeTujuanPemda,
+            String kodeIndikator,
+            String kodeTarget,
             Double realisasi,
             String satuan,
             String tahun,
             String bulan,
-            String visiMisi,
-            String rumusPerhitungan,
-            String sumberData,
             String faktorPenunjang,
             String faktorPenghambat,
             JenisRealisasi jenisRealisasi,
@@ -72,35 +62,8 @@ public record Tujuan(
             String keteranganBuktiPendukung
     ) {
         return new Tujuan(null,
-                tujuanId, tujuan, indikatorId, indikator,
-                targetId, target, realisasi, satuan, tahun, bulan, visiMisi, rumusPerhitungan, sumberData, faktorPenunjang, faktorPenghambat, jenisRealisasi, status, buktiPendukung, keteranganBuktiPendukung,
+                kodeTujuanPemda, kodeIndikator, kodeTarget,
+                realisasi, satuan, tahun, bulan, faktorPenunjang, faktorPenghambat, jenisRealisasi, status, buktiPendukung, keteranganBuktiPendukung,
                 null, null, null, null);
-    }
-
-    @JsonProperty("capaian")
-    public String capaian() {
-        if (realisasi == null || target == null || target.equals("0") || realisasi == 0) {
-            return null;
-        }
-        double calculatedCapaian = capaianTujuan();
-        return formatCapaian(Math.min(calculatedCapaian, 100));
-    }
-
-    @JsonProperty("keteranganCapaian")
-    public String keteranganCapaian() {
-        if (realisasi == null || target == null || target.equals("0") || realisasi == 0) {
-            return null;
-        }
-        double calculatedCapaian = capaianTujuan();
-        return calculatedCapaian > 100 ? "nilai capaian lebih dari 100% (" + formatCapaian(calculatedCapaian) + ")" : null;
-    }
-
-    private String formatCapaian(double value) {
-        return String.format("%.2f%%", value);
-    }
-
-    public Double capaianTujuan() {
-        Capaian capaian = new Capaian(realisasi, target, jenisRealisasi);
-        return capaian.hasilCapaian();
     }
 }

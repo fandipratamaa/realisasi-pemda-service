@@ -11,24 +11,20 @@ public record TujuanRequest(
         @Schema(description = "ID internal data realisasi. Kosongkan saat create.", example = "1", nullable = true)
         Long targetRealisasiId,
 
-        @NotNull(message = "ID tujuan tidak boleh kosong")
-        @NotEmpty(message = "ID tujuan tidak boleh kosong")
-        @Schema(description = "ID tujuan dari sistem sumber", example = "TUJ-123")
-        String tujuanId,
+        @NotNull(message = "Kode tujuan tidak boleh kosong")
+        @NotEmpty(message = "Kode tujuan tidak boleh kosong")
+        @Schema(description = "Kode tujuan dari sistem sumber", example = "TUJ-123")
+        String kodeTujuanPemda,
 
-        @NotNull(message = "ID indikator tidak boleh kosong")
-        @NotEmpty(message = "ID indikator tidak boleh kosong")
-        @Schema(description = "ID indikator tujuan", example = "IND-TUJ-123")
-        String indikatorId,
+        @NotNull(message = "Kode indikator tidak boleh kosong")
+        @NotEmpty(message = "Kode indikator tidak boleh kosong")
+        @Schema(description = "Kode indikator tujuan", example = "IND-TUJ-123")
+        String kodeIndikator,
 
-        @NotNull(message = "Target harus terdefinisi")
-        @NotEmpty(message = "ID target tidak boleh kosong")
-        @Schema(description = "ID target indikator", example = "TAR-1")
-        String targetId,
-
-        @NotNull(message = "Target harus terdefinisi")
-        @Schema(description = "Nilai target yang ditetapkan", example = "100.0")
-        String target,
+        @NotNull(message = "Kode target tidak boleh kosong")
+        @NotEmpty(message = "Kode target tidak boleh kosong")
+        @Schema(description = "Kode target indikator", example = "TAR-1")
+        String kodeTarget,
 
         @NotNull(message = "Realisasi harus terdefinisi")
         @PositiveOrZero(message = "Realisasi tidak boleh negatif")
@@ -39,7 +35,7 @@ public record TujuanRequest(
         @Schema(description = "Satuan target/realisasi", example = "%")
         String satuan,
 
-@NotNull(message = "Tahun harus terdefinisi")
+        @NotNull(message = "Tahun harus terdefinisi")
         @NotEmpty(message = "Tahun tidak boleh kosong")
         @Schema(description = "Tahun realisasi", example = "2026")
         String tahun,
@@ -48,21 +44,6 @@ public record TujuanRequest(
         @NotEmpty(message = "Bulan tidak boleh kosong")
         @Schema(description = "Bulan realisasi", example = "1")
         String bulan,
-
-        @NotNull(message = "Visi/misi tidak boleh kosong")
-        @NotEmpty(message = "Visi/misi tidak boleh kosong")
-        @Schema(description = "Visi/misi tujuan pemda", example = "Mewujudkan tata kelola pemerintahan yang baik")
-        String visiMisi,
-
-        @NotNull(message = "Rumus perhitungan tidak boleh kosong")
-        @NotEmpty(message = "Rumus perhitungan tidak boleh kosong")
-        @Schema(description = "Rumus perhitungan indikator", example = "(realisasi/target)*100")
-        String rumusPerhitungan,
-
-        @NotNull(message = "Sumber data tidak boleh kosong")
-        @NotEmpty(message = "Sumber data tidak boleh kosong")
-        @Schema(description = "Sumber data realisasi", example = "BPS")
-        String sumberData,
 
         @NotNull(message = "Pilih jenis NAIK atau TURUN")
         @Schema(description = "Jenis perhitungan capaian", example = "NAIK", allowableValues = {"NAIK", "TURUN"})

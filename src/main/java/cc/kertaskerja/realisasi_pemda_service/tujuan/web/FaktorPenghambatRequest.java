@@ -6,20 +6,20 @@ import jakarta.validation.constraints.NotNull;
 
 @Schema(name = "FaktorPenghambatRequest", description = "Payload untuk memperbarui faktor penghambat pada realisasi tujuan pemda")
 public record FaktorPenghambatRequest(
-        @NotNull(message = "ID tujuan tidak boleh kosong")
-        @NotEmpty(message = "ID tujuan tidak boleh kosong")
-        @Schema(description = "ID tujuan dari sistem sumber", example = "TUJ-123")
-        String tujuanId,
+        @NotNull(message = "Kode tujuan tidak boleh kosong")
+        @NotEmpty(message = "Kode tujuan tidak boleh kosong")
+        @Schema(description = "Kode tujuan dari sistem sumber", example = "TUJ-123")
+        String kodeTujuanPemda,
 
-        @NotNull(message = "ID indikator tidak boleh kosong")
-        @NotEmpty(message = "ID indikator tidak boleh kosong")
-        @Schema(description = "ID indikator tujuan", example = "IND-TUJ-123")
-        String indikatorId,
+        @NotNull(message = "Kode indikator tidak boleh kosong")
+        @NotEmpty(message = "Kode indikator tidak boleh kosong")
+        @Schema(description = "Kode indikator tujuan", example = "IND-TUJ-123")
+        String kodeIndikator,
 
-        @NotNull(message = "ID target tidak boleh kosong")
-        @NotEmpty(message = "ID target tidak boleh kosong")
-        @Schema(description = "ID target indikator", example = "TAR-1")
-        String targetId,
+        @NotNull(message = "Kode target tidak boleh kosong")
+        @NotEmpty(message = "Kode target tidak boleh kosong")
+        @Schema(description = "Kode target indikator", example = "TAR-1")
+        String kodeTarget,
 
         @NotNull(message = "Tahun tidak boleh kosong")
         @NotEmpty(message = "Tahun tidak boleh kosong")

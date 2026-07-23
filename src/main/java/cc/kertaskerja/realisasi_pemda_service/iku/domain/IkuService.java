@@ -32,19 +32,19 @@ public class IkuService {
     public Flux<Iku> getAllIku() {
         Flux<Iku> ikuTujuan = tujuanRepository.findAll()
                 .map(t -> buildIkuTujuan(
-                        t.indikatorId(),
-                        t.indikator(),
-                        t.targetId(),
-                        t.target(),
+                        t.kodeIndikator(),
+                        "",
+                        t.kodeTarget(),
+                        "",
                         t.realisasi(),
                         t.satuan(),
-                        t.capaian(),
+                        "",
                         t.tahun(),
                         t.faktorPenunjang(),
                         t.faktorPenghambat(),
                         t.jenisRealisasi(),
-                        t.rumusPerhitungan(),
-                        t.sumberData(),
+                        "",
+                        "",
                         t.bulan()
                 ));
 
@@ -73,19 +73,19 @@ public class IkuService {
         Flux<Iku> ikuTujuan = tujuanRepository.findAll()
                 .filter(t -> tahun.equals(t.tahun()) && bulan.equals(t.bulan()))
                 .map(t -> buildIkuTujuan(
-                        t.indikatorId(),
-                        t.indikator(),
-                        t.targetId(),
-                        t.target(),
+                        t.kodeIndikator(),
+                        "",
+                        t.kodeTarget(),
+                        "",
                         t.realisasi(),
                         t.satuan(),
-                        t.capaian(),
+                        "",
                         t.tahun(),
                         t.faktorPenunjang(),
                         t.faktorPenghambat(),
                         t.jenisRealisasi(),
-                        t.rumusPerhitungan(),
-                        t.sumberData(),
+                        "",
+                        "",
                         t.bulan()
                 ));
 
@@ -125,10 +125,10 @@ public class IkuService {
             return tujuanService.updateFaktorPenunjang(new FaktorPenunjangRequest(
                     req.jenisId(), req.indikatorId(), req.targetId(), req.tahun(), req.bulan(), req.faktorPenunjang()
             )).map(t -> buildIkuTujuan(
-                    t.indikatorId(), t.indikator(), t.targetId(), t.target(),
-                    t.realisasi(), t.satuan(), t.capaian(), t.tahun(),
+                    t.kodeIndikator(), "", t.kodeTarget(), "",
+                    t.realisasi(), t.satuan(), "", t.tahun(),
                     t.faktorPenunjang(), t.faktorPenghambat(), t.jenisRealisasi(),
-                    t.rumusPerhitungan(), t.sumberData(), t.bulan()
+                    "", "", t.bulan()
             ));
         }
         return sasaranService.updateFaktorPenunjang(new FaktorPenunjangSasaranRequest(
@@ -146,10 +146,10 @@ public class IkuService {
             return tujuanService.updateFaktorPenghambat(new FaktorPenghambatRequest(
                     req.jenisId(), req.indikatorId(), req.targetId(), req.tahun(), req.bulan(), req.faktorPenghambat()
             )).map(t -> buildIkuTujuan(
-                    t.indikatorId(), t.indikator(), t.targetId(), t.target(),
-                    t.realisasi(), t.satuan(), t.capaian(), t.tahun(),
+                    t.kodeIndikator(), "", t.kodeTarget(), "",
+                    t.realisasi(), t.satuan(), "", t.tahun(),
                     t.faktorPenunjang(), t.faktorPenghambat(), t.jenisRealisasi(),
-                    t.rumusPerhitungan(), t.sumberData(), t.bulan()
+                    "", "", t.bulan()
             ));
         }
         return sasaranService.updateFaktorPenghambat(new FaktorPenghambatSasaranRequest(

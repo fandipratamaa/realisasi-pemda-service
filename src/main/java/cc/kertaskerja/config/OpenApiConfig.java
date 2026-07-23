@@ -34,7 +34,8 @@ public class OpenApiConfig {
                 .pathsToMatch(
                         "/tujuans/**", 
                         "/sasarans/**", 
-                        "/ikus/**")
+                        "/ikus/**",
+                        "/pemda/**")
                 .build();
     }
 
