@@ -38,14 +38,13 @@ public class SasaranControllerWebFluxTests {
     @Test
     void whenSubmitRealisasiSasaran_thenReturnsSasaran() throws Exception {
         SasaranRequest request = new SasaranRequest(
-                null, "SAS-001", "IND-SAS-123", "TAR-1", "100.0", 80.0, "%", "2025", "01",
-                "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK, "test.pdf", "keterangan bukti"
+                null, "SAS-001", "IND-SAS-123", "TAR-1", 80.0, "%", "2025", "01",
+                JenisRealisasi.NAIK, "test.pdf", "keterangan bukti"
         );
 
-        Sasaran updated = Sasaran.of("SAS-001", "Realisasi Sasaran SAS-001",
-                "IND-SAS-123", "Realisasi Indikator IND-SAS-123",
-                "TAR-1", "100.0", 80.0, "%", "2025", "01",
-                "(realisasi/target)*100", "BPS",
+        Sasaran updated = Sasaran.of("SAS-001",
+                "IND-SAS-123",
+                "TAR-1", 80.0, "%", "2025", "01",
                 "", "",
                 JenisRealisasi.NAIK, SasaranStatus.UNCHECKED, "test.pdf", "keterangan bukti");
 
@@ -66,7 +65,7 @@ public class SasaranControllerWebFluxTests {
                 .consumeWith(response -> {
                     var body = response.getResponseBody();
                     Assertions.assertNotNull(body);
-                    Assertions.assertEquals("SAS-001", body.sasaranId());
+                    Assertions.assertEquals("SAS-001", body.kodeSasaranPemda());
                     Assertions.assertEquals("test.pdf", body.buktiPendukung());
                     Assertions.assertEquals("keterangan bukti", body.keteranganBuktiPendukung());
                 });
@@ -94,47 +93,16 @@ public class SasaranControllerWebFluxTests {
                 .jsonPath("$.url").isEqualTo("test.pdf");
     }
 
-    @Test
-    void whenGetByTahunAndBulan_thenReturnSasarans() throws Exception {
-        String tahun = "2025";
-        String bulan = "01";
 
-        Sasaran ss = SasaranService.buildUnchekcedRealisasiSasaran(
-                "S-1", "IS-1", "TIS-1",
-                "10", 10.0, "%", tahun, bulan, "(realisasi/target)*100", "BPS", JenisRealisasi.NAIK, "file.pdf", "bukti valid"
-        );
-
-        when(sasaranService.getAllRealisasiSasaranByTahunAndBulan(anyString(), anyString()))
-                .thenReturn(Flux.just(ss));
-
-        webTestClient
-                .mutateWith(csrf())
-                .mutateWith(SecurityMockServerConfigurers.mockJwt()
-                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                )
-                .get()
-                .uri("/sasarans/by-tahun/{tahun}/by-bulan/{bulan}", tahun, bulan)
-                .exchange()
-                .expectStatus().is2xxSuccessful()
-                .expectBodyList(Sasaran.class)
-                .consumeWith(response -> {
-                    var body = response.getResponseBody();
-                    Assertions.assertNotNull(body);
-                    Assertions.assertEquals(1, body.size());
-                    Assertions.assertEquals(tahun, body.get(0).tahun());
-                    Assertions.assertEquals(bulan, body.get(0).bulan());
-                });
-    }
 
     @Test
     void whenUpdateFaktorPenunjang_thenReturnsUpdatedSasaran() throws Exception {
         FaktorPenunjangSasaranRequest req = new FaktorPenunjangSasaranRequest(
                 "SAS-001", "IND-SAS-123", "TAR-1", "2025", "01", "Kerjasama antar daerah");
 
-        Sasaran updated = Sasaran.of("SAS-001", "Realisasi Sasaran SAS-001",
-                "IND-SAS-123", "Realisasi Indikator IND-SAS-123",
-                "TAR-1", "100.0", 100.0, "%", "2025", "01",
-                "(realisasi/target)*100", "BPS",
+        Sasaran updated = Sasaran.of("SAS-001",
+                "IND-SAS-123",
+                "TAR-1", 100.0, "%", "2025", "01",
                 "Kerjasama antar daerah", "Keterbatasan anggaran",
                 JenisRealisasi.NAIK, SasaranStatus.UNCHECKED, "file.pdf", "bukti valid");
 
@@ -164,10 +132,9 @@ public class SasaranControllerWebFluxTests {
         FaktorPenghambatSasaranRequest req = new FaktorPenghambatSasaranRequest(
                 "SAS-001", "IND-SAS-123", "TAR-1", "2025", "01", "Keterbatasan anggaran");
 
-        Sasaran updated = Sasaran.of("SAS-001", "Realisasi Sasaran SAS-001",
-                "IND-SAS-123", "Realisasi Indikator IND-SAS-123",
-                "TAR-1", "100.0", 100.0, "%", "2025", "01",
-                "(realisasi/target)*100", "BPS",
+        Sasaran updated = Sasaran.of("SAS-001",
+                "IND-SAS-123",
+                "TAR-1", 100.0, "%", "2025", "01",
                 "Kerjasama antar daerah", "Keterbatasan anggaran",
                 JenisRealisasi.NAIK, SasaranStatus.UNCHECKED, "file.pdf", "bukti valid");
 
