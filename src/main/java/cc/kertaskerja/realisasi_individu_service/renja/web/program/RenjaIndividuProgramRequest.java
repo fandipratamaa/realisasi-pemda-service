@@ -40,10 +40,6 @@ public record RenjaIndividuProgramRequest(
         String kodePagu,
 
         @NotNull @PositiveOrZero
-        @Schema(example = "100")
-        Double target,
-
-        @NotNull @PositiveOrZero
         @Schema(example = "70")
         Double realisasi,
 

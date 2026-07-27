@@ -47,49 +47,79 @@ public class RenjaIndividuController {
         this.renjaIndividuService = renjaIndividuService;
     }
 
-    @GetMapping("/program/kodeOpd/{kodeOpd}/nip/{nip}/tahun/{tahun}/bulan/{bulan}")
-    @Operation(summary = "Ambil realisasi renja individu - PROGRAM saja", description = "Mengembalikan data realisasi renja individu tingkat PROGRAM yang cocok dengan kode_opd, nip, tahun, dan bulan.")
+    @PostMapping("/nip/{nip}/kodeOpd/{kodeOpd}/tahun/{tahun}/sync/penetapan")
+    @Operation(summary = "Sinkronisasi renja individu", description = "Memicu sinkronisasi data renja individu dari service penetapan dan langsung mengembalikan data terbarunya.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Data realisasi renja program ditemukan", content = @Content(schema = @Schema(implementation = RenjaIndividuProgramResponse.class))),
+            @ApiResponse(responseCode = "200", description = "Data penetapan ter-sinkronisasi dan terintegrasi dengan realisasi", content = @Content(schema = @Schema(implementation = PenetapanRenjaIndividuResponse.class))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Flux<RenjaIndividuProgramResponse> getProgramByKodeOpdAndNipAndTahunAndBulan(
-            @PathVariable String kodeOpd,
-            @PathVariable String nip,
-            @PathVariable String tahun,
-            @PathVariable String bulan) {
-        return renjaIndividuService.getProgramByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
+    public Mono<PenetapanRenjaIndividuResponse> syncRenjaIndividu(
+            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
+            @Parameter(description = "Kode OPD", example = "8.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun", example = "2026") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi (opsional)", example = "1") @RequestParam(required = false) String bulan) {
+        if (nip == null || nip.isBlank() || kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip, kodeOpd, dan tahun tidak boleh kosong");
+        }
+        return renjaIndividuService.syncPenetapanRenjaIndividu(nip, kodeOpd, Integer.parseInt(tahun))
+                .thenReturn(true)
+                .defaultIfEmpty(true)
+                .flatMap(ignored -> renjaIndividuService.getPenetapanByNip(nip, kodeOpd, Integer.parseInt(tahun), bulan));
     }
 
-    @GetMapping("/kegiatan/kodeOpd/{kodeOpd}/nip/{nip}/tahun/{tahun}/bulan/{bulan}")
-    @Operation(summary = "Ambil realisasi renja individu - KEGIATAN saja", description = "Mengembalikan data realisasi renja individu tingkat KEGIATAN yang cocok dengan kode_opd, nip, tahun, dan bulan.")
+    @GetMapping("/program/kodeOpd/{kodeOpd}/nip/{nip}/tahun/{tahun}/penetapan")
+    @Operation(summary = "Integrasi penetapan dengan realisasi renja individu", description = "Menggabungkan data penetapan (dari external service) dengan data realisasi renja berdasarkan kode OPD, NIP, dan tahun. Parameter bulan bersifat opsional; jika tidak dikirim, hanya data penetapan tanpa realisasi yang dikembalikan.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Data realisasi renja kegiatan ditemukan", content = @Content(schema = @Schema(implementation = RenjaIndividuKegiatanResponse.class))),
+            @ApiResponse(responseCode = "200", description = "Data penetapan terintegrasi dengan realisasi", content = @Content(schema = @Schema(implementation = PenetapanRenjaIndividuResponse.class))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Flux<RenjaIndividuKegiatanResponse> getKegiatanByKodeOpdAndNipAndTahunAndBulan(
-            @PathVariable String kodeOpd,
-            @PathVariable String nip,
-            @PathVariable String tahun,
-            @PathVariable String bulan) {
-        return renjaIndividuService.getKegiatanByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
+    public Mono<PenetapanRenjaIndividuResponse> getPenetapanProgramByNipAndTahun(
+            @Parameter(description = "Kode OPD", example = "8.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
+            @Parameter(description = "Tahun", example = "2026") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi (opsional)", example = "1") @RequestParam(required = false) String bulan) {
+        if (nip == null || nip.isBlank() || kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip, kodeOpd, dan tahun tidak boleh kosong");
+        }
+        return renjaIndividuService.getPenetapanByNip(nip, kodeOpd, Integer.parseInt(tahun), bulan);
     }
 
-    @GetMapping("/subkegiatan/kodeOpd/{kodeOpd}/nip/{nip}/tahun/{tahun}/bulan/{bulan}")
-    @Operation(summary = "Ambil realisasi renja individu - SUBKEGIATAN saja", description = "Mengembalikan data realisasi renja individu tingkat SUBKEGIATAN yang cocok dengan kode_opd, nip, tahun, dan bulan.")
+    @GetMapping("/kegiatan/kodeOpd/{kodeOpd}/nip/{nip}/tahun/{tahun}/penetapan")
+    @Operation(summary = "Integrasi penetapan dengan realisasi renja individu (kegiatan)", description = "Menggabungkan data penetapan (dari external service) dengan data realisasi renja kegiatan berdasarkan kode OPD, NIP, dan tahun. Parameter bulan bersifat opsional; jika tidak dikirim, hanya data penetapan tanpa realisasi yang dikembalikan.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Data realisasi renja subkegiatan ditemukan", content = @Content(schema = @Schema(implementation = RenjaIndividuSubKegiatanResponse.class))),
+            @ApiResponse(responseCode = "200", description = "Data penetapan terintegrasi dengan realisasi", content = @Content(schema = @Schema(implementation = PenetapanRenjaIndividuResponse.class))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Flux<RenjaIndividuSubKegiatanResponse> getSubKegiatanByKodeOpdAndNipAndTahunAndBulan(
-            @PathVariable String kodeOpd,
-            @PathVariable String nip,
-            @PathVariable String tahun,
-            @PathVariable String bulan) {
-        return renjaIndividuService.getSubKegiatanByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
+    public Mono<PenetapanRenjaIndividuResponse> getPenetapanKegiatanByNipAndTahun(
+            @Parameter(description = "Kode OPD", example = "8.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
+            @Parameter(description = "Tahun", example = "2026") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi (opsional)", example = "1") @RequestParam(required = false) String bulan) {
+        if (nip == null || nip.isBlank() || kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip, kodeOpd, dan tahun tidak boleh kosong");
+        }
+        return renjaIndividuService.getPenetapanByNip(nip, kodeOpd, Integer.parseInt(tahun), bulan);
+    }
+
+    @GetMapping("/subkegiatan/kodeOpd/{kodeOpd}/nip/{nip}/tahun/{tahun}/penetapan")
+    @Operation(summary = "Integrasi penetapan dengan realisasi renja individu (subkegiatan)", description = "Menggabungkan data penetapan (dari external service) dengan data realisasi renja subkegiatan berdasarkan kode OPD, NIP, dan tahun. Parameter bulan bersifat opsional; jika tidak dikirim, hanya data penetapan tanpa realisasi yang dikembalikan.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data penetapan terintegrasi dengan realisasi", content = @Content(schema = @Schema(implementation = PenetapanRenjaIndividuResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Mono<PenetapanRenjaIndividuResponse> getPenetapanSubKegiatanByNipAndTahun(
+            @Parameter(description = "Kode OPD", example = "8.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
+            @Parameter(description = "Tahun", example = "2026") @PathVariable String tahun,
+            @Parameter(description = "Bulan realisasi (opsional)", example = "1") @RequestParam(required = false) String bulan) {
+        if (nip == null || nip.isBlank() || kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip, kodeOpd, dan tahun tidak boleh kosong");
+        }
+        return renjaIndividuService.getPenetapanByNip(nip, kodeOpd, Integer.parseInt(tahun), bulan);
     }
 
     @GetMapping("/program/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}/levelRole/{levelRole}/nip/{nip}")

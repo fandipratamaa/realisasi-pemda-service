@@ -22,23 +22,14 @@ public record RenjaSubKegiatanIndividu(
         @Column("kode_subkegiatan")
         String kodeSubKegiatan,
 
-        String subkegiatan,
-
         @Column("kode_indikator")
         String kodeIndikator,
-
-        String indikator,
 
         @Column("kode_target")
         String kodeTarget,
 
         @Column("kode_pagu")
         String kodePagu,
-
-        BigDecimal pagu,
-
-        @Column("target_realisasi")
-        BigDecimal targetRealisasi,
 
         @Column("realisasi_target")
         BigDecimal realisasiTarget,
@@ -68,16 +59,16 @@ public record RenjaSubKegiatanIndividu(
 ) {
     public RenjaSubKegiatanIndividu withFaktorPenunjang(String faktorPenunjang) {
         return new RenjaSubKegiatanIndividu(
-                id, kodeOpd, nip, tahun, bulan, kodeSubKegiatan, subkegiatan, kodeIndikator, indikator, kodeTarget, kodePagu,
-                pagu, targetRealisasi, realisasiTarget, realisasiPagu, jenisRealisasi, faktorPenunjang, faktorPenghambat, buktiPendukung, keteranganBuktiPendukung,
+                id, kodeOpd, nip, tahun, bulan, kodeSubKegiatan, kodeIndikator, kodeTarget, kodePagu,
+                realisasiTarget, realisasiPagu, jenisRealisasi, faktorPenunjang, faktorPenghambat, buktiPendukung, keteranganBuktiPendukung,
                 createdDate, lastModifiedDate, createdBy, lastModifiedBy
         );
     }
 
     public RenjaSubKegiatanIndividu withFaktorPenghambat(String faktorPenghambat) {
         return new RenjaSubKegiatanIndividu(
-                id, kodeOpd, nip, tahun, bulan, kodeSubKegiatan, subkegiatan, kodeIndikator, indikator, kodeTarget, kodePagu,
-                pagu, targetRealisasi, realisasiTarget, realisasiPagu, jenisRealisasi, faktorPenunjang, faktorPenghambat, buktiPendukung, keteranganBuktiPendukung,
+                id, kodeOpd, nip, tahun, bulan, kodeSubKegiatan, kodeIndikator, kodeTarget, kodePagu,
+                realisasiTarget, realisasiPagu, jenisRealisasi, faktorPenunjang, faktorPenghambat, buktiPendukung, keteranganBuktiPendukung,
                 createdDate, lastModifiedDate, createdBy, lastModifiedBy
         );
     }

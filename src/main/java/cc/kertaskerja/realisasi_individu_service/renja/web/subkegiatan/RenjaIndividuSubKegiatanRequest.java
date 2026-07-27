@@ -41,16 +41,6 @@ public record RenjaIndividuSubKegiatanRequest(
         String kodePagu,
 
         @NotNull @PositiveOrZero
-        @JsonProperty("target_realisasi")
-        @Schema(example = "100")
-        Double targetRealisasi,
-
-        @NotNull @PositiveOrZero
-        @JsonProperty("pagu")
-        @Schema(example = "50000000")
-        Double pagu,
-
-        @NotNull @PositiveOrZero
         @JsonProperty("realisasi_target")
         @Schema(example = "70")
         Double realisasiTarget,

@@ -22,22 +22,14 @@ public record RenjaKegiatanIndividu(
         @Column("kode_kegiatan")
         String kodeKegiatan,
 
-        String kegiatan,
-
         @Column("kode_indikator")
         String kodeIndikator,
-
-        String indikator,
 
         @Column("kode_target")
         String kodeTarget,
 
         @Column("kode_pagu")
         String kodePagu,
-
-        BigDecimal pagu,
-
-        BigDecimal target,
 
         BigDecimal realisasi,
 
@@ -63,16 +55,16 @@ public record RenjaKegiatanIndividu(
 ) {
     public RenjaKegiatanIndividu withFaktorPenunjang(String faktorPenunjang) {
         return new RenjaKegiatanIndividu(
-                id, kodeOpd, nip, tahun, bulan, kodeKegiatan, kegiatan, kodeIndikator, indikator, kodeTarget, kodePagu,
-                pagu, target, realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat, buktiPendukung, keteranganBuktiPendukung,
+                id, kodeOpd, nip, tahun, bulan, kodeKegiatan, kodeIndikator, kodeTarget, kodePagu,
+                realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat, buktiPendukung, keteranganBuktiPendukung,
                 createdDate, lastModifiedDate, createdBy, lastModifiedBy
         );
     }
 
     public RenjaKegiatanIndividu withFaktorPenghambat(String faktorPenghambat) {
         return new RenjaKegiatanIndividu(
-                id, kodeOpd, nip, tahun, bulan, kodeKegiatan, kegiatan, kodeIndikator, indikator, kodeTarget, kodePagu,
-                pagu, target, realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat, buktiPendukung, keteranganBuktiPendukung,
+                id, kodeOpd, nip, tahun, bulan, kodeKegiatan, kodeIndikator, kodeTarget, kodePagu,
+                realisasi, jenisRealisasi, faktorPenunjang, faktorPenghambat, buktiPendukung, keteranganBuktiPendukung,
                 createdDate, lastModifiedDate, createdBy, lastModifiedBy
         );
     }
