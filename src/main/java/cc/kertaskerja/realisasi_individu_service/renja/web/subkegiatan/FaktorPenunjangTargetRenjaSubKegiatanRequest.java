@@ -24,6 +24,10 @@ public record FaktorPenunjangTargetRenjaSubKegiatanRequest(
         String kodeTarget,
 
         @NotNull @NotEmpty
+        @Schema(example = "PAGU-PRG-8.01.03-2026-programs")
+        String kodePagu,
+
+        @NotNull @NotEmpty
         @Schema(example = "2026")
         String tahun,
 
