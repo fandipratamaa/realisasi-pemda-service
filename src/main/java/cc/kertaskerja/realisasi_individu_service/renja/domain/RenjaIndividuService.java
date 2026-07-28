@@ -283,7 +283,6 @@ public class RenjaIndividuService {
                             .collect(java.util.stream.Collectors
                                     .groupingBy(t -> t.kodeIndikator() + "|" + t.kodeTarget()));
                     return Flux.fromIterable(grouped.values()).map(groupList -> {
-                        RenjaProgramIndividu first = groupList.get(0);
                         Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan,
                                 item -> item.realisasi() != null ? item.realisasi().doubleValue() : null);
                         Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN
@@ -306,7 +305,6 @@ public class RenjaIndividuService {
                             .collect(java.util.stream.Collectors
                                     .groupingBy(t -> t.kodeIndikator() + "|" + t.kodeTarget()));
                     return Flux.fromIterable(grouped.values()).map(groupList -> {
-                        RenjaKegiatanIndividu first = groupList.get(0);
                         Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan,
                                 item -> item.realisasi() != null ? item.realisasi().doubleValue() : null);
                         Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN
@@ -329,7 +327,6 @@ public class RenjaIndividuService {
                             .collect(java.util.stream.Collectors
                                     .groupingBy(t -> t.kodeIndikator() + "|" + t.kodeTarget()));
                     return Flux.fromIterable(grouped.values()).map(groupList -> {
-                        RenjaSubKegiatanIndividu first = groupList.get(0);
                         Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan,
                                 item -> item.realisasiTarget() != null ? item.realisasiTarget().doubleValue() : null);
                         Double totalRealisasi = (jenisLaporan == JenisLaporan.TRIWULAN
@@ -882,15 +879,15 @@ public class RenjaIndividuService {
             Map<String, RealisasiData> subMap
     ) {
         List<PenetapanRenjaIndividuResponse.IndikatorPenetapanResponse> indProg = safeList(r.indikatorPrograms()).stream()
-                .map(i -> mergeIndikatorWithRealisasi(i, progMap))
+                .map(i -> mergeIndikatorWithRealisasi(i, progMap, r.paguProgram()))
                 .toList();
 
         List<PenetapanRenjaIndividuResponse.IndikatorPenetapanResponse> indKeg = safeList(r.indikatorKegiatans()).stream()
-                .map(i -> mergeIndikatorWithRealisasi(i, kegMap))
+                .map(i -> mergeIndikatorWithRealisasi(i, kegMap, r.paguKegiatan()))
                 .toList();
 
         List<PenetapanRenjaIndividuResponse.IndikatorPenetapanResponse> indSub = safeList(r.indikatorSubkegiatans()).stream()
-                .map(i -> mergeIndikatorWithRealisasi(i, subMap))
+                .map(i -> mergeIndikatorWithRealisasi(i, subMap, r.paguSubkegiatan()))
                 .toList();
 
         return new PenetapanRenjaIndividuResponse.RenjaPenetapanResponse(
@@ -903,10 +900,11 @@ public class RenjaIndividuService {
 
     private PenetapanRenjaIndividuResponse.IndikatorPenetapanResponse mergeIndikatorWithRealisasi(
             PenetapanRenjaIndividu.IndikatorPenetapanData i,
-            Map<String, RealisasiData> realisasiMap
+            Map<String, RealisasiData> realisasiMap,
+            Long pagu
     ) {
         List<PenetapanRenjaIndividuResponse.TargetPenetapanResponse> targets = safeList(i.targets()).stream()
-                .map(t -> mergeTargetWithRealisasi(t, realisasiMap))
+                .map(t -> mergeTargetWithRealisasi(t, realisasiMap, pagu))
                 .toList();
 
         return new PenetapanRenjaIndividuResponse.IndikatorPenetapanResponse(
@@ -916,7 +914,8 @@ public class RenjaIndividuService {
 
     private PenetapanRenjaIndividuResponse.TargetPenetapanResponse mergeTargetWithRealisasi(
             PenetapanRenjaIndividu.TargetPenetapanData t,
-            Map<String, RealisasiData> realisasiMap
+            Map<String, RealisasiData> realisasiMap,
+            Long pagu
     ) {
         RealisasiData data = realisasiMap.get(t.kodeTarget());
         // realisasiTarget = nilai realisasi terhadap target indikator
@@ -924,8 +923,9 @@ public class RenjaIndividuService {
         Double realisasiPagu = data != null ? data.realisasiPagu() : null;
         // capaianTarget = realisasiTarget / target(penetapan) * 100
         var capaianTargetResult = hitungCapaian(realisasiTarget, t.target());
-        // capaianPagu = realisasiPagu / target(penetapan) * 100
-        var capaianPaguResult = hitungCapaian(realisasiPagu, t.target());
+        // capaianPagu = realisasiPagu / pagu * 100
+        Double paguDenominator = pagu != null ? pagu.doubleValue() : t.target();
+        var capaianPaguResult = hitungCapaian(realisasiPagu, paguDenominator);
         Double capaianPagu = realisasiPagu != null ? capaianPaguResult.capaian() : null;
         String keteranganCapaianPagu = realisasiPagu != null ? capaianPaguResult.keteranganCapaian() : null;
         return new PenetapanRenjaIndividuResponse.TargetPenetapanResponse(
