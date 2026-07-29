@@ -18,8 +18,11 @@ import cc.kertaskerja.realisasi_individu_service.renja.web.program.RenjaIndividu
 import cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan.LaporanRealisasiRenjaSubKegiatanIndividuResponse;
 import cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan.RenjaIndividuSubKegiatanRequest;
 import cc.kertaskerja.realisasi_individu_service.renja.web.kegiatan.RenjaIndividuKegiatanResponse;
+import cc.kertaskerja.realisasi_individu_service.renja.web.kegiatan.SearchRenjaKegiatanResponse;
 import cc.kertaskerja.realisasi_individu_service.renja.web.program.RenjaIndividuProgramResponse;
+import cc.kertaskerja.realisasi_individu_service.renja.web.program.SearchRenjaProgramResponse;
 import cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan.RenjaIndividuSubKegiatanResponse;
+import cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan.SearchRenjaSubKegiatanResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -125,14 +128,14 @@ public class RenjaIndividuController {
     @GetMapping("/program/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}/levelRole/{levelRole}/nip/{nip}")
     @Operation(summary = "Mencari realisasi renja individu - PROGRAM", description = "Endpoint untuk fitur pencarian realisasi renja individu tingkat PROGRAM di frontend. Memvalidasi NIP ke service pegawai lalu mengambil data realisasi.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Data realisasi renja program ditemukan", content = @Content(schema = @Schema(implementation = RenjaIndividuProgramResponse.class))),
+            @ApiResponse(responseCode = "200", description = "Data realisasi renja program ditemukan", content = @Content(schema = @Schema(implementation = SearchRenjaProgramResponse.class))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "Pegawai tidak ditemukan", content = @Content)
     })
     @PreAuthorize("hasAnyAuthority('super_admin', 'ROLE_SUPER_ADMIN', 'admin_opd', 'ROLE_ADMIN_OPD')")
-    public Flux<RenjaIndividuProgramResponse> searchProgram(
+    public Mono<SearchRenjaProgramResponse> searchProgram(
             @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun") @PathVariable String tahun,
             @Parameter(description = "Bulan") @PathVariable String bulan,
@@ -147,14 +150,14 @@ public class RenjaIndividuController {
     @GetMapping("/kegiatan/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}/levelRole/{levelRole}/nip/{nip}")
     @Operation(summary = "Mencari realisasi renja individu - KEGIATAN", description = "Endpoint untuk fitur pencarian realisasi renja individu tingkat KEGIATAN di frontend. Memvalidasi NIP ke service pegawai lalu mengambil data realisasi.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Data realisasi renja kegiatan ditemukan", content = @Content(schema = @Schema(implementation = RenjaIndividuKegiatanResponse.class))),
+            @ApiResponse(responseCode = "200", description = "Data realisasi renja kegiatan ditemukan", content = @Content(schema = @Schema(implementation = SearchRenjaKegiatanResponse.class))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "Pegawai tidak ditemukan", content = @Content)
     })
     @PreAuthorize("hasAnyAuthority('super_admin', 'ROLE_SUPER_ADMIN', 'admin_opd', 'ROLE_ADMIN_OPD')")
-    public Flux<RenjaIndividuKegiatanResponse> searchKegiatan(
+    public Mono<SearchRenjaKegiatanResponse> searchKegiatan(
             @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun") @PathVariable String tahun,
             @Parameter(description = "Bulan") @PathVariable String bulan,
@@ -169,14 +172,14 @@ public class RenjaIndividuController {
     @GetMapping("/subkegiatan/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}/levelRole/{levelRole}/nip/{nip}")
     @Operation(summary = "Mencari realisasi renja individu - SUBKEGIATAN", description = "Endpoint untuk fitur pencarian realisasi renja individu tingkat SUBKEGIATAN di frontend. Memvalidasi NIP ke service pegawai lalu mengambil data realisasi.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Data realisasi renja subkegiatan ditemukan", content = @Content(schema = @Schema(implementation = RenjaIndividuSubKegiatanResponse.class))),
+            @ApiResponse(responseCode = "200", description = "Data realisasi renja subkegiatan ditemukan", content = @Content(schema = @Schema(implementation = SearchRenjaSubKegiatanResponse.class))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "Pegawai tidak ditemukan", content = @Content)
     })
     @PreAuthorize("hasAnyAuthority('super_admin', 'ROLE_SUPER_ADMIN', 'admin_opd', 'ROLE_ADMIN_OPD')")
-    public Flux<RenjaIndividuSubKegiatanResponse> searchSubKegiatan(
+    public Mono<SearchRenjaSubKegiatanResponse> searchSubKegiatan(
             @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun") @PathVariable String tahun,
             @Parameter(description = "Bulan") @PathVariable String bulan,

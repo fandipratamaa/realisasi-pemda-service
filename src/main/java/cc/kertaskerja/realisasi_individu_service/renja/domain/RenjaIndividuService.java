@@ -12,16 +12,19 @@ import cc.kertaskerja.realisasi_individu_service.renja.web.kegiatan.FaktorPengha
 import cc.kertaskerja.realisasi_individu_service.renja.web.kegiatan.FaktorPenunjangTargetRenjaKegiatanRequest;
 import cc.kertaskerja.realisasi_individu_service.renja.web.kegiatan.RenjaIndividuKegiatanRequest;
 import cc.kertaskerja.realisasi_individu_service.renja.web.kegiatan.RenjaIndividuKegiatanResponse;
+import cc.kertaskerja.realisasi_individu_service.renja.web.kegiatan.SearchRenjaKegiatanResponse;
 import cc.kertaskerja.realisasi_individu_service.renja.web.program.FaktorPenghambatTargetRenjaProgramRequest;
 import cc.kertaskerja.realisasi_individu_service.renja.web.program.FaktorPenunjangTargetRenjaProgramRequest;
 import cc.kertaskerja.realisasi_individu_service.renja.web.program.LaporanRealisasiRenjaProgramIndividuResponse;
 import cc.kertaskerja.realisasi_individu_service.renja.web.program.RenjaIndividuProgramRequest;
 import cc.kertaskerja.realisasi_individu_service.renja.web.program.RenjaIndividuProgramResponse;
+import cc.kertaskerja.realisasi_individu_service.renja.web.program.SearchRenjaProgramResponse;
 import cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan.FaktorPenghambatTargetRenjaSubKegiatanRequest;
 import cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan.FaktorPenunjangTargetRenjaSubKegiatanRequest;
 import cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan.LaporanRealisasiRenjaSubKegiatanIndividuResponse;
 import cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan.RenjaIndividuSubKegiatanRequest;
 import cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan.RenjaIndividuSubKegiatanResponse;
+import cc.kertaskerja.realisasi_individu_service.renja.web.subkegiatan.SearchRenjaSubKegiatanResponse;
 import cc.kertaskerja.integration.penetapan.PenetapanRenjaIndividuClient;
 import cc.kertaskerja.integration.penetapan.renja.PenetapanRenjaIndividu;
 import cc.kertaskerja.realisasi_individu_service.renja.web.PenetapanRenjaIndividuResponse;
@@ -214,63 +217,141 @@ public class RenjaIndividuService {
                 });
     }
 
-    public Flux<RenjaIndividuProgramResponse> searchProgram(
+    public Mono<SearchRenjaProgramResponse> searchProgram(
             String kodeOpd, String tahun, String bulan, String levelRole, String nip) {
         java.util.List<String> validRoles = java.util.List.of("LEVEL_1", "LEVEL_2", "LEVEL_3", "LEVEL_4");
         if (!validRoles.contains(levelRole.toUpperCase())) {
-            return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
         }
 
+        int tahunInt = Integer.parseInt(tahun);
+        int bulanInt = Integer.parseInt(bulan);
+
         return pegawaiClient.fetchAllPegawai()
-                .flatMapMany(pegawais -> {
+                .flatMap(pegawais -> {
                     boolean nipExists = pegawais.stream()
                             .anyMatch(p -> nip.equals(p.nip()));
-                    
+
                     if (!nipExists) {
-                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
+                        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
                     }
-                    
-                    return getProgramByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
+
+                    return penetapanClient.fetchRenjaIndividu(nip, kodeOpd, tahunInt)
+                            .flatMap(penetapanData ->
+                                    programRepo.findAllByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan)
+                                            .map(saved -> enrichProgramWithPenetapan(saved, penetapanData))
+                                            .collectList()
+                                            .map(items -> new SearchRenjaProgramResponse(
+                                                    penetapanData.pegawaiId(),
+                                                    penetapanData.nama(),
+                                                    penetapanData.kodeOpd(),
+                                                    penetapanData.tahunAktif(),
+                                                    bulanInt,
+                                                    items
+                                            ))
+                            )
+                            .onErrorResume(e -> {
+                                log.warn("Gagal menghubungi penetapan saat search program nip={}, kodeOpd={}, tahun={}: {}",
+                                        nip, kodeOpd, tahun, e.getMessage());
+                                return programRepo.findAllByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan)
+                                        .flatMap(this::enrichProgramResponse)
+                                        .collectList()
+                                        .map(items -> new SearchRenjaProgramResponse(
+                                                nip, null, kodeOpd, tahunInt, bulanInt, items
+                                        ));
+                            });
                 });
     }
 
-    public Flux<RenjaIndividuKegiatanResponse> searchKegiatan(
+    public Mono<SearchRenjaKegiatanResponse> searchKegiatan(
             String kodeOpd, String tahun, String bulan, String levelRole, String nip) {
         java.util.List<String> validRoles = java.util.List.of("LEVEL_1", "LEVEL_2", "LEVEL_3", "LEVEL_4");
         if (!validRoles.contains(levelRole.toUpperCase())) {
-            return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
         }
 
+        int tahunInt = Integer.parseInt(tahun);
+        int bulanInt = Integer.parseInt(bulan);
+
         return pegawaiClient.fetchAllPegawai()
-                .flatMapMany(pegawais -> {
+                .flatMap(pegawais -> {
                     boolean nipExists = pegawais.stream()
                             .anyMatch(p -> nip.equals(p.nip()));
-                    
+
                     if (!nipExists) {
-                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
+                        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
                     }
-                    
-                    return getKegiatanByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
+
+                    return penetapanClient.fetchRenjaIndividu(nip, kodeOpd, tahunInt)
+                            .flatMap(penetapanData ->
+                                    kegiatanRepo.findAllByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan)
+                                            .map(saved -> enrichKegiatanWithPenetapan(saved, penetapanData))
+                                            .collectList()
+                                            .map(items -> new SearchRenjaKegiatanResponse(
+                                                    penetapanData.pegawaiId(),
+                                                    penetapanData.nama(),
+                                                    penetapanData.kodeOpd(),
+                                                    penetapanData.tahunAktif(),
+                                                    bulanInt,
+                                                    items
+                                            ))
+                            )
+                            .onErrorResume(e -> {
+                                log.warn("Gagal menghubungi penetapan saat search kegiatan nip={}, kodeOpd={}, tahun={}: {}",
+                                        nip, kodeOpd, tahun, e.getMessage());
+                                return kegiatanRepo.findAllByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan)
+                                        .flatMap(this::enrichKegiatanResponse)
+                                        .collectList()
+                                        .map(items -> new SearchRenjaKegiatanResponse(
+                                                nip, null, kodeOpd, tahunInt, bulanInt, items
+                                        ));
+                            });
                 });
     }
 
-    public Flux<RenjaIndividuSubKegiatanResponse> searchSubKegiatan(
+    public Mono<SearchRenjaSubKegiatanResponse> searchSubKegiatan(
             String kodeOpd, String tahun, String bulan, String levelRole, String nip) {
         java.util.List<String> validRoles = java.util.List.of("LEVEL_1", "LEVEL_2", "LEVEL_3", "LEVEL_4");
         if (!validRoles.contains(levelRole.toUpperCase())) {
-            return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
         }
 
+        int tahunInt = Integer.parseInt(tahun);
+        int bulanInt = Integer.parseInt(bulan);
+
         return pegawaiClient.fetchAllPegawai()
-                .flatMapMany(pegawais -> {
+                .flatMap(pegawais -> {
                     boolean nipExists = pegawais.stream()
                             .anyMatch(p -> nip.equals(p.nip()));
-                    
+
                     if (!nipExists) {
-                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
+                        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
                     }
-                    
-                    return getSubKegiatanByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
+
+                    return penetapanClient.fetchRenjaIndividu(nip, kodeOpd, tahunInt)
+                            .flatMap(penetapanData ->
+                                    subKegiatanRepo.findAllByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan)
+                                            .map(saved -> enrichSubKegiatanWithPenetapan(saved, penetapanData))
+                                            .collectList()
+                                            .map(items -> new SearchRenjaSubKegiatanResponse(
+                                                    penetapanData.pegawaiId(),
+                                                    penetapanData.nama(),
+                                                    penetapanData.kodeOpd(),
+                                                    penetapanData.tahunAktif(),
+                                                    bulanInt,
+                                                    items
+                                            ))
+                            )
+                            .onErrorResume(e -> {
+                                log.warn("Gagal menghubungi penetapan saat search subkegiatan nip={}, kodeOpd={}, tahun={}: {}",
+                                        nip, kodeOpd, tahun, e.getMessage());
+                                return subKegiatanRepo.findAllByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan)
+                                        .flatMap(this::enrichSubKegiatanResponse)
+                                        .collectList()
+                                        .map(items -> new SearchRenjaSubKegiatanResponse(
+                                                nip, null, kodeOpd, tahunInt, bulanInt, items
+                                        ));
+                            });
                 });
     }
 
