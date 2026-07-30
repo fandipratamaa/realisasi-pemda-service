@@ -339,15 +339,9 @@ public class RekinService {
             return reactor.core.publisher.Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
         }
 
-        return pegawaiClient.fetchAllPegawai()
-                .flatMapMany(pegawais -> {
-                    boolean nipExists = pegawais.stream()
-                            .anyMatch(p -> nip.equals(p.nip()));
-                    
-                    if (!nipExists) {
-                        return reactor.core.publisher.Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
-                    }
-                    
+        return pegawaiClient.findPegawaiByNip(nip)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian")))
+                .flatMapMany(pegawai -> {
                     return repository.findAllByKodeOpdAndNipAndTahun(kodeOpd, nip, tahun).collectList()
                             .flatMapMany(list -> {
                                 Map<String, List<RekinIndividu>> grouped = list.stream()
@@ -404,26 +398,15 @@ public class RekinService {
                 });
     }
 
-    // --- Pegawai Integration ---
-    public Mono<List<cc.kertaskerja.integration.kepegawaian.PegawaiClient.PegawaiData>> getAllPegawai() {
-        return pegawaiClient.fetchAllPegawai();
-    }
-
     public Mono<PenetapanRekinIndividuResponse> searchRekin(String kodeOpd, String tahun, String bulan, String levelRole, String nip) {
         List<String> validRoles = List.of("LEVEL_1", "LEVEL_2", "LEVEL_3", "LEVEL_4");
         if (!validRoles.contains(levelRole.toUpperCase())) {
             return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
         }
 
-        return pegawaiClient.fetchAllPegawai()
-                .flatMap(pegawais -> {
-                    boolean nipExists = pegawais.stream()
-                            .anyMatch(p -> nip.equals(p.nip()));
-                    
-                    if (!nipExists) {
-                        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
-                    }
-                    
+        return pegawaiClient.findPegawaiByNip(nip)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian")))
+                .flatMap(pegawai -> {
                     return getPenetapanByNip(nip, kodeOpd, Integer.parseInt(tahun), bulan);
                 });
     }

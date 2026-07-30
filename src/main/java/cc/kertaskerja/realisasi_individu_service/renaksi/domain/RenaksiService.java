@@ -123,15 +123,9 @@ public class RenaksiService {
             return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
         }
 
-        return pegawaiClient.fetchAllPegawai()
-                .flatMapMany(pegawais -> {
-                    boolean nipExists = pegawais.stream()
-                            .anyMatch(p -> nip.equals(p.nip()));
-                    
-                    if (!nipExists) {
-                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
-                    }
-                    
+        return pegawaiClient.findPegawaiByNip(nip)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian")))
+                .flatMapMany(pegawai -> {
                     return getAllByNipAndKodeOpdAndTahunAndBulan(nip, kodeOpd, tahun, bulan);
                 });
     }
@@ -198,15 +192,9 @@ public class RenaksiService {
             return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
         }
 
-        return pegawaiClient.fetchAllPegawai()
-                .flatMapMany(pegawais -> {
-                    boolean nipExists = pegawais.stream()
-                            .anyMatch(p -> nip.equals(p.nip()));
-                    
-                    if (!nipExists) {
-                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
-                    }
-                    
+        return pegawaiClient.findPegawaiByNip(nip)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian")))
+                .flatMapMany(pegawai -> {
                     return renaksiIndividuRepository.findAllByKodeOpdAndNipAndTahun(kodeOpd, nip, tahun)
                             .collectList()
                             .flatMapMany(list -> {
