@@ -214,63 +214,66 @@ public class RenjaIndividuService {
                 });
     }
 
-    public Flux<RenjaIndividuProgramResponse> searchProgram(
+    public Mono<PenetapanRenjaIndividuResponse> searchProgram(
             String kodeOpd, String tahun, String bulan, String levelRole, String nip) {
         java.util.List<String> validRoles = java.util.List.of("LEVEL_1", "LEVEL_2", "LEVEL_3", "LEVEL_4");
         if (!validRoles.contains(levelRole.toUpperCase())) {
-            return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
         }
 
-        return pegawaiClient.fetchAllPegawai()
-                .flatMapMany(pegawais -> {
-                    boolean nipExists = pegawais.stream()
-                            .anyMatch(p -> nip.equals(p.nip()));
-                    
-                    if (!nipExists) {
-                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
-                    }
-                    
-                    return getProgramByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
+        int tahunInt = Integer.parseInt(tahun);
+
+        return pegawaiClient.findPegawaiByNip(nip)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian")))
+                .flatMap(pegawai -> getPenetapanByNip(nip, kodeOpd, tahunInt, bulan))
+                .onErrorResume(e -> {
+                    log.warn("Gagal menghubungi penetapan saat search program nip={}, kodeOpd={}, tahun={}: {}",
+                            nip, kodeOpd, tahun, e.getMessage());
+                    return Mono.just(new PenetapanRenjaIndividuResponse(
+                            nip, null, kodeOpd, tahunInt, parseInteger(bulan), List.of()
+                    ));
                 });
     }
 
-    public Flux<RenjaIndividuKegiatanResponse> searchKegiatan(
+    public Mono<PenetapanRenjaIndividuResponse> searchKegiatan(
             String kodeOpd, String tahun, String bulan, String levelRole, String nip) {
         java.util.List<String> validRoles = java.util.List.of("LEVEL_1", "LEVEL_2", "LEVEL_3", "LEVEL_4");
         if (!validRoles.contains(levelRole.toUpperCase())) {
-            return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
         }
 
-        return pegawaiClient.fetchAllPegawai()
-                .flatMapMany(pegawais -> {
-                    boolean nipExists = pegawais.stream()
-                            .anyMatch(p -> nip.equals(p.nip()));
-                    
-                    if (!nipExists) {
-                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
-                    }
-                    
-                    return getKegiatanByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
+        int tahunInt = Integer.parseInt(tahun);
+
+        return pegawaiClient.findPegawaiByNip(nip)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian")))
+                .flatMap(pegawai -> getPenetapanByNip(nip, kodeOpd, tahunInt, bulan))
+                .onErrorResume(e -> {
+                    log.warn("Gagal menghubungi penetapan saat search kegiatan nip={}, kodeOpd={}, tahun={}: {}",
+                            nip, kodeOpd, tahun, e.getMessage());
+                    return Mono.just(new PenetapanRenjaIndividuResponse(
+                            nip, null, kodeOpd, tahunInt, parseInteger(bulan), List.of()
+                    ));
                 });
     }
 
-    public Flux<RenjaIndividuSubKegiatanResponse> searchSubKegiatan(
+    public Mono<PenetapanRenjaIndividuResponse> searchSubKegiatan(
             String kodeOpd, String tahun, String bulan, String levelRole, String nip) {
         java.util.List<String> validRoles = java.util.List.of("LEVEL_1", "LEVEL_2", "LEVEL_3", "LEVEL_4");
         if (!validRoles.contains(levelRole.toUpperCase())) {
-            return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
         }
 
-        return pegawaiClient.fetchAllPegawai()
-                .flatMapMany(pegawais -> {
-                    boolean nipExists = pegawais.stream()
-                            .anyMatch(p -> nip.equals(p.nip()));
-                    
-                    if (!nipExists) {
-                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
-                    }
-                    
-                    return getSubKegiatanByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
+        int tahunInt = Integer.parseInt(tahun);
+
+        return pegawaiClient.findPegawaiByNip(nip)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian")))
+                .flatMap(pegawai -> getPenetapanByNip(nip, kodeOpd, tahunInt, bulan))
+                .onErrorResume(e -> {
+                    log.warn("Gagal menghubungi penetapan saat search subkegiatan nip={}, kodeOpd={}, tahun={}: {}",
+                            nip, kodeOpd, tahun, e.getMessage());
+                    return Mono.just(new PenetapanRenjaIndividuResponse(
+                            nip, null, kodeOpd, tahunInt, parseInteger(bulan), List.of()
+                    ));
                 });
     }
 
@@ -348,15 +351,9 @@ public class RenjaIndividuService {
             return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
         }
 
-        return pegawaiClient.fetchAllPegawai()
-                .flatMapMany(pegawais -> {
-                    boolean nipExists = pegawais.stream()
-                            .anyMatch(p -> nip.equals(p.nip()));
-                    
-                    if (!nipExists) {
-                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
-                    }
-                    
+        return pegawaiClient.findPegawaiByNip(nip)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian")))
+                .flatMapMany(pegawai -> {
                     return programRepo.findAllByKodeOpdAndNipAndTahun(kodeOpd, nip, tahun)
                             .collectList()
                             .flatMapMany(list -> {
@@ -386,15 +383,9 @@ public class RenjaIndividuService {
             return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
         }
 
-        return pegawaiClient.fetchAllPegawai()
-                .flatMapMany(pegawais -> {
-                    boolean nipExists = pegawais.stream()
-                            .anyMatch(p -> nip.equals(p.nip()));
-                    
-                    if (!nipExists) {
-                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
-                    }
-                    
+        return pegawaiClient.findPegawaiByNip(nip)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian")))
+                .flatMapMany(pegawai -> {
                     return kegiatanRepo.findAllByKodeOpdAndNipAndTahun(kodeOpd, nip, tahun)
                             .collectList()
                             .flatMapMany(list -> {
@@ -424,15 +415,9 @@ public class RenjaIndividuService {
             return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
         }
 
-        return pegawaiClient.fetchAllPegawai()
-                .flatMapMany(pegawais -> {
-                    boolean nipExists = pegawais.stream()
-                            .anyMatch(p -> nip.equals(p.nip()));
-                    
-                    if (!nipExists) {
-                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
-                    }
-                    
+        return pegawaiClient.findPegawaiByNip(nip)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian")))
+                .flatMapMany(pegawai -> {
                     return subKegiatanRepo.findAllByKodeOpdAndNipAndTahun(kodeOpd, nip, tahun)
                             .collectList()
                             .flatMapMany(list -> {

@@ -6,6 +6,7 @@ import cc.kertaskerja.realisasi_individu_service.renaksi.web.FaktorPenunjangRena
 import cc.kertaskerja.realisasi_individu_service.renaksi.web.LaporanRealisasiRenaksiIndividuResponse;
 import cc.kertaskerja.realisasi_individu_service.renaksi.web.RenaksiIndividuRequest;
 import cc.kertaskerja.realisasi_individu_service.renaksi.web.RenaksiResponse;
+import cc.kertaskerja.realisasi_individu_service.rekin.web.PenetapanRekinIndividuResponse;
 import cc.kertaskerja.integration.upload.UploadClient;
 import cc.kertaskerja.integration.kepegawaian.PegawaiClient;
 import cc.kertaskerja.integration.penetapan.PenetapanRekinIndividuClient;
@@ -117,22 +118,23 @@ public class RenaksiService {
         return renaksiIndividuRepository.findAllByKodeOpdAndNipAndTahunAndBulan(kodeOpd, nip, tahun, bulan);
     }
 
-    public Flux<RenaksiIndividu> searchRealisasi(String kodeOpd, String tahun, String bulan, String levelRole, String nip) {
+    public Mono<PenetapanRekinIndividuResponse> searchRealisasi(String kodeOpd, String tahun, String bulan, String levelRole, String nip) {
         java.util.List<String> validRoles = java.util.List.of("LEVEL_1", "LEVEL_2", "LEVEL_3", "LEVEL_4");
         if (!validRoles.contains(levelRole.toUpperCase())) {
-            return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
         }
 
-        return pegawaiClient.fetchAllPegawai()
-                .flatMapMany(pegawais -> {
-                    boolean nipExists = pegawais.stream()
-                            .anyMatch(p -> nip.equals(p.nip()));
-                    
-                    if (!nipExists) {
-                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
-                    }
-                    
-                    return getAllByNipAndKodeOpdAndTahunAndBulan(nip, kodeOpd, tahun, bulan);
+        int tahunInt = Integer.parseInt(tahun);
+
+        return pegawaiClient.findPegawaiByNip(nip)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian")))
+                .flatMap(pegawai -> getPenetapanByNip(nip, kodeOpd, tahunInt, bulan))
+                .onErrorResume(e -> {
+                    log.warn("Gagal menghubungi penetapan saat search realisasi nip={}, kodeOpd={}, tahun={}: {}",
+                            nip, kodeOpd, tahun, e.getMessage());
+                    return Mono.just(new PenetapanRekinIndividuResponse(
+                            nip, null, kodeOpd, tahunInt, parseInteger(bulan), List.of()
+                    ));
                 });
     }
 
@@ -198,15 +200,9 @@ public class RenaksiService {
             return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
         }
 
-        return pegawaiClient.fetchAllPegawai()
-                .flatMapMany(pegawais -> {
-                    boolean nipExists = pegawais.stream()
-                            .anyMatch(p -> nip.equals(p.nip()));
-                    
-                    if (!nipExists) {
-                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian"));
-                    }
-                    
+        return pegawaiClient.findPegawaiByNip(nip)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian")))
+                .flatMapMany(pegawai -> {
                     return renaksiIndividuRepository.findAllByKodeOpdAndNipAndTahun(kodeOpd, nip, tahun)
                             .collectList()
                             .flatMapMany(list -> {
@@ -452,6 +448,10 @@ public class RenaksiService {
     public Mono<String> uploadFile(FilePart file) {
         return uploadClient.uploadFile(file)
                 .map(UploadClient.UploadMetadata::url);
+    }
+
+    private Integer parseInteger(String value) {
+        return value == null ? null : Integer.parseInt(value);
     }
 }
 

@@ -38,16 +38,6 @@ public class RekinController {
         this.rekinService = rekinService;
     }
 
-    @GetMapping("/pegawai")
-    @Operation(summary = "Mengambil data seluruh pegawai", description = "Endpoint untuk mengambil data pegawai untuk opsi dropdown di frontend.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Berhasil mengambil data pegawai", content = @Content(array = @ArraySchema(schema = @Schema(implementation = cc.kertaskerja.integration.kepegawaian.PegawaiClient.PegawaiData.class)))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Mono<java.util.List<cc.kertaskerja.integration.kepegawaian.PegawaiClient.PegawaiData>> getAllPegawai() {
-        return rekinService.getAllPegawai();
-    }
-
     @GetMapping("/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}/levelRole/{levelRole}/nip/{nip}")
     @Operation(summary = "Mencari rekin individu berdasarkan filter", description = "Endpoint untuk fitur pencarian rekin individu di frontend. Memvalidasi NIP ke service pegawai lalu mengambil data penetapan.")
     @ApiResponses(value = {

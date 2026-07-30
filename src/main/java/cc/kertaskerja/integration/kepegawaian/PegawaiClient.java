@@ -1,5 +1,6 @@
 package cc.kertaskerja.integration.kepegawaian;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,18 +33,26 @@ public class PegawaiClient {
             Integer code,
             String status,
             String message,
-            List<PegawaiData> data
+            @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY) List<PegawaiData> data
     ) {}
 
-    public Mono<List<PegawaiData>> fetchAllPegawai() {
+    public Mono<PegawaiData> findPegawaiByNip(String nip) {
         return webClient.get()
-                .uri("/pegawai")
+                .uri(uriBuilder -> uriBuilder.path("/pegawai/findByNip")
+                        .queryParam("nip", nip)
+                        .build())
                 .retrieve()
                 .bodyToMono(PegawaiResponse.class)
-                .map(response -> response.data() != null ? response.data() : List.<PegawaiData>of())
+                .flatMap(response -> {
+                    List<PegawaiData> data = response.data();
+                    if (data != null && !data.isEmpty()) {
+                        return Mono.just(data.get(0));
+                    }
+                    return Mono.empty();
+                })
                 .onErrorResume(e -> {
-                    log.warn("Failed to fetch pegawai list from kepegawaian service", e);
-                    return Mono.just(List.<PegawaiData>of());
+                    log.warn("Failed to fetch pegawai by NIP from kepegawaian service", e);
+                    return Mono.empty();
                 });
     }
 }
