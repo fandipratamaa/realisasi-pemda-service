@@ -404,10 +404,17 @@ public class RekinService {
             return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "levelRole tidak valid"));
         }
 
+        int tahunInt = Integer.parseInt(tahun);
+
         return pegawaiClient.findPegawaiByNip(nip)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Pegawai dengan NIP tersebut tidak ditemukan di service Kepegawaian")))
-                .flatMap(pegawai -> {
-                    return getPenetapanByNip(nip, kodeOpd, Integer.parseInt(tahun), bulan);
+                .flatMap(pegawai -> getPenetapanByNip(nip, kodeOpd, tahunInt, bulan))
+                .onErrorResume(e -> {
+                    log.warn("Gagal menghubungi penetapan saat search rekin nip={}, kodeOpd={}, tahun={}: {}",
+                            nip, kodeOpd, tahun, e.getMessage());
+                    return Mono.just(new PenetapanRekinIndividuResponse(
+                            nip, null, kodeOpd, tahunInt, parseInteger(bulan), List.of()
+                    ));
                 });
     }
 

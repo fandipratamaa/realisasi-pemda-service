@@ -3,9 +3,9 @@ package cc.kertaskerja.realisasi_individu_service.renaksi.web;
 import cc.kertaskerja.realisasi.domain.JenisLaporan;
 import cc.kertaskerja.realisasi_individu_service.renaksi.domain.RenaksiIndividu;
 import cc.kertaskerja.realisasi_individu_service.renaksi.domain.RenaksiService;
+import cc.kertaskerja.realisasi_individu_service.rekin.web.PenetapanRekinIndividuResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -76,16 +76,16 @@ public class RenaksiController {
     }
 
     @GetMapping("/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}/levelRole/{levelRole}/nip/{nip}")
-    @Operation(summary = "Mencari realisasi renaksi individu", description = "Endpoint untuk fitur pencarian realisasi renaksi individu di frontend. Memvalidasi NIP ke service pegawai lalu mengambil data realisasi.")
+    @Operation(summary = "Mencari realisasi renaksi individu", description = "Endpoint untuk fitur pencarian realisasi renaksi individu di frontend. Memvalidasi NIP ke service pegawai lalu mengambil data penetapan terintegrasi realisasi.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Daftar realisasi renaksi individu", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RenaksiIndividu.class)))),
+            @ApiResponse(responseCode = "200", description = "Data penetapan terintegrasi dengan realisasi", content = @Content(schema = @Schema(implementation = PenetapanRekinIndividuResponse.class))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "Pegawai tidak ditemukan", content = @Content)
     })
     @PreAuthorize("hasAnyAuthority('super_admin', 'ROLE_SUPER_ADMIN', 'admin_opd', 'ROLE_ADMIN_OPD')")
-    public Flux<RenaksiIndividu> searchRealisasi(
+    public Mono<PenetapanRekinIndividuResponse> searchRealisasi(
             @Parameter(description = "Kode OPD") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun realisasi") @PathVariable String tahun,
             @Parameter(description = "Bulan realisasi") @PathVariable String bulan,
