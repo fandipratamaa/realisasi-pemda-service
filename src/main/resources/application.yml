@@ -18,7 +18,18 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://keycloak.kertaskerja.local/realms/KabMadiun
+          issuer-uri: http://keycloak.kertaskerja.local/realms/TestRealm
+      client:
+        registration:
+          gateway:
+            provider: keycloak
+            client-id: client
+            client-secret: secret
+            authorization-grant-type: client_credentials
+
+        provider:
+          keycloak:
+            issuer-uri: http://keycloak.kertaskerja.local/realms/TestRealm
 
 server:
   port: 9001
