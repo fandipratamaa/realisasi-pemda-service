@@ -56,25 +56,6 @@ public class RenaksiController {
         return renaksiService.getPenetapanByNip(nip, kodeOpd, Integer.parseInt(tahun), bulan);
     }
 
-    @PostMapping("/nip/{nip}/kodeOpd/{kodeOpd}/tahun/{tahun}/sync/penetapan")
-    @Operation(summary = "Sinkronisasi renaksi individu", description = "Memicu sinkronisasi data renaksi individu dari service penetapan dan langsung mengembalikan data terbarunya.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Data penetapan ter-sinkronisasi dan terintegrasi dengan realisasi", content = @Content(schema = @Schema(implementation = cc.kertaskerja.realisasi_individu_service.rekin.web.PenetapanRekinIndividuResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public Mono<cc.kertaskerja.realisasi_individu_service.rekin.web.PenetapanRekinIndividuResponse> syncRenaksiIndividu(
-            @Parameter(description = "NIP pelaksana", example = "198012312005011001") @PathVariable String nip,
-            @Parameter(description = "Kode OPD", example = "1.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
-            @Parameter(description = "Tahun", example = "2026") @PathVariable String tahun,
-            @Parameter(description = "Bulan realisasi (opsional)", example = "1") @RequestParam(required = false) String bulan) {
-        if (nip == null || nip.isBlank() || kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter nip, kodeOpd, dan tahun tidak boleh kosong");
-        }
-        return renaksiService.syncPenetapanRenaksiIndividu(nip, kodeOpd, Integer.parseInt(tahun))
-                .then(renaksiService.getPenetapanByNip(nip, kodeOpd, Integer.parseInt(tahun), bulan));
-    }
-
     @GetMapping("/kodeOpd/{kodeOpd}/tahun/{tahun}/bulan/{bulan}/levelRole/{levelRole}/nip/{nip}")
     @Operation(summary = "Mencari realisasi renaksi individu", description = "Endpoint untuk fitur pencarian realisasi renaksi individu di frontend. Memvalidasi NIP ke service pegawai lalu mengambil data penetapan terintegrasi realisasi.")
     @ApiResponses(value = {

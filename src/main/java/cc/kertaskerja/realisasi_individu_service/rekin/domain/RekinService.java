@@ -429,10 +429,6 @@ public class RekinService {
                 });
     }
 
-    public Mono<String> syncPenetapanRekinIndividu(String nip, String kodeOpd, int tahun) {
-        return penetapanClient.syncRekinIndividu(nip, kodeOpd, tahun);
-    }
-
     private PenetapanRekinIndividuResponse toResponseWithoutBulan(PenetapanRekinIndividu.RekinIndividuData data) {
         List<PenetapanRekinIndividuResponse.RekinPenetapanResponse> rekins = data.rekins().stream()
                 .map(this::mapRekinToResponse)

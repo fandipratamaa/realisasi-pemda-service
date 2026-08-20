@@ -342,10 +342,6 @@ public class RenaksiService {
                 .flatMap(data -> buildResponseWithBulan(data, nip, kodeOpd, tahun, bulan));
     }
 
-    public Mono<String> syncPenetapanRenaksiIndividu(String nip, String kodeOpd, int tahun) {
-        return penetapanClient.syncRekinIndividu(nip, kodeOpd, tahun);
-    }
-
     private cc.kertaskerja.realisasi_individu_service.rekin.web.PenetapanRekinIndividuResponse.IndikatorPenetapanResponse mapIndikatorToResponse(
             cc.kertaskerja.integration.penetapan.rekin.PenetapanRekinIndividu.IndikatorRekinData indikator
     ) {
