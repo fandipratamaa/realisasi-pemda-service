@@ -372,12 +372,18 @@ public class RenaksiService {
                 .collectList()
                 .map(localList -> {
                     Map<String, RenaksiIndividu> localTargetMap = buildLocalTargetMap(localList);
-                    List<cc.kertaskerja.realisasi_individu_service.rekin.web.PenetapanRekinIndividuResponse.RekinPenetapanResponse> rekins = data.rekins().stream()
-                            .map(r -> mergeRekinWithRealisasi(r, localTargetMap))
-                            .toList();
+                    Integer bulanInt = (bulan != null && !bulan.isBlank()) ? Integer.parseInt(bulan) : null;
+                    List<cc.kertaskerja.realisasi_individu_service.rekin.web.PenetapanRekinIndividuResponse.RekinPenetapanResponse> rekins;
+                    if (bulanInt != null) {
+                        rekins = data.rekins().stream()
+                                .map(r -> mergeRekinWithRealisasi(r, localTargetMap, bulan))
+                                .filter(r -> !r.renaksis().isEmpty())
+                                .toList();
+                    } else {
+                        rekins = List.of();
+                    }
                     return new cc.kertaskerja.realisasi_individu_service.rekin.web.PenetapanRekinIndividuResponse(
-                            data.pegawaiId(), data.nama(), data.kodeOpd(), data.tahunAktif(),
-                            (bulan == null || bulan.isBlank()) ? null : Integer.parseInt(bulan), rekins
+                            data.pegawaiId(), data.nama(), data.kodeOpd(), data.tahunAktif(), null, rekins
                     );
                 });
     }
@@ -397,20 +403,25 @@ public class RenaksiService {
 
     private cc.kertaskerja.realisasi_individu_service.rekin.web.PenetapanRekinIndividuResponse.RekinPenetapanResponse mergeRekinWithRealisasi(
             cc.kertaskerja.integration.penetapan.rekin.PenetapanRekinIndividu.RekinData rekin,
-            Map<String, RenaksiIndividu> localTargetMap
+            Map<String, RenaksiIndividu> localTargetMap,
+            String bulan
     ) {
+        Integer bulanInt = (bulan != null && !bulan.isBlank()) ? Integer.parseInt(bulan) : null;
         List<cc.kertaskerja.realisasi_individu_service.rekin.web.PenetapanRekinIndividuResponse.IndikatorPenetapanResponse> indikators = rekin.indikatorPk().stream()
                 .map(this::mapIndikatorToResponse)
                 .toList();
         List<cc.kertaskerja.realisasi_individu_service.rekin.web.PenetapanRekinIndividuResponse.RenaksiPenetapanResponse> renaksis = rekin.renaksis().stream()
                 .map(r -> {
                     List<cc.kertaskerja.realisasi_individu_service.rekin.web.PenetapanRekinIndividuResponse.PelaksanaanPenetapanResponse> pelaksanaans = r.pelaksanaans().stream()
+                            .filter(p -> bulanInt == null || p.bulanPelaksanaan() == null || p.bulanPelaksanaan().equals(bulanInt))
                             .map(p -> mergePelaksanaanWithRealisasi(rekin.kodePk(), r.kodeRenaksi(), p, localTargetMap))
                             .toList();
                     return new cc.kertaskerja.realisasi_individu_service.rekin.web.PenetapanRekinIndividuResponse.RenaksiPenetapanResponse(
                             r.id(), r.urutanRenaksi(), r.kodeRenaksi(), r.namaRenaksi(), r.anggaranRenaksi(), pelaksanaans
                     );
                 })
+                .filter(r -> bulanInt == null || !r.pelaksanaans().isEmpty())
+                .sorted(java.util.Comparator.comparing(r -> r.urutanRenaksi() != null ? r.urutanRenaksi() : Integer.MAX_VALUE))
                 .toList();
         return new cc.kertaskerja.realisasi_individu_service.rekin.web.PenetapanRekinIndividuResponse.RekinPenetapanResponse(
                 rekin.id(), rekin.kodeSasaranOpd(), rekin.kodePk(), rekin.rekin(),
