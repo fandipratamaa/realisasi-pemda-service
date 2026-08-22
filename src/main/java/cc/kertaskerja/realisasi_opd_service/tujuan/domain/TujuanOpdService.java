@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 @Service
@@ -319,7 +318,6 @@ public class TujuanOpdService {
                 .map(lookup -> {
                     List<TujuanOpdPenetapanResponse> items = penetapanList.stream()
                             .map(p -> mergePenetapanWithRealisasi(p, lookup.get(p.kodeTujuanOpd())))
-                            .filter(response -> !response.indikators().isEmpty())
                             .toList();
                     return new PenetapanTujuanOpdListResponse(
                             root.kodeOpd(), root.tahun(), parseInteger(bulan), items);
@@ -332,7 +330,6 @@ public class TujuanOpdService {
     ) {
         List<TujuanOpdPenetapanResponse> items = penetapanList.stream()
                 .map(p -> mergePenetapanWithRealisasi(p, null))
-                .filter(response -> !response.indikators().isEmpty())
                 .toList();
         return new PenetapanTujuanOpdListResponse(root.kodeOpd(), root.tahun(), null, items);
     }
@@ -343,7 +340,6 @@ public class TujuanOpdService {
     ) {
         List<TujuanOpdPenetapanResponse.IndikatorPenetapan> indikatorList = penetapan.indikators().stream()
                 .map(ind -> mapIndikatorToPenetapan(ind, indikatorLookup))
-                .filter(Objects::nonNull)
                 .toList();
 
         return new TujuanOpdPenetapanResponse(
@@ -362,10 +358,6 @@ public class TujuanOpdService {
         List<TujuanOpdPenetapanResponse.TargetPenetapan> targetList = ind.targets().stream()
                 .map(t -> mergeTarget(t, targetMap))
                 .toList();
-
-        if (targetList.isEmpty()) {
-            return null;
-        }
 
         return new TujuanOpdPenetapanResponse.IndikatorPenetapan(
                 ind.kodeIndikator(), ind.indikator(), ind.rumusPerhitungan(),

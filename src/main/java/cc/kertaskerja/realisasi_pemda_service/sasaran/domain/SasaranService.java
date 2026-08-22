@@ -251,7 +251,6 @@ public class SasaranService {
                 .map(lookup -> {
                     List<SasaranPemdaPenetapanResponse> items = penetapanList.stream()
                             .map(p -> mergePenetapanWithRealisasi(p, lookup.get(p.kodeSasaranPemda())))
-                            .filter(response -> !response.indikators().isEmpty())
                             .toList();
                     return new PenetapanSasaranPemdaListResponse(
                             rootTahun, parseInteger(bulan), items);
@@ -264,7 +263,6 @@ public class SasaranService {
     ) {
         List<SasaranPemdaPenetapanResponse> items = penetapanList.stream()
                 .map(p -> mergePenetapanWithRealisasi(p, null))
-                .filter(response -> !response.indikators().isEmpty())
                 .toList();
         return new PenetapanSasaranPemdaListResponse(rootTahun, null, items);
     }
@@ -290,7 +288,6 @@ public class SasaranService {
     ) {
         List<SasaranPemdaPenetapanResponse.IndikatorPenetapan> indikatorList = penetapan.indikators().stream()
                 .map(ind -> mapIndikatorToPenetapan(ind, indikatorLookup))
-                .filter(java.util.Objects::nonNull)
                 .toList();
 
         return new SasaranPemdaPenetapanResponse(
@@ -309,10 +306,6 @@ public class SasaranService {
         List<SasaranPemdaPenetapanResponse.TargetPenetapan> targetList = ind.targets().stream()
                 .map(t -> mergeTarget(t, targetMap))
                 .toList();
-
-        if (targetList.isEmpty()) {
-            return null;
-        }
 
         return new SasaranPemdaPenetapanResponse.IndikatorPenetapan(
                 ind.kodeIndikator(), ind.indikator(), ind.rumusPerhitungan(),

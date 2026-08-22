@@ -28,7 +28,6 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @Service
 public class RenjaOpdService {
@@ -212,17 +211,14 @@ public class RenjaOpdService {
 
                     List<RenjaOpdPenetapanResponse.ProgramPenetapan> programs = safeList(root.programs()).stream()
                             .map(p -> mergeProgramWithRealisasi(p, progMap))
-                            .filter(p -> !p.indikators().isEmpty())
                             .toList();
 
                     List<RenjaOpdPenetapanResponse.KegiatanPenetapan> kegiatans = safeList(root.kegiatans()).stream()
                             .map(k -> mergeKegiatanWithRealisasi(k, kegMap))
-                            .filter(k -> !k.indikators().isEmpty())
                             .toList();
 
                     List<RenjaOpdPenetapanResponse.SubkegiatanPenetapan> subkegiatans = safeList(root.subkegiatans()).stream()
                             .map(s -> mergeSubKegiatanWithRealisasi(s, subMap))
-                            .filter(s -> !s.indikators().isEmpty())
                             .toList();
 
                     return new RenjaOpdPenetapanResponse(
@@ -334,30 +330,24 @@ public class RenjaOpdService {
             Map<String, RealisasiData> realisasiMap
     ) {
         List<RenjaOpdPenetapanResponse.IndikatorPenetapan> indikators = p.indikators().stream()
-                .map(ind -> {
-                    List<RenjaOpdPenetapanResponse.TargetPenetapan> targets = ind.targets().stream()
-                            .map(t -> {
-                                RealisasiData data = realisasiMap.get(t.kodeTarget());
-                                Double realisasi = data != null ? data.realisasi() : null;
-                                var capaianResult = hitungCapaian(realisasi, t.target());
-                                return new RenjaOpdPenetapanResponse.TargetPenetapan(
-                                        t.id(), t.kodeTarget(), t.tahun(), null,
-                                        t.target(), realisasi, t.satuan(),
-                                        capaianResult.capaian(), capaianResult.keteranganCapaian(),
-                                        data != null ? data.faktorPenunjang() : null,
-                                        data != null ? data.faktorPenghambat() : null,
-                                        data != null ? data.buktiPendukung() : null
-                                );
-                            })
-                            .toList();
-
-                    if (targets.isEmpty()) return null;
-
-                    return new RenjaOpdPenetapanResponse.IndikatorPenetapan(
-                            ind.id(), ind.kodeIndikator(), ind.indikator(), targets
-                    );
-                })
-                .filter(Objects::nonNull)
+                .map(ind -> new RenjaOpdPenetapanResponse.IndikatorPenetapan(
+                        ind.id(), ind.kodeIndikator(), ind.indikator(),
+                        ind.targets().stream()
+                                .map(t -> {
+                                    RealisasiData data = realisasiMap.get(t.kodeTarget());
+                                    Double realisasi = data != null ? data.realisasi() : null;
+                                    var capaianResult = hitungCapaian(realisasi, t.target());
+                                    return new RenjaOpdPenetapanResponse.TargetPenetapan(
+                                            t.id(), t.kodeTarget(), t.tahun(), null,
+                                            t.target(), realisasi, t.satuan(),
+                                            capaianResult.capaian(), capaianResult.keteranganCapaian(),
+                                            data != null ? data.faktorPenunjang() : null,
+                                            data != null ? data.faktorPenghambat() : null,
+                                            data != null ? data.buktiPendukung() : null
+                                    );
+                                })
+                                .toList()
+                ))
                 .toList();
 
         return new RenjaOpdPenetapanResponse.ProgramPenetapan(
@@ -371,30 +361,24 @@ public class RenjaOpdService {
             Map<String, RealisasiData> realisasiMap
     ) {
         List<RenjaOpdPenetapanResponse.IndikatorPenetapan> indikators = k.indikators().stream()
-                .map(ind -> {
-                    List<RenjaOpdPenetapanResponse.TargetPenetapan> targets = ind.targets().stream()
-                            .map(t -> {
-                                RealisasiData data = realisasiMap.get(t.kodeTarget());
-                                Double realisasi = data != null ? data.realisasi() : null;
-                                var capaianResult = hitungCapaian(realisasi, t.target());
-                                return new RenjaOpdPenetapanResponse.TargetPenetapan(
-                                        t.id(), t.kodeTarget(), t.tahun(), null,
-                                        t.target(), realisasi, t.satuan(),
-                                        capaianResult.capaian(), capaianResult.keteranganCapaian(),
-                                        data != null ? data.faktorPenunjang() : null,
-                                        data != null ? data.faktorPenghambat() : null,
-                                        data != null ? data.buktiPendukung() : null
-                                );
-                            })
-                            .toList();
-
-                    if (targets.isEmpty()) return null;
-
-                    return new RenjaOpdPenetapanResponse.IndikatorPenetapan(
-                            ind.id(), ind.kodeIndikator(), ind.indikator(), targets
-                    );
-                })
-                .filter(Objects::nonNull)
+                .map(ind -> new RenjaOpdPenetapanResponse.IndikatorPenetapan(
+                        ind.id(), ind.kodeIndikator(), ind.indikator(),
+                        ind.targets().stream()
+                                .map(t -> {
+                                    RealisasiData data = realisasiMap.get(t.kodeTarget());
+                                    Double realisasi = data != null ? data.realisasi() : null;
+                                    var capaianResult = hitungCapaian(realisasi, t.target());
+                                    return new RenjaOpdPenetapanResponse.TargetPenetapan(
+                                            t.id(), t.kodeTarget(), t.tahun(), null,
+                                            t.target(), realisasi, t.satuan(),
+                                            capaianResult.capaian(), capaianResult.keteranganCapaian(),
+                                            data != null ? data.faktorPenunjang() : null,
+                                            data != null ? data.faktorPenghambat() : null,
+                                            data != null ? data.buktiPendukung() : null
+                                    );
+                                })
+                                .toList()
+                ))
                 .toList();
 
         return new RenjaOpdPenetapanResponse.KegiatanPenetapan(
@@ -408,30 +392,24 @@ public class RenjaOpdService {
             Map<String, RealisasiData> realisasiMap
     ) {
         List<RenjaOpdPenetapanResponse.IndikatorPenetapan> indikators = s.indikators().stream()
-                .map(ind -> {
-                    List<RenjaOpdPenetapanResponse.TargetPenetapan> targets = ind.targets().stream()
-                            .map(t -> {
-                                RealisasiData data = realisasiMap.get(t.kodeTarget());
-                                Double realisasi = data != null ? data.realisasi() : null;
-                                var capaianResult = hitungCapaian(realisasi, t.target());
-                                return new RenjaOpdPenetapanResponse.TargetPenetapan(
-                                        t.id(), t.kodeTarget(), t.tahun(), null,
-                                        t.target(), realisasi, t.satuan(),
-                                        capaianResult.capaian(), capaianResult.keteranganCapaian(),
-                                        data != null ? data.faktorPenunjang() : null,
-                                        data != null ? data.faktorPenghambat() : null,
-                                        data != null ? data.buktiPendukung() : null
-                                );
-                            })
-                            .toList();
-
-                    if (targets.isEmpty()) return null;
-
-                    return new RenjaOpdPenetapanResponse.IndikatorPenetapan(
-                            ind.id(), ind.kodeIndikator(), ind.indikator(), targets
-                    );
-                })
-                .filter(Objects::nonNull)
+                .map(ind -> new RenjaOpdPenetapanResponse.IndikatorPenetapan(
+                        ind.id(), ind.kodeIndikator(), ind.indikator(),
+                        ind.targets().stream()
+                                .map(t -> {
+                                    RealisasiData data = realisasiMap.get(t.kodeTarget());
+                                    Double realisasi = data != null ? data.realisasi() : null;
+                                    var capaianResult = hitungCapaian(realisasi, t.target());
+                                    return new RenjaOpdPenetapanResponse.TargetPenetapan(
+                                            t.id(), t.kodeTarget(), t.tahun(), null,
+                                            t.target(), realisasi, t.satuan(),
+                                            capaianResult.capaian(), capaianResult.keteranganCapaian(),
+                                            data != null ? data.faktorPenunjang() : null,
+                                            data != null ? data.faktorPenghambat() : null,
+                                            data != null ? data.buktiPendukung() : null
+                                    );
+                                })
+                                .toList()
+                ))
                 .toList();
 
         return new RenjaOpdPenetapanResponse.SubkegiatanPenetapan(

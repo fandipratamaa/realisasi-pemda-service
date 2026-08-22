@@ -370,7 +370,6 @@ public class TujuanService {
                 .map(lookup -> {
                     List<TujuanPemdaPenetapanResponse> items = penetapanList.stream()
                             .map(p -> mergePenetapanWithRealisasi(p, lookup.get(p.kodeTujuanPemda())))
-                            .filter(response -> !response.indikators().isEmpty())
                             .toList();
                     return new PenetapanTujuanPemdaListResponse(
                             rootTahun, parseInteger(bulan), items);
@@ -383,7 +382,6 @@ public class TujuanService {
     ) {
         List<TujuanPemdaPenetapanResponse> items = penetapanList.stream()
                 .map(p -> mergePenetapanWithRealisasi(p, null))
-                .filter(response -> !response.indikators().isEmpty())
                 .toList();
         return new PenetapanTujuanPemdaListResponse(rootTahun, null, items);
     }
@@ -409,7 +407,6 @@ public class TujuanService {
     ) {
         List<TujuanPemdaPenetapanResponse.IndikatorPenetapan> indikatorList = penetapan.indikators().stream()
                 .map(ind -> mapIndikatorToPenetapan(ind, indikatorLookup))
-                .filter(java.util.Objects::nonNull)
                 .toList();
 
         return new TujuanPemdaPenetapanResponse(
@@ -428,10 +425,6 @@ public class TujuanService {
         List<TujuanPemdaPenetapanResponse.TargetPenetapan> targetList = ind.targets().stream()
                 .map(t -> mergeTarget(t, targetMap))
                 .toList();
-
-        if (targetList.isEmpty()) {
-            return null;
-        }
 
         return new TujuanPemdaPenetapanResponse.IndikatorPenetapan(
                 ind.kodeIndikator(), ind.indikator(), ind.rumusPerhitungan(),
