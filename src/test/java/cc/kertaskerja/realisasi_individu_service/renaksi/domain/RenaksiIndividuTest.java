@@ -1,9 +1,7 @@
 package cc.kertaskerja.realisasi_individu_service.renaksi.domain;
 
-import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
