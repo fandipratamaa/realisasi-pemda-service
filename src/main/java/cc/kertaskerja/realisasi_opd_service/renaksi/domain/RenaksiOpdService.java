@@ -2,9 +2,11 @@ package cc.kertaskerja.realisasi_opd_service.renaksi.domain;
 
 import cc.kertaskerja.integration.penetapan.PenetapanRenaksiOpdClient;
 import cc.kertaskerja.integration.penetapan.renaksi.PenetapanRenaksiOpd;
+import cc.kertaskerja.realisasi.domain.JenisLaporan;
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import cc.kertaskerja.realisasi_opd_service.renaksi.web.FaktorPenghambatRenaksiOpdRequest;
 import cc.kertaskerja.realisasi_opd_service.renaksi.web.FaktorPenunjangRenaksiOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.renaksi.web.LaporanRealisasiRenaksiOpdResponse;
 import cc.kertaskerja.realisasi_opd_service.renaksi.web.PenetapanRenaksiOpdListResponse;
 import cc.kertaskerja.realisasi_opd_service.renaksi.web.RenaksiOpdPenetapanResponse;
 import cc.kertaskerja.realisasi_opd_service.renaksi.web.RenaksiOpdRequest;
@@ -19,6 +21,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.UnaryOperator;
 
 @Service
@@ -205,6 +208,123 @@ public class RenaksiOpdService {
 
     public Flux<RenaksiOpd> getRealisasiRenaksiByKodeOpdAndTahunAndBulan(String kodeOpd, String tahun, String bulan) {
         return renaksiOpdRepository.findAllByKodeOpdAndTahunAndBulan(kodeOpd, tahun, bulan);
+    }
+
+    public Flux<LaporanRealisasiRenaksiOpdResponse> getLaporanRealisasi(
+            String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan) {
+        if (jenisLaporan == null) {
+            return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Jenis laporan tidak boleh kosong"));
+        }
+        if (jenisLaporan == JenisLaporan.BULANAN && !hasText(bulan)) {
+            return Flux.error(new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Parameter bulan wajib diisi untuk laporan BULANAN"));
+        }
+
+        int tahunInt = Integer.parseInt(tahun);
+        Mono<PenetapanRenaksiOpd.PenetapanRenaksiOpdRoot> penetapanMono =
+                penetapanRenaksiOpdClient.fetchRenaksiOpd(kodeOpd, tahunInt)
+                        .onErrorReturn(new PenetapanRenaksiOpd.PenetapanRenaksiOpdRoot(
+                                kodeOpd, tahunInt, null, null, List.of()));
+
+        return Mono.zip(
+                        renaksiOpdRepository.findAllByKodeOpdAndTahun(kodeOpd, tahun).collectList(),
+                        penetapanMono.defaultIfEmpty(new PenetapanRenaksiOpd.PenetapanRenaksiOpdRoot(
+                                kodeOpd, tahunInt, null, null, List.of())))
+                .flatMapMany(tuple -> {
+                    List<RenaksiOpd> realisasiList = tuple.getT1();
+                    PenetapanRenaksiOpd.PenetapanRenaksiOpdRoot root = tuple.getT2();
+
+                    Map<String, PenetapanRenaksiOpd.RenaksiPenetapanData> penetapanByKode = new HashMap<>();
+                    for (PenetapanRenaksiOpd.RenaksiPenetapanData item : root.renaksiOpds()) {
+                        if (hasText(item.kodeRencanaAksiOpd())) {
+                            penetapanByKode.putIfAbsent(item.kodeRencanaAksiOpd(), item);
+                        }
+                    }
+
+                    Map<String, List<RenaksiOpd>> grouped = realisasiList.stream()
+                            .filter(item -> hasText(item.kodeRencanaAksiOpd()))
+                            .collect(java.util.stream.Collectors.groupingBy(RenaksiOpd::kodeRencanaAksiOpd));
+
+                    return Flux.fromIterable(grouped.entrySet()).map(entry -> {
+                        String kodeRencanaAksiOpd = entry.getKey();
+                        List<RenaksiOpd> groupList = entry.getValue();
+                        PenetapanRenaksiOpd.RenaksiPenetapanData penetapan = penetapanByKode.get(kodeRencanaAksiOpd);
+
+                        String namaRenaksi = penetapan != null && hasText(penetapan.namaPk())
+                                ? penetapan.namaPk() : kodeRencanaAksiOpd;
+                        String target = penetapan == null ? null : String.valueOf(sumTriwulan(
+                                penetapan.tw1(), penetapan.tw2(), penetapan.tw3(), penetapan.tw4()));
+
+                        Map<String, Double> listData = buildLaporanData(groupList, jenisLaporan, bulan);
+                        Double totalRealisasi = null;
+                        if (jenisLaporan == JenisLaporan.TRIWULAN || jenisLaporan == JenisLaporan.TAHUNAN) {
+                            totalRealisasi = listData.entrySet().stream()
+                                    .max(Map.Entry.comparingByKey())
+                                    .map(Map.Entry::getValue)
+                                    .orElse(0.0);
+                        }
+
+                        return new LaporanRealisasiRenaksiOpdResponse(
+                                tahun, kodeOpd, kodeRencanaAksiOpd, namaRenaksi, target,
+                                jenisLaporan, listData, totalRealisasi);
+                    });
+                });
+    }
+
+    private Map<String, Double> buildLaporanData(
+            List<RenaksiOpd> groupList, JenisLaporan jenisLaporan, String bulan) {
+        return switch (jenisLaporan) {
+            case BULANAN -> {
+                double total = groupList.stream()
+                        .filter(item -> bulan != null && bulan.equals(item.bulan()))
+                        .filter(item -> item.realisasi() != null)
+                        .mapToDouble(item -> item.realisasi().doubleValue())
+                        .sum();
+                yield Map.of(bulan, total);
+            }
+            case TRIWULAN -> hitungTriwulanKumulatif(groupList);
+            case TAHUNAN -> hitungBulanKumulatif(groupList);
+        };
+    }
+
+    private Map<String, Double> hitungTriwulanKumulatif(List<RenaksiOpd> groupList) {
+        Map<String, Double> triwulanMap = new TreeMap<>();
+        for (int triwulan = 1; triwulan <= 4; triwulan++) {
+            int awalBulan = (triwulan - 1) * 3 + 1;
+            int akhirBulan = triwulan * 3;
+            boolean adaData = groupList.stream()
+                    .filter(item -> item.realisasi() != null)
+                    .anyMatch(item -> {
+                        int b = Integer.parseInt(item.bulan());
+                        return b >= awalBulan && b <= akhirBulan;
+                    });
+            if (adaData) {
+                double kumulatif = groupList.stream()
+                        .filter(item -> item.realisasi() != null)
+                        .filter(item -> Integer.parseInt(item.bulan()) <= akhirBulan)
+                        .mapToDouble(item -> item.realisasi().doubleValue())
+                        .sum();
+                triwulanMap.put(String.valueOf(triwulan), kumulatif);
+            }
+        }
+        return triwulanMap;
+    }
+
+    private Map<String, Double> hitungBulanKumulatif(List<RenaksiOpd> groupList) {
+        TreeMap<Integer, Double> bulanMap = new TreeMap<>();
+        for (RenaksiOpd item : groupList) {
+            if (item.realisasi() == null) continue;
+            int noBulan = Integer.parseInt(item.bulan());
+            bulanMap.merge(noBulan, item.realisasi().doubleValue(), Double::sum);
+        }
+
+        double akumulasi = 0.0;
+        Map<String, Double> result = new TreeMap<>();
+        for (Map.Entry<Integer, Double> entry : bulanMap.entrySet()) {
+            akumulasi += entry.getValue();
+            result.put(String.valueOf(entry.getKey()), akumulasi);
+        }
+        return result;
     }
 
     public Mono<RenaksiOpd> updateFaktorPenunjang(FaktorPenunjangRenaksiOpdRequest req) {

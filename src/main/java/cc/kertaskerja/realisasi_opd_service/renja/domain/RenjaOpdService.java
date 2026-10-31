@@ -3,14 +3,16 @@ package cc.kertaskerja.realisasi_opd_service.renja.domain;
 import cc.kertaskerja.integration.penetapan.PenetapanRenjaOpdClient;
 import cc.kertaskerja.integration.penetapan.renja.PenetapanRenjaOpd;
 import cc.kertaskerja.realisasi.domain.JenisLaporan;
-import cc.kertaskerja.realisasi_opd_service.renja.web.LaporanRealisasiRenjaOpdResponse;
 import cc.kertaskerja.realisasi_opd_service.renja.web.RenjaOpdPenetapanResponse;
 import cc.kertaskerja.realisasi_opd_service.renja.web.kegiatan.FaktorPenghambatTargetRenjaKegiatanOpdRequest;
 import cc.kertaskerja.realisasi_opd_service.renja.web.kegiatan.FaktorPenunjangTargetRenjaKegiatanOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.renja.web.kegiatan.LaporanRealisasiRenjaKegiatanOpdResponse;
 import cc.kertaskerja.realisasi_opd_service.renja.web.program.FaktorPenghambatTargetRenjaProgramOpdRequest;
 import cc.kertaskerja.realisasi_opd_service.renja.web.program.FaktorPenunjangTargetRenjaProgramOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.renja.web.program.LaporanRealisasiRenjaProgramOpdResponse;
 import cc.kertaskerja.realisasi_opd_service.renja.web.subkegiatan.FaktorPenghambatTargetRenjaSubKegiatanOpdRequest;
 import cc.kertaskerja.realisasi_opd_service.renja.web.subkegiatan.FaktorPenunjangTargetRenjaSubKegiatanOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.renja.web.subkegiatan.LaporanRealisasiRenjaSubKegiatanOpdResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.http.HttpStatus;
@@ -29,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 @Service
 public class RenjaOpdService {
@@ -232,45 +235,150 @@ public class RenjaOpdService {
                 .flatMap(existing -> targetSubKegiatanRepo.save(existing.withFaktorPenghambat(req.faktorPenghambat())));
     }
 
-    public Flux<LaporanRealisasiRenjaOpdResponse> getLaporanRealisasi(String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan) {
-        Mono<PenetapanRenjaOpd.PenetapanRenjaOpdRoot> penetapanMono = penetapanClient.fetchRenjaOpd(kodeOpd, Integer.parseInt(tahun))
-                .onErrorReturn(new PenetapanRenjaOpd.PenetapanRenjaOpdRoot(kodeOpd, Integer.parseInt(tahun), null, List.of(), List.of(), List.of()));
-
-        Flux<PeriodeRealisasi> programFlux = targetProgramRepo.findAllByKodeOpdAndTahun(kodeOpd, tahun)
-                .map(t -> new PeriodeRealisasi(t.bulan(), t.realisasi()));
-        Flux<PeriodeRealisasi> kegiatanFlux = targetKegiatanRepo.findAllByKodeOpdAndTahun(kodeOpd, tahun)
-                .map(t -> new PeriodeRealisasi(t.bulan(), t.realisasi()));
-        Flux<PeriodeRealisasi> subkegiatanFlux = targetSubKegiatanRepo.findAllByKodeOpdAndTahun(kodeOpd, tahun)
-                .map(t -> new PeriodeRealisasi(t.bulan(), t.realisasi()));
-
-        return Flux.merge(programFlux, kegiatanFlux, subkegiatanFlux)
-                .collectList()
-                .flatMapMany(list -> {
-                    Map<String, Double> listData = switch (jenisLaporan) {
-                        case BULANAN -> {
-                            if (bulan == null || bulan.isBlank()) {
-                                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter bulan wajib diisi untuk laporan BULANAN");
+    public Flux<LaporanRealisasiRenjaProgramOpdResponse> getLaporanRealisasiProgram(
+            String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan) {
+        Mono<PenetapanRenjaOpd.PenetapanRenjaOpdRoot> penetapanMono = fetchPenetapanOrEmpty(kodeOpd, tahun);
+        return Mono.zip(targetProgramRepo.findAllByKodeOpdAndTahun(kodeOpd, tahun).collectList(), penetapanMono)
+                .flatMapMany(tuple -> {
+                    List<RenjaProgramOpd> list = tuple.getT1();
+                    PenetapanRenjaOpd.PenetapanRenjaOpdRoot root = tuple.getT2();
+                    Map<String, List<RenjaProgramOpd>> grouped = list.stream()
+                            .collect(Collectors.groupingBy(t -> t.kodeIndikator() + "|" + t.kodeTarget()));
+                    return Flux.fromIterable(grouped.values()).map(groupList -> {
+                        RenjaProgramOpd first = groupList.get(0);
+                        String program = first.kodeProgram();
+                        String indikatorName = first.kodeIndikator();
+                        String targetName = first.kodeTarget();
+                        for (PenetapanRenjaOpd.ProgramPenetapanData p : safeList(root.programs())) {
+                            for (PenetapanRenjaOpd.IndikatorPenetapanData ind : safeList(p.indikators())) {
+                                for (PenetapanRenjaOpd.TargetPenetapanData tgt : safeList(ind.targets())) {
+                                    if (first.kodeTarget().equals(tgt.kodeTarget())) {
+                                        program = p.program() != null ? p.program() : program;
+                                        indikatorName = ind.indikator() != null ? ind.indikator() : indikatorName;
+                                        targetName = tgt.target() != null ? String.valueOf(tgt.target()) : targetName;
+                                        break;
+                                    }
+                                }
                             }
-                            double total = list.stream()
-                                    .filter(p -> bulan.equals(p.bulan()))
-                                    .filter(p -> p.realisasi() != null)
-                                    .mapToDouble(p -> p.realisasi().doubleValue())
-                                    .sum();
-                            yield Map.of(bulan, total);
                         }
-                        case TRIWULAN -> hitungTriwulanKumulatif(list);
-                        case TAHUNAN -> hitungBulanKumulatif(list);
-                    };
-                    
-                    Double totalRealisasi = null;
-                    if (jenisLaporan == JenisLaporan.TRIWULAN || jenisLaporan == JenisLaporan.TAHUNAN) {
-                        totalRealisasi = listData.values().stream()
-                                .mapToDouble(Double::doubleValue)
-                                .sum();
-                    }
-                    
-                    return Flux.just(new LaporanRealisasiRenjaOpdResponse(tahun, kodeOpd, null, null, jenisLaporan, listData, totalRealisasi));
+                        List<PeriodeRealisasi> periode = groupList.stream()
+                                .map(t -> new PeriodeRealisasi(t.bulan(), t.realisasi()))
+                                .toList();
+                        Map<String, Double> listData = buildLaporanData(periode, jenisLaporan, bulan);
+                        Double totalRealisasi = hitungTotalRealisasi(listData, jenisLaporan);
+                        return new LaporanRealisasiRenjaProgramOpdResponse(
+                                tahun, kodeOpd, program, indikatorName, targetName,
+                                jenisLaporan, listData, totalRealisasi);
+                    });
                 });
+    }
+
+    public Flux<LaporanRealisasiRenjaKegiatanOpdResponse> getLaporanRealisasiKegiatan(
+            String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan) {
+        Mono<PenetapanRenjaOpd.PenetapanRenjaOpdRoot> penetapanMono = fetchPenetapanOrEmpty(kodeOpd, tahun);
+        return Mono.zip(targetKegiatanRepo.findAllByKodeOpdAndTahun(kodeOpd, tahun).collectList(), penetapanMono)
+                .flatMapMany(tuple -> {
+                    List<RenjaKegiatanOpd> list = tuple.getT1();
+                    PenetapanRenjaOpd.PenetapanRenjaOpdRoot root = tuple.getT2();
+                    Map<String, List<RenjaKegiatanOpd>> grouped = list.stream()
+                            .collect(Collectors.groupingBy(t -> t.kodeIndikator() + "|" + t.kodeTarget()));
+                    return Flux.fromIterable(grouped.values()).map(groupList -> {
+                        RenjaKegiatanOpd first = groupList.get(0);
+                        String kegiatan = first.kodeKegiatan();
+                        String indikatorName = first.kodeIndikator();
+                        String targetName = first.kodeTarget();
+                        for (PenetapanRenjaOpd.KegiatanPenetapanData k : safeList(root.kegiatans())) {
+                            for (PenetapanRenjaOpd.IndikatorPenetapanData ind : safeList(k.indikators())) {
+                                for (PenetapanRenjaOpd.TargetPenetapanData tgt : safeList(ind.targets())) {
+                                    if (first.kodeTarget().equals(tgt.kodeTarget())) {
+                                        kegiatan = k.kegiatan() != null ? k.kegiatan() : kegiatan;
+                                        indikatorName = ind.indikator() != null ? ind.indikator() : indikatorName;
+                                        targetName = tgt.target() != null ? String.valueOf(tgt.target()) : targetName;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        List<PeriodeRealisasi> periode = groupList.stream()
+                                .map(t -> new PeriodeRealisasi(t.bulan(), t.realisasi()))
+                                .toList();
+                        Map<String, Double> listData = buildLaporanData(periode, jenisLaporan, bulan);
+                        Double totalRealisasi = hitungTotalRealisasi(listData, jenisLaporan);
+                        return new LaporanRealisasiRenjaKegiatanOpdResponse(
+                                tahun, kodeOpd, kegiatan, indikatorName, targetName,
+                                jenisLaporan, listData, totalRealisasi);
+                    });
+                });
+    }
+
+    public Flux<LaporanRealisasiRenjaSubKegiatanOpdResponse> getLaporanRealisasiSubKegiatan(
+            String kodeOpd, String tahun, JenisLaporan jenisLaporan, String bulan) {
+        Mono<PenetapanRenjaOpd.PenetapanRenjaOpdRoot> penetapanMono = fetchPenetapanOrEmpty(kodeOpd, tahun);
+        return Mono.zip(targetSubKegiatanRepo.findAllByKodeOpdAndTahun(kodeOpd, tahun).collectList(), penetapanMono)
+                .flatMapMany(tuple -> {
+                    List<RenjaSubKegiatanOpd> list = tuple.getT1();
+                    PenetapanRenjaOpd.PenetapanRenjaOpdRoot root = tuple.getT2();
+                    Map<String, List<RenjaSubKegiatanOpd>> grouped = list.stream()
+                            .collect(Collectors.groupingBy(t -> t.kodeIndikator() + "|" + t.kodeTarget()));
+                    return Flux.fromIterable(grouped.values()).map(groupList -> {
+                        RenjaSubKegiatanOpd first = groupList.get(0);
+                        String subKegiatan = first.kodeSubkegiatan();
+                        String indikatorName = first.kodeIndikator();
+                        String targetName = first.kodeTarget();
+                        for (PenetapanRenjaOpd.SubkegiatanPenetapanData s : safeList(root.subkegiatans())) {
+                            for (PenetapanRenjaOpd.IndikatorPenetapanData ind : safeList(s.indikators())) {
+                                for (PenetapanRenjaOpd.TargetPenetapanData tgt : safeList(ind.targets())) {
+                                    if (first.kodeTarget().equals(tgt.kodeTarget())) {
+                                        subKegiatan = s.subkegiatan() != null ? s.subkegiatan() : subKegiatan;
+                                        indikatorName = ind.indikator() != null ? ind.indikator() : indikatorName;
+                                        targetName = tgt.target() != null ? String.valueOf(tgt.target()) : targetName;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        List<PeriodeRealisasi> periode = groupList.stream()
+                                .map(t -> new PeriodeRealisasi(t.bulan(), t.realisasi()))
+                                .toList();
+                        Map<String, Double> listData = buildLaporanData(periode, jenisLaporan, bulan);
+                        Double totalRealisasi = hitungTotalRealisasi(listData, jenisLaporan);
+                        return new LaporanRealisasiRenjaSubKegiatanOpdResponse(
+                                tahun, kodeOpd, subKegiatan, indikatorName, targetName,
+                                jenisLaporan, listData, totalRealisasi);
+                    });
+                });
+    }
+
+    private Mono<PenetapanRenjaOpd.PenetapanRenjaOpdRoot> fetchPenetapanOrEmpty(String kodeOpd, String tahun) {
+        return penetapanClient.fetchRenjaOpd(kodeOpd, Integer.parseInt(tahun))
+                .onErrorReturn(new PenetapanRenjaOpd.PenetapanRenjaOpdRoot(
+                        kodeOpd, Integer.parseInt(tahun), null, List.of(), List.of(), List.of()));
+    }
+
+    private Map<String, Double> buildLaporanData(
+            List<PeriodeRealisasi> list, JenisLaporan jenisLaporan, String bulan) {
+        return switch (jenisLaporan) {
+            case BULANAN -> {
+                if (bulan == null || bulan.isBlank()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter bulan wajib diisi untuk laporan BULANAN");
+                }
+                double total = list.stream()
+                        .filter(p -> bulan.equals(p.bulan()))
+                        .filter(p -> p.realisasi() != null)
+                        .mapToDouble(p -> p.realisasi().doubleValue())
+                        .sum();
+                yield Map.of(bulan, total);
+            }
+            case TRIWULAN -> hitungTriwulanKumulatif(list);
+            case TAHUNAN -> hitungBulanKumulatif(list);
+        };
+    }
+
+    private Double hitungTotalRealisasi(Map<String, Double> listData, JenisLaporan jenisLaporan) {
+        if (jenisLaporan != JenisLaporan.TRIWULAN && jenisLaporan != JenisLaporan.TAHUNAN) {
+            return null;
+        }
+        return listData.values().stream().mapToDouble(Double::doubleValue).sum();
     }
 
     // ========================================================================

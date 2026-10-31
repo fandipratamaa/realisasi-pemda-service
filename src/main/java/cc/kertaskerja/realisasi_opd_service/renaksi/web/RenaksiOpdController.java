@@ -1,5 +1,6 @@
 package cc.kertaskerja.realisasi_opd_service.renaksi.web;
 
+import cc.kertaskerja.realisasi.domain.JenisLaporan;
 import cc.kertaskerja.realisasi_opd_service.renaksi.domain.RenaksiOpd;
 import cc.kertaskerja.realisasi_opd_service.renaksi.domain.RenaksiOpdService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -69,6 +70,25 @@ public class RenaksiOpdController {
         validateBulan(bulan);
         return renaksiOpdService.syncPenetapanRenaksiOpd(kodeOpd, Integer.parseInt(tahun))
                 .then(renaksiOpdService.getPenetapanWithRealisasi(kodeOpd, Integer.parseInt(tahun), bulan));
+    }
+
+    @GetMapping("/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
+    @Operation(summary = "Laporan realisasi renaksi OPD per periode", description = "Mengambil total realisasi renaksi OPD yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN). Data diagregasi per kode rencana aksi OPD dan diperkaya dengan nama serta target dari data penetapan.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data laporan realisasi renaksi OPD", content = @Content(schema = @Schema(implementation = LaporanRealisasiRenaksiOpdResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<LaporanRealisasiRenaksiOpdResponse> getLaporanRealisasi(
+            @Parameter(description = "Kode OPD", example = "8.01.0.00.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun laporan", example = "2026") @PathVariable String tahun,
+            @Parameter(description = "Jenis periode laporan", example = "TAHUNAN") @PathVariable JenisLaporan jenisLaporan,
+            @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN", example = "3") @RequestParam(required = false) String bulan) {
+        if (kodeOpd == null || kodeOpd.isBlank() || tahun == null || tahun.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter kodeOpd dan tahun tidak boleh kosong");
+        }
+        validateBulan(bulan);
+        return renaksiOpdService.getLaporanRealisasi(kodeOpd, tahun, jenisLaporan, bulan);
     }
 
     private void validateBulan(String bulan) {

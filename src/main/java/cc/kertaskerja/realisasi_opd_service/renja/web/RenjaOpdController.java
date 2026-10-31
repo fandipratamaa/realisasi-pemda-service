@@ -7,10 +7,13 @@ import cc.kertaskerja.realisasi_opd_service.renja.domain.RenjaProgramOpd;
 import cc.kertaskerja.realisasi_opd_service.renja.domain.RenjaSubKegiatanOpd;
 import cc.kertaskerja.realisasi_opd_service.renja.web.kegiatan.FaktorPenghambatTargetRenjaKegiatanOpdRequest;
 import cc.kertaskerja.realisasi_opd_service.renja.web.kegiatan.FaktorPenunjangTargetRenjaKegiatanOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.renja.web.kegiatan.LaporanRealisasiRenjaKegiatanOpdResponse;
 import cc.kertaskerja.realisasi_opd_service.renja.web.program.FaktorPenghambatTargetRenjaProgramOpdRequest;
 import cc.kertaskerja.realisasi_opd_service.renja.web.program.FaktorPenunjangTargetRenjaProgramOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.renja.web.program.LaporanRealisasiRenjaProgramOpdResponse;
 import cc.kertaskerja.realisasi_opd_service.renja.web.subkegiatan.FaktorPenghambatTargetRenjaSubKegiatanOpdRequest;
 import cc.kertaskerja.realisasi_opd_service.renja.web.subkegiatan.FaktorPenunjangTargetRenjaSubKegiatanOpdRequest;
+import cc.kertaskerja.realisasi_opd_service.renja.web.subkegiatan.LaporanRealisasiRenjaSubKegiatanOpdResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -62,19 +65,49 @@ public class RenjaOpdController {
                 .then(renjaOpdService.getPenetapanWithRealisasi(kodeOpd, Integer.parseInt(tahun), bulan));
     }
 
-    @GetMapping("/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
-    @Operation(summary = "Laporan realisasi renja OPD per periode", description = "Mengambil total realisasi renja OPD yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN). Data diagregasi dari program, kegiatan, dan subkegiatan.")
+    @GetMapping("/program/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
+    @Operation(summary = "Laporan realisasi renja OPD program per periode", description = "Mengambil total realisasi renja OPD tingkat program yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN).")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Data laporan realisasi renja OPD", content = @Content(schema = @Schema(implementation = LaporanRealisasiRenjaOpdResponse.class))),
+            @ApiResponse(responseCode = "200", description = "Data laporan realisasi renja OPD program", content = @Content(schema = @Schema(implementation = LaporanRealisasiRenjaProgramOpdResponse.class))),
             @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public Flux<LaporanRealisasiRenjaOpdResponse> getLaporanRealisasi(
+    public Flux<LaporanRealisasiRenjaProgramOpdResponse> getLaporanRealisasiProgram(
             @Parameter(description = "Kode OPD", example = "5.01.5.05.0.00.01.0000") @PathVariable String kodeOpd,
             @Parameter(description = "Tahun laporan", example = "2026") @PathVariable String tahun,
             @Parameter(description = "Jenis periode laporan", example = "TAHUNAN") @PathVariable JenisLaporan jenisLaporan,
             @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN", example = "3") @RequestParam(required = false) String bulan) {
-        return renjaOpdService.getLaporanRealisasi(kodeOpd, tahun, jenisLaporan, bulan);
+        return renjaOpdService.getLaporanRealisasiProgram(kodeOpd, tahun, jenisLaporan, bulan);
+    }
+
+    @GetMapping("/kegiatan/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
+    @Operation(summary = "Laporan realisasi renja OPD kegiatan per periode", description = "Mengambil total realisasi renja OPD tingkat kegiatan yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data laporan realisasi renja OPD kegiatan", content = @Content(schema = @Schema(implementation = LaporanRealisasiRenjaKegiatanOpdResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<LaporanRealisasiRenjaKegiatanOpdResponse> getLaporanRealisasiKegiatan(
+            @Parameter(description = "Kode OPD", example = "5.01.5.05.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun laporan", example = "2026") @PathVariable String tahun,
+            @Parameter(description = "Jenis periode laporan", example = "TAHUNAN") @PathVariable JenisLaporan jenisLaporan,
+            @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN", example = "3") @RequestParam(required = false) String bulan) {
+        return renjaOpdService.getLaporanRealisasiKegiatan(kodeOpd, tahun, jenisLaporan, bulan);
+    }
+
+    @GetMapping("/subkegiatan/laporan/kodeOpd/{kodeOpd}/tahun/{tahun}/jenisLaporan/{jenisLaporan}")
+    @Operation(summary = "Laporan realisasi renja OPD subkegiatan per periode", description = "Mengambil total realisasi target renja OPD tingkat subkegiatan yang dikelompokkan berdasarkan periode (BULANAN, TRIWULAN, TAHUNAN).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data laporan realisasi renja OPD subkegiatan", content = @Content(schema = @Schema(implementation = LaporanRealisasiRenjaSubKegiatanOpdResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parameter tidak valid", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public Flux<LaporanRealisasiRenjaSubKegiatanOpdResponse> getLaporanRealisasiSubKegiatan(
+            @Parameter(description = "Kode OPD", example = "5.01.5.05.0.00.01.0000") @PathVariable String kodeOpd,
+            @Parameter(description = "Tahun laporan", example = "2026") @PathVariable String tahun,
+            @Parameter(description = "Jenis periode laporan", example = "TAHUNAN") @PathVariable JenisLaporan jenisLaporan,
+            @Parameter(description = "Nomor bulan (1-12), wajib jika BULANAN", example = "3") @RequestParam(required = false) String bulan) {
+        return renjaOpdService.getLaporanRealisasiSubKegiatan(kodeOpd, tahun, jenisLaporan, bulan);
     }
 
     @PostMapping("/program/faktor-penunjang")

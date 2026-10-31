@@ -2,6 +2,7 @@ package cc.kertaskerja.realisasi_opd_service.renaksi.domain;
 
 import cc.kertaskerja.integration.penetapan.PenetapanRenaksiOpdClient;
 import cc.kertaskerja.integration.penetapan.renaksi.PenetapanRenaksiOpd;
+import cc.kertaskerja.realisasi.domain.JenisLaporan;
 import cc.kertaskerja.realisasi.domain.JenisRealisasi;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -263,6 +264,94 @@ class RenaksiOpdServiceTest {
                     org.junit.jupiter.api.Assertions.assertNotNull(realisasi.keteranganCapaian());
                     org.junit.jupiter.api.Assertions.assertTrue(
                             realisasi.keteranganCapaian().contains("lebih dari 100%"));
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void getLaporanRealisasi_Bulanan_ShouldSumSelectedMonthAndEnrichFromPenetapan() {
+        when(penetapanRenaksiOpdClient.fetchRenaksiOpd(KODE_OPD, 2026))
+                .thenReturn(Mono.just(penetapanRoot));
+        when(renaksiOpdRepository.findAllByKodeOpdAndTahun(KODE_OPD, "2026"))
+                .thenReturn(Flux.just(realisasi("1", 10), realisasi("2", 20)));
+
+        StepVerifier.create(renaksiOpdService.getLaporanRealisasi(
+                        KODE_OPD, "2026", JenisLaporan.BULANAN, "1"))
+                .assertNext(response -> {
+                    org.junit.jupiter.api.Assertions.assertEquals("2026", response.tahun());
+                    org.junit.jupiter.api.Assertions.assertEquals(KODE_OPD, response.kodeOpd());
+                    org.junit.jupiter.api.Assertions.assertEquals(KODE_RENAKSI, response.kodeRencanaAksiOpd());
+                    org.junit.jupiter.api.Assertions.assertEquals(
+                            "Terlaksananya Koordinasi antar Pimpinan Daerah di Kabupaten", response.namaRenaksi());
+                    org.junit.jupiter.api.Assertions.assertEquals("100.0", response.target());
+                    org.junit.jupiter.api.Assertions.assertEquals(JenisLaporan.BULANAN, response.jenisLaporan());
+                    org.junit.jupiter.api.Assertions.assertEquals(java.util.Map.of("1", 10.0), response.listData());
+                    org.junit.jupiter.api.Assertions.assertNull(response.totalRealisasi());
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void getLaporanRealisasi_Triwulan_ShouldReturnCumulativeAndTotal() {
+        when(penetapanRenaksiOpdClient.fetchRenaksiOpd(KODE_OPD, 2026))
+                .thenReturn(Mono.just(penetapanRoot));
+        when(renaksiOpdRepository.findAllByKodeOpdAndTahun(KODE_OPD, "2026"))
+                .thenReturn(Flux.just(realisasi("1", 10), realisasi("2", 20), realisasi("4", 5)));
+
+        StepVerifier.create(renaksiOpdService.getLaporanRealisasi(
+                        KODE_OPD, "2026", JenisLaporan.TRIWULAN, null))
+                .assertNext(response -> {
+                    org.junit.jupiter.api.Assertions.assertEquals(
+                            java.util.Map.of("1", 30.0, "2", 35.0), response.listData());
+                    org.junit.jupiter.api.Assertions.assertEquals(35.0, response.totalRealisasi());
+                    org.junit.jupiter.api.Assertions.assertEquals("100.0", response.target());
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void getLaporanRealisasi_Tahunan_ShouldReturnCumulativePerMonthAndTotal() {
+        when(penetapanRenaksiOpdClient.fetchRenaksiOpd(KODE_OPD, 2026))
+                .thenReturn(Mono.just(penetapanRoot));
+        when(renaksiOpdRepository.findAllByKodeOpdAndTahun(KODE_OPD, "2026"))
+                .thenReturn(Flux.just(realisasi("1", 10), realisasi("2", 20)));
+
+        StepVerifier.create(renaksiOpdService.getLaporanRealisasi(
+                        KODE_OPD, "2026", JenisLaporan.TAHUNAN, null))
+                .assertNext(response -> {
+                    org.junit.jupiter.api.Assertions.assertEquals(
+                            java.util.Map.of("1", 10.0, "2", 30.0), response.listData());
+                    org.junit.jupiter.api.Assertions.assertEquals(30.0, response.totalRealisasi());
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void getLaporanRealisasi_BulananWithoutBulan_ShouldReturnBadRequest() {
+        StepVerifier.create(renaksiOpdService.getLaporanRealisasi(
+                        KODE_OPD, "2026", JenisLaporan.BULANAN, null))
+                .expectErrorSatisfies(error -> {
+                    org.junit.jupiter.api.Assertions.assertTrue(
+                            error instanceof org.springframework.web.server.ResponseStatusException);
+                    var status = (org.springframework.web.server.ResponseStatusException) error;
+                    org.junit.jupiter.api.Assertions.assertEquals(400, status.getStatusCode().value());
+                })
+                .verify();
+    }
+
+    @Test
+    void getLaporanRealisasi_WhenPenetapanEmpty_ShouldStillReturnStoredRealisasi() {
+        when(penetapanRenaksiOpdClient.fetchRenaksiOpd(KODE_OPD, 2026))
+                .thenReturn(Mono.empty());
+        when(renaksiOpdRepository.findAllByKodeOpdAndTahun(KODE_OPD, "2026"))
+                .thenReturn(Flux.just(realisasi("1", 10)));
+
+        StepVerifier.create(renaksiOpdService.getLaporanRealisasi(
+                        KODE_OPD, "2026", JenisLaporan.BULANAN, "1"))
+                .assertNext(response -> {
+                    org.junit.jupiter.api.Assertions.assertEquals(KODE_RENAKSI, response.namaRenaksi());
+                    org.junit.jupiter.api.Assertions.assertNull(response.target());
+                    org.junit.jupiter.api.Assertions.assertEquals(java.util.Map.of("1", 10.0), response.listData());
                 })
                 .verifyComplete();
     }

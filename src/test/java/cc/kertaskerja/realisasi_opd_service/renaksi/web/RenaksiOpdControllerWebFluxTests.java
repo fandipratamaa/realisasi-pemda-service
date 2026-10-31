@@ -1,6 +1,7 @@
 package cc.kertaskerja.realisasi_opd_service.renaksi.web;
 
 import cc.kertaskerja.config.SecurityConfig;
+import cc.kertaskerja.realisasi.domain.JenisLaporan;
 import cc.kertaskerja.realisasi_opd_service.renaksi.domain.RenaksiOpdService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,9 +11,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.Mockito.when;
 
@@ -192,6 +195,51 @@ class RenaksiOpdControllerWebFluxTests {
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.renaksi_opds[0].kode_rencana_aksi_opd").isEqualTo("REN-OPD-1");
+    }
+
+    @Test
+    void whenAdminOpdGetsLaporanRealisasi_thenDataReturned() {
+        when(renaksiOpdService.getLaporanRealisasi(KODE_OPD, "2026", JenisLaporan.BULANAN, "1"))
+                .thenReturn(Flux.just(new LaporanRealisasiRenaksiOpdResponse(
+                        "2026", KODE_OPD, "REN-OPD-1",
+                        "Terlaksananya Koordinasi antar Pimpinan Daerah di Kabupaten",
+                        "100.0", JenisLaporan.BULANAN, Map.of("1", 30.0), null)));
+
+        webTestClient
+                .mutateWith(SecurityMockServerConfigurers.mockJwt().authorities(new SimpleGrantedAuthority("admin_opd")))
+                .get()
+                .uri("/renaksi_opd/laporan/kodeOpd/8.01.0.00.0.00.01.0000/tahun/2026/jenisLaporan/BULANAN?bulan=1")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$[0].tahun").isEqualTo("2026")
+                .jsonPath("$[0].kode_opd").isEqualTo(KODE_OPD)
+                .jsonPath("$[0].kode_rencana_aksi_opd").isEqualTo("REN-OPD-1")
+                .jsonPath("$[0].nama_renaksi")
+                .isEqualTo("Terlaksananya Koordinasi antar Pimpinan Daerah di Kabupaten")
+                .jsonPath("$[0].target").isEqualTo("100.0")
+                .jsonPath("$[0].jenis_laporan").isEqualTo("BULANAN")
+                .jsonPath("$[0].list_data.1").isEqualTo(30.0)
+                .jsonPath("$[0].totalRealisasi").doesNotExist();
+    }
+
+    @Test
+    void whenLaporanBulanInvalid_thenBadRequest() {
+        webTestClient
+                .mutateWith(SecurityMockServerConfigurers.mockJwt().authorities(new SimpleGrantedAuthority("admin_opd")))
+                .get()
+                .uri("/renaksi_opd/laporan/kodeOpd/8.01.0.00.0.00.01.0000/tahun/2026/jenisLaporan/BULANAN?bulan=13")
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void whenUnauthenticated_thenLaporanIsUnauthorized() {
+        webTestClient
+                .get()
+                .uri("/renaksi_opd/laporan/kodeOpd/8.01.0.00.0.00.01.0000/tahun/2026/jenisLaporan/TAHUNAN")
+                .exchange()
+                .expectStatus().isUnauthorized();
     }
 
     @Test

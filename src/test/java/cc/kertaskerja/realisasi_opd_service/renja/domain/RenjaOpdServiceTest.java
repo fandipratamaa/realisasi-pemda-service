@@ -2,12 +2,14 @@ package cc.kertaskerja.realisasi_opd_service.renja.domain;
 
 import cc.kertaskerja.integration.penetapan.PenetapanRenjaOpdClient;
 import cc.kertaskerja.integration.penetapan.renja.PenetapanRenjaOpd;
+import cc.kertaskerja.realisasi.domain.JenisLaporan;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -211,6 +213,114 @@ class RenjaOpdServiceTest {
                     assertEquals(BigDecimal.valueOf(7500000.0), res.realisasiPagu());
                 })
                 .verifyComplete();
+    }
+
+    @Test
+    void getLaporanRealisasiProgram_Bulanan_ShouldAggregatePerMonthAndResolveNames() {
+        when(penetapanClient.fetchRenjaOpd("5.01.5.05.0.00.01.0000", 2026))
+                .thenReturn(Mono.just(penetapanRoot));
+        when(targetProgramRepo.findAllByKodeOpdAndTahun("5.01.5.05.0.00.01.0000", "2026"))
+                .thenReturn(Flux.just(
+                        programRecord("1", "IND-001", "TGT-001", 30.0),
+                        programRecord("2", "IND-001", "TGT-001", 40.0)
+                ));
+
+        StepVerifier.create(renjaOpdService.getLaporanRealisasiProgram(
+                        "5.01.5.05.0.00.01.0000", "2026", JenisLaporan.BULANAN, "1"))
+                .assertNext(res -> {
+                    assertEquals("PROGRAM PERENCANAAN", res.program());
+                    assertEquals("test2026", res.indikator());
+                    assertEquals("100.0", res.target());
+                    assertEquals(30.0, res.listData().get("1"));
+                    assertNull(res.totalRealisasi());
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void getLaporanRealisasiProgram_Tahunan_ShouldReturnKumulatif() {
+        when(penetapanClient.fetchRenjaOpd("5.01.5.05.0.00.01.0000", 2026))
+                .thenReturn(Mono.just(penetapanRoot));
+        when(targetProgramRepo.findAllByKodeOpdAndTahun("5.01.5.05.0.00.01.0000", "2026"))
+                .thenReturn(Flux.just(
+                        programRecord("1", "IND-001", "TGT-001", 30.0),
+                        programRecord("2", "IND-001", "TGT-001", 40.0)
+                ));
+
+        StepVerifier.create(renjaOpdService.getLaporanRealisasiProgram(
+                        "5.01.5.05.0.00.01.0000", "2026", JenisLaporan.TAHUNAN, null))
+                .assertNext(res -> {
+                    assertEquals(30.0, res.listData().get("1"));
+                    assertEquals(40.0, res.listData().get("2"));
+                    assertEquals(70.0, res.totalRealisasi());
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void getLaporanRealisasiKegiatan_Bulanan_ShouldResolveKegiatanName() {
+        when(penetapanClient.fetchRenjaOpd("5.01.5.05.0.00.01.0000", 2026))
+                .thenReturn(Mono.just(penetapanRoot));
+        when(targetKegiatanRepo.findAllByKodeOpdAndTahun("5.01.5.05.0.00.01.0000", "2026"))
+                .thenReturn(Flux.just(kegiatanRecord("1", "IND-002", "TGT-002", 25.0)));
+
+        StepVerifier.create(renjaOpdService.getLaporanRealisasiKegiatan(
+                        "5.01.5.05.0.00.01.0000", "2026", JenisLaporan.BULANAN, "1"))
+                .assertNext(res -> {
+                    assertEquals("Penyusunan Perencanaan", res.kegiatan());
+                    assertEquals("INDI X", res.indikator());
+                    assertEquals("100.0", res.target());
+                    assertEquals(25.0, res.listData().get("1"));
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void getLaporanRealisasiSubKegiatan_ShouldUseRealisasiTargetNotPagu() {
+        when(penetapanClient.fetchRenjaOpd("5.01.5.05.0.00.01.0000", 2026))
+                .thenReturn(Mono.just(penetapanRoot));
+        when(targetSubKegiatanRepo.findAllByKodeOpdAndTahun("5.01.5.05.0.00.01.0000", "2026"))
+                .thenReturn(Flux.just(
+                        new RenjaSubKegiatanOpd(3L, "5.01.5.05.0.00.01.0000", "2026", "1",
+                                "5.01.02.2.01.0005", "IND-003", "TGT-003", "PAGU-3",
+                                BigDecimal.valueOf(70), BigDecimal.valueOf(5_000_000), "NAIK", "", "", "",
+                                Instant.now(), Instant.now(), null, null)
+                ));
+
+        StepVerifier.create(renjaOpdService.getLaporanRealisasiSubKegiatan(
+                        "5.01.5.05.0.00.01.0000", "2026", JenisLaporan.TAHUNAN, null))
+                .assertNext(res -> {
+                    assertEquals("Musrenbang Kab/Kota", res.subKegiatan());
+                    assertEquals("INDI X", res.indikator());
+                    assertEquals(70.0, res.listData().get("1"));
+                    assertEquals(70.0, res.totalRealisasi());
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void getLaporanRealisasi_BulananWithoutBulan_ShouldError() {
+        when(penetapanClient.fetchRenjaOpd("5.01.5.05.0.00.01.0000", 2026))
+                .thenReturn(Mono.just(penetapanRoot));
+        when(targetProgramRepo.findAllByKodeOpdAndTahun("5.01.5.05.0.00.01.0000", "2026"))
+                .thenReturn(Flux.just(programRecord("1", "IND-001", "TGT-001", 30.0)));
+
+        StepVerifier.create(renjaOpdService.getLaporanRealisasiProgram(
+                        "5.01.5.05.0.00.01.0000", "2026", JenisLaporan.BULANAN, null))
+                .expectError(ResponseStatusException.class)
+                .verify();
+    }
+
+    private RenjaProgramOpd programRecord(String bulan, String kodeIndikator, String kodeTarget, double realisasi) {
+        return new RenjaProgramOpd(1L, "5.01.5.05.0.00.01.0000", "2026", bulan,
+                "5.01.02", kodeIndikator, kodeTarget, "", BigDecimal.valueOf(realisasi), "NAIK", "", "", "",
+                Instant.now(), Instant.now(), null, null);
+    }
+
+    private RenjaKegiatanOpd kegiatanRecord(String bulan, String kodeIndikator, String kodeTarget, double realisasi) {
+        return new RenjaKegiatanOpd(2L, "5.01.5.05.0.00.01.0000", "2026", bulan,
+                "5.01.02.2.01", kodeIndikator, kodeTarget, "", BigDecimal.valueOf(realisasi), "NAIK", "", "", "",
+                Instant.now(), Instant.now(), null, null);
     }
 
     @Test
